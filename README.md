@@ -41,3 +41,36 @@ print(result)
 # show graphical results
 result.image_overlay.show()
 ```
+
+## Running PySDK Examples
+
+This repository prvides some example scripts that can work with 
+
+0. DeGirum Cloud Server, 
+1. AI server equipped with DeGirum ORCA accelerator shared via Peer-to-Peer VPN, 
+2. AI server equipped with DeGirum ORCA accelerator running in local network and 
+3. AI server equipped with DeGirum ORCA accelerator running on the same machine as this code. 
+
+To try different options, the user needs to just change the model zoo option in the code.
+
+To run the examples, clone this repo:
+
+```
+git clone https://github.com/DeGirum/PySDKExamples.git
+```
+
+Inside the repo, create an .env file and fill the required information such as DEGIRUM_CLOUD_TOKEN, P2P_VPN_SERVER_ADDRESS etc. This will allow loading the required information from the .env file instead of hardcoding the values in the script. You can copy the below lines and fill in the missing information.
+
+DEGIRUM_CLOUD_SERVER_ADDRESS='dgcps://cs.degirum.com'
+
+DEGIRUM_CLOUD_TOKEN='Enter your token here'
+
+P2P_VPN_SERVER_ADDRESS='Enter the IP address of the P2P_VPN_SERVER'
+
+LOCAL_NETWORK_SERVER_ADDRESS='Enter the IP address of the AI server running in local network'
+
+LOCAL_HOST_ADDRESS='localhost'
+
+The .env file is added to .gitignore and will not be checked in. This will ensure that your token information is not leaked. 
+
+
