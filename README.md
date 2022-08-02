@@ -1,57 +1,49 @@
 # DeGirum PySDK Examples
 
-## PySDK Installation
+## Quick Start
 
-It is recommended to install DeGirum PySDK package inside a virtual environment. Currently, Python 3.8 and 3.9 are supported. Other versions will be supported in future.
+1. Install DeGirum PySDK. Refer to [DeGirum Developers Center](https://degirum.github.io) for instructions.
 
-To install DeGirum PySDK from the DeGirum index server use the following command:
+1. The following script will download *MobileNetv2+SSD* CPU model from 
+[DeGirum public mode zoo](https://github.com/DeGirum/public_model_zoo)
+and perform ML inference of a test image with two cats. The inference result will be displayed in both text 
+and graphical form.
 
-```
-python -m pip install degirum --extra-index-url https://degirum.github.io/simple
-```
+    ```python
+    import degirum as dg         # import DeGirum PySDK package
+    zoo = dg.connect_model_zoo() # connect to DeGirum public model zoo
+    print(zoo.list_models())     # print all available models in the model zoo
 
-To force reinstall the most recent PySDK version without reinstalling all dependencies use the following command:
-```
-python -m pip install degirum --upgrade --no-deps --force-reinstall --extra-index-url https://degirum.github.io/simple
-```
+    # load mobilenet_ssd model for CPU;
+    # model_name should be one returned by zoo.list_models()
+    model_name = "mobilenet_v2_ssd_coco--300x300_quant_n2x_cpu_1"     
+    model = zoo.load_model(model_name)
+
+    # perform AI inference of an image specified by URL
+    image_url = "https://degirum.github.io/images/samples/TwoCats.jpg"
+    result = model(image_url)
+
+    print(result)                # print numeric results
+    result.image_overlay.show()  # show graphical results
+    ```
 
 ## Resources
 
-[DeGirum Developers Center](https://degirum.github.io)
-
-## Quick Start
-
-```python
-# import DeGirum PySDK package
-import degirum as dg
-
-# connect to DeGirum public model zoo
-zoo = dg.connect_model_zoo()
-
-# load mobilenet_ssd model for CPU
-mobilenet_ssd = zoo.load_model("mobilenet_v2_ssd_coco--300x300_quant_n2x_cpu_1")
-
-# perform AI inference of an image specified by URL
-image_url="https://degirum.github.io/images/samples/TwoCats.jpg"
-result = mobilenet_ssd(image_url)
-
-# print numeric results
-print(result)
-
-# show graphical results
-result.image_overlay.show()
-```
+1. [DeGirum Developers Center](https://degirum.github.io): place to look for PySDK documentation
+1. [DeGirum Cloud Platform](cs.degirum.com): place to manage your cloud API access tokens 
+1. [DeGirum public mode zoo](https://github.com/DeGirum/public_model_zoo) GitHub repo
 
 ## Running PySDK Examples
 
-This repository prvides some example scripts that can work with 
+This repository provides PySDK example scripts that can perform ML inferences on the following hosting options:
 
-0. DeGirum Cloud Server, 
-1. AI server equipped with DeGirum ORCA accelerator shared via Peer-to-Peer VPN, 
-2. AI server equipped with DeGirum ORCA accelerator running in local network and 
-3. AI server equipped with DeGirum ORCA accelerator running on the same machine as this code. 
+1. Using [DeGirum Cloud Platform](cs.degirum.com),
+1. On DeGirum-hosted AI server node shared via Peer-to-Peer VPN,
+1. On AI server node hosted by you in your local network,
+1. On AI server running on your local machine,
+1. On DeGirum ORCA accelerator directly installed on your local machine.
 
-To try different options, the user needs to just change the model zoo option in the code.
+To try different options, you need to just change the `inference_option` variable in the script code.
 
 To run the examples, clone this repo:
 
@@ -59,18 +51,23 @@ To run the examples, clone this repo:
 git clone https://github.com/DeGirum/PySDKExamples.git
 ```
 
-Inside the repo, create an .env file and fill the required information such as DEGIRUM_CLOUD_TOKEN, P2P_VPN_SERVER_ADDRESS etc. This will allow loading the required information from the .env file instead of hardcoding the values in the script. You can copy the below lines and fill in the missing information.
+Inside the repo, create an `.env` file and fill the required authentication details by assigning the following variables:
+
+|Variable Name|Description|
+|-------------|-----------|
+|`DEGIRUM_CLOUD_TOKEN`|DeGirum cloud platform API access token, obtained on [DeGirum Cloud Platform](cs.degirum.com) site.|
+|`P2P_VPN_SERVER_ADDRESS`|IP address of DeGirum-hosted AI server node shared via Peer-to-Peer VPN; please contact support@degirm.com to obtain one.|
+|`LOCAL_NETWORK_SERVER_ADDRESS`|IP address of AI server node hosted by you in your local network; refer to [DeGirum Developers Center](https://degirum.github.io) for AI server installation details.|
+|`GITHUB_TOKEN`|[GitHub personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) to access [DeGirum public mode zoo repo](https://github.com/DeGirum/public_model_zoo); any valid GitHub token will work.|
+
+This will allow loading the required information from the `.env` file instead of hard-coding the values in the script. 
+You can copy the below lines and fill in the missing information.
 ```
-DEGIRUM_CLOUD_SERVER_ADDRESS='dgcps://cs.degirum.com'
-
-DEGIRUM_CLOUD_TOKEN='Enter your token here'
-
-P2P_VPN_SERVER_ADDRESS='Enter the IP address of the P2P_VPN_SERVER'
-
-LOCAL_NETWORK_SERVER_ADDRESS='Enter the IP address of the AI server running in local network'
-
-LOCAL_HOST_ADDRESS='localhost'
+DEGIRUM_CLOUD_TOKEN = 'Enter your DeGirum cloud platform token'
+P2P_VPN_SERVER_ADDRESS = 'Enter IP address of the DeGirum P2P AI server'
+LOCAL_NETWORK_SERVER_ADDRESS = 'Enter IP address of the AI server in your local network'
+GITHUB_TOKEN = 'Enter your GitHub personal access token'
 ```
-The .env file is added to .gitignore and will not be checked in. This will ensure that your token information is not leaked. 
 
+The `.env` file is added to `.gitignore` and will not be checked in. This will ensure that your token information is not leaked. 
 
