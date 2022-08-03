@@ -36,7 +36,7 @@ def connect_model_zoo(inference_option=1):
     zoo = dg.connect_model_zoo(
         _get_var(my_cfg[1]), _get_var(my_cfg[2])
     )  # connect to the model zoo
-    print(f"Inference option = '{my_cfg[0]}")
+    print(f"Inference option = '{my_cfg[0]}'")
     return zoo
 
 
