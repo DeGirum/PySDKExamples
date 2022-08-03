@@ -30,14 +30,14 @@ and graphical form.
 ## Resources
 
 1. [DeGirum Developers Center](https://degirum.github.io): place to look for PySDK documentation
-1. [DeGirum Cloud Platform](cs.degirum.com): place to manage your cloud API access tokens 
+1. [DeGirum Cloud Platform](https://cs.degirum.com): place to manage your cloud API access tokens 
 1. [DeGirum public mode zoo](https://github.com/DeGirum/public_model_zoo) GitHub repo
 
 ## Running PySDK Examples
 
 This repository provides PySDK example scripts that can perform ML inferences on the following hosting options:
 
-1. Using [DeGirum Cloud Platform](cs.degirum.com),
+1. Using [DeGirum Cloud Platform](https://cs.degirum.com),
 1. On DeGirum-hosted AI server node shared via Peer-to-Peer VPN,
 1. On AI server node hosted by you in your local network,
 1. On AI server running on your local machine,
@@ -55,8 +55,8 @@ Inside the repo, create an `.env` file and fill the required authentication deta
 
 |Variable Name|Description|
 |-------------|-----------|
-|`DEGIRUM_CLOUD_TOKEN`|DeGirum cloud platform API access token, obtained on [DeGirum Cloud Platform](cs.degirum.com) site.|
-|`P2P_VPN_SERVER_ADDRESS`|IP address of DeGirum-hosted AI server node shared via Peer-to-Peer VPN; please contact support@degirm.com to obtain one.|
+|`DEGIRUM_CLOUD_TOKEN`|DeGirum cloud platform API access token, obtained on [DeGirum Cloud Platform](https://cs.degirum.com) site.|
+|`P2P_VPN_SERVER_ADDRESS`|IP address of DeGirum-hosted AI server node shared via Peer-to-Peer VPN; please contact support@degirum.com to obtain one.|
 |`LOCAL_NETWORK_SERVER_ADDRESS`|IP address of AI server node hosted by you in your local network; refer to [DeGirum Developers Center](https://degirum.github.io) for AI server installation details.|
 |`GITHUB_TOKEN`|[GitHub personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) to access [DeGirum public mode zoo repo](https://github.com/DeGirum/public_model_zoo); any valid GitHub token will work.|
 
