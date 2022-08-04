@@ -89,14 +89,32 @@ class FPSMeter:
         return 1e9 / self._duration_ns if self._duration_ns > 0 else 0
 
 
-_fps = FPSMeter()
+class Display:
+    """Class to handle OpenCV image display"""
 
+    def __init__(self, capt="<image>", show_fps=True):
+        """Constructor
+        show_fps - True to show FPS
+        capt - window title
+        """
+        self._fps = FPSMeter() if show_fps else None
+        self._capt = capt
+        self._need_destroy = False
 
-def show(img, capt="<image>"):
-    """Show opencv image"""
+    def __enter__(self):
+        return self
 
-    fps = _fps.record()
-    if fps > 0:
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self._need_destroy:
+            cv2.destroyWindow(self._capt)  # close OpenCV window
+        return exc_type is KeyboardInterrupt  # ignore KeyboardInterrupt errors
+
+    def crop(img, bbox):
+        """Crop opencv image to given bbox"""
+        return img[int(bbox[1]) : int(bbox[3]), int(bbox[0]) : int(bbox[2])]
+
+    def _show_fps(img, fps):
+        """Helper method to display FPS"""
         text = f"{fps:5.1f} FPS"
         font = cv2.FONT_HERSHEY_PLAIN
         text_size = cv2.getTextSize(text, font, 1, 1)
@@ -118,28 +136,22 @@ def show(img, capt="<image>"):
             (0, 0, 0),
         )
 
-    cv2.imshow(capt, img)
-    key = cv2.waitKey(1) & 0xFF
-    if key == ord("x") or key == ord("q"):
-        _fps.reset()
-        raise KeyboardInterrupt
+    def show(self, img):
+        """Show OpenCV image
+        img - numpy array with valid OpenCV image
+        """
+        if self._fps:
+            fps = self._fps.record()
+            if fps > 0:
+                Display._show_fps(img, fps)
 
-
-def crop(img, bbox):
-    """Crop opencv image to given bbox"""
-    return img[int(bbox[1]) : int(bbox[3]), int(bbox[0]) : int(bbox[2])]
-
-
-@contextmanager
-def cv_loop():
-    """To run OpenCV actions in a loop with proper cleanup"""
-    try:
-        yield
-
-    except KeyboardInterrupt:
-        pass  # ignore KeyboardInterrupt errors
-    finally:
-        cv2.destroyAllWindows()  # close OpenCV windows
+        cv2.imshow(self._capt, img)
+        self._need_destroy = True
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord("x") or key == ord("q"):
+            if self._fps:
+                self._fps.reset()
+            raise KeyboardInterrupt
 
 
 def video_source(stream):
