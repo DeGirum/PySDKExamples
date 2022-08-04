@@ -6,7 +6,7 @@
 #
 
 import degirum as dg  # import DeGirum PySDK
-import os, time, string, dotenv, cv2
+import os, time, string, dotenv, cv2, PIL, IPython.display
 from contextlib import contextmanager
 
 
@@ -45,13 +45,25 @@ def connect_model_zoo(inference_option=1):
 #
 
 
-def open_video_stream(camera_index):
-    """Open video stream from local camera"""
-    stream = cv2.VideoCapture(camera_index)
+def open_video_stream(camera_id=None):
+    """Open video stream from camera with given identifier
+    camera_id - 0-based index for local cameras
+       or IP camera URL in the format "rtsp://<user>:<password>@<ip or hostname>"
+    """
+    if camera_id is None:
+        dotenv.load_dotenv(override=True)  # load environment variables from .env file
+        camera_id = os.getenv("CAMERA_ID")
+        if camera_id.isnumeric():
+            camera_id = int(camera_id)
+    if camera_id is None:
+        raise Exception(
+            "No camera ID specified. Either define 'CAMERA_ID' environment variable or pass as a parameter"
+        )
+    stream = cv2.VideoCapture(camera_id)
     if not stream.isOpened():
-        raise Exception("Error opening video stream")
+        raise Exception(f"Error opening '{camera_id}' video stream")
     else:
-        print("Successfully opened video stream")
+        print(f"Successfully opened video stream '{camera_id}'")
     return stream
 
 
@@ -92,7 +104,7 @@ class FPSMeter:
 class Display:
     """Class to handle OpenCV image display"""
 
-    def __init__(self, capt="<image>", show_fps=True):
+    def __init__(self, capt="<image>", show_fps=True, show_embedded=False):
         """Constructor
         show_fps - True to show FPS
         capt - window title
@@ -100,6 +112,8 @@ class Display:
         self._fps = FPSMeter() if show_fps else None
         self._capt = capt
         self._need_destroy = False
+        self._show_embedded = show_embedded
+        self._no_gui = not Display._check_gui()
 
     def __enter__(self):
         return self
@@ -112,6 +126,14 @@ class Display:
     def crop(img, bbox):
         """Crop opencv image to given bbox"""
         return img[int(bbox[1]) : int(bbox[3]), int(bbox[0]) : int(bbox[2])]
+
+    def _check_gui():
+        """Check if graphical display is supported"""
+        import os, platform
+
+        if platform.system() == "Linux":
+            return os.environ.get("DISPLAY") is not None
+        return True
 
     def _show_fps(img, fps):
         """Helper method to display FPS"""
@@ -145,13 +167,16 @@ class Display:
             if fps > 0:
                 Display._show_fps(img, fps)
 
-        cv2.imshow(self._capt, img)
-        self._need_destroy = True
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord("x") or key == ord("q"):
-            if self._fps:
-                self._fps.reset()
-            raise KeyboardInterrupt
+        if self._show_embedded or self._no_gui:
+            IPython.display.display(PIL.Image.fromarray(img[..., ::-1]), clear=True)
+        else:
+            cv2.imshow(self._capt, img)
+            self._need_destroy = True
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord("x") or key == ord("q"):
+                if self._fps:
+                    self._fps.reset()
+                raise KeyboardInterrupt
 
 
 def video_source(stream):

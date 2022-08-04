@@ -59,6 +59,7 @@ Inside the repo, create an `.env` file and fill the required authentication deta
 |`P2P_VPN_SERVER_ADDRESS`|IP address of DeGirum-hosted AI server node shared via Peer-to-Peer VPN; please contact support@degirum.com to obtain one.|
 |`LOCAL_NETWORK_SERVER_ADDRESS`|IP address of AI server node hosted by you in your local network; refer to [DeGirum Developers Center](https://degirum.github.io) for AI server installation details.|
 |`GITHUB_TOKEN`|[GitHub personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) to access [DeGirum public mode zoo repo](https://github.com/DeGirum/public_model_zoo); any valid GitHub token will work.|
+|`CAMERA_ID`|Local camera index or web camera URL in the format `rtsp://<user>:<password>@<ip or hostname>`|
 
 This will allow loading the required information from the `.env` file instead of hard-coding the values in the script. 
 You can copy the below lines and fill in the missing information.
@@ -67,6 +68,7 @@ DEGIRUM_CLOUD_TOKEN = 'Enter your DeGirum cloud platform token'
 P2P_VPN_SERVER_ADDRESS = 'Enter IP address of the DeGirum P2P AI server'
 LOCAL_NETWORK_SERVER_ADDRESS = 'Enter IP address of the AI server in your local network'
 GITHUB_TOKEN = 'Enter your GitHub personal access token'
+CAMERA_ID = 'rtsp://<user>:<password>@<ip or hostname>'
 ```
 
 The `.env` file is added to `.gitignore` and will not be checked in. This will ensure that your token information is not leaked. 
