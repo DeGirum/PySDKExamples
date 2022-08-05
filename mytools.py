@@ -5,7 +5,7 @@
 # All rights reserved
 #
 
-import degirum as dg  # import DeGirum PySDK
+
 import os, time, string, dotenv, cv2, PIL, IPython.display
 from contextlib import contextmanager
 
@@ -23,6 +23,8 @@ inference_option_list = {
 def connect_model_zoo(inference_option=1):
     """Connect to model zoo according to given inference option"""
 
+    import degirum as dg  # import DeGirum PySDK
+
     def _get_var(var):
         ret = os.getenv(var) if var.isupper() else var
         if ret is None:
@@ -38,11 +40,6 @@ def connect_model_zoo(inference_option=1):
     )  # connect to the model zoo
     print(f"Inference option = '{my_cfg[0]}'")
     return zoo
-
-
-#
-# Some helper functions
-#
 
 
 def open_video_stream(camera_id=None):
@@ -65,6 +62,51 @@ def open_video_stream(camera_id=None):
     else:
         print(f"Successfully opened video stream '{camera_id}'")
     return stream
+
+
+@contextmanager
+def open_audio_stream(model_info, check_abort):
+    """Open model-specific audio stream
+    model_info - audio ML model info as returned by Model.model_info
+    check_abort - check-for-abort function or lambda; stream will be terminated when it returns True
+
+    We define context manager function, which opens PyAudio stream on enter, reads it and yields audio waveforms
+    of proper type, proper size, and with proper overlap. It properly closes PyAudio stream on exit.
+    """
+
+    import numpy as np
+
+    try:
+        import pyaudio
+    except Exception as e:
+        raise Exception(f"Error loading pyaudio package: {e}")
+
+    chunk_length = model_info.InputWaveformSize[0] // 2
+    audio = pyaudio.PyAudio()
+    stream = audio.open(
+        format=pyaudio.paInt16,
+        channels=1,
+        rate=int(model_info.InputSamplingRate[0]),
+        input=True,
+        frames_per_buffer=chunk_length,
+    )
+
+    data = np.zeros(2 * chunk_length, dtype=np.int16)
+    try:
+
+        def out_stream():
+            while not check_abort():
+                data[:chunk_length] = data[chunk_length:]
+                data[chunk_length:] = np.frombuffer(
+                    stream.read(chunk_length), dtype=np.int16
+                )
+                yield data
+
+        yield out_stream
+    finally:
+        stream.stop_stream()  # stop audio streaming
+        stream.close()  # close audio stream
+        audio.terminate()  # terminate audio library
 
 
 class FPSMeter:
@@ -127,6 +169,43 @@ class Display:
         """Crop opencv image to given bbox"""
         return img[int(bbox[1]) : int(bbox[3]), int(bbox[0]) : int(bbox[2])]
 
+    def put_text(
+        img,
+        text,
+        position,
+        text_color,
+        back_color=None,
+        font=cv2.FONT_HERSHEY_COMPLEX_SMALL,
+    ):
+        """Draw given text on given image at given point with given color
+        img - numpy array with image
+        text - text to draw
+        position - text top left coordinate tuple (x,y)
+        text_color - text color (BGR)
+        back_color - background color (BGR) or None for transparent
+        font = font to use
+        """
+
+        text_size = cv2.getTextSize(text, font, 1, 1)
+        text_w = text_size[0][0]
+        text_h = text_size[0][1] + text_size[1]
+        margin = int(text_h / 4)
+        bl_corner = (position[0], position[1] + text_h)
+        if back_color is not None:
+            tr_corner = (
+                bl_corner[0] + text_w + 2 * margin,
+                bl_corner[1] - text_h - 2 * margin,
+            )
+            cv2.rectangle(img, bl_corner, tr_corner, back_color, cv2.FILLED)
+        cv2.putText(
+            img,
+            text,
+            (bl_corner[0] + margin, bl_corner[1] - margin),
+            font,
+            1,
+            text_color,
+        )
+
     def _check_gui():
         """Check if graphical display is supported"""
         import os, platform
@@ -137,26 +216,7 @@ class Display:
 
     def _show_fps(img, fps):
         """Helper method to display FPS"""
-        text = f"{fps:5.1f} FPS"
-        font = cv2.FONT_HERSHEY_PLAIN
-        text_size = cv2.getTextSize(text, font, 1, 1)
-        text_w = text_size[0][0]
-        text_h = text_size[0][1] + text_size[1]
-        margin = int(text_h / 4)
-        bl_corner = (margin, img.shape[0] - margin)
-        tr_corner = (
-            bl_corner[0] + text_w + margin,
-            bl_corner[1] - text_h - margin,
-        )
-        cv2.rectangle(img, bl_corner, tr_corner, (255, 255, 255), cv2.FILLED)
-        cv2.putText(
-            img,
-            text,
-            (bl_corner[0] + margin, bl_corner[1] - margin),
-            font,
-            1,
-            (0, 0, 0),
-        )
+        Display.put_text(img, f"{fps:5.1f} FPS", (1, 1), (0, 0, 0), (255, 255, 255))
 
     def show(self, img):
         """Show OpenCV image
@@ -179,14 +239,19 @@ class Display:
                 raise KeyboardInterrupt
 
 
-def video_source(stream):
+def video_source(stream, report_error=True):
     """Generator function, which returns video frames captured from given video stream
     Useful to pass to model batch_predict()
+    stream - OpenCV VideoCapture object
+    report_error - when True, error is raised on stream end
     """
     while True:
         ret, frame = stream.read()
         if not ret:
-            raise Exception(
-                "Fail to capture camera frame. May be camera was opened by another notebook?"
-            )
+            if report_error:
+                raise Exception(
+                    "Fail to capture camera frame. May be camera was opened by another notebook?"
+                )
+            else:
+                break
         yield frame
