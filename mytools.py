@@ -42,10 +42,14 @@ def connect_model_zoo(inference_option=1):
     return zoo
 
 
+@contextmanager
 def open_video_stream(camera_id=None):
-    """Open video stream from camera with given identifier
+    """Open OpenCV video stream from camera with given identifier.
+
     camera_id - 0-based index for local cameras
        or IP camera URL in the format "rtsp://<user>:<password>@<ip or hostname>"
+
+    Returns context manager yielding video stream object and closing it on exit
     """
     if camera_id is None:
         dotenv.load_dotenv(override=True)  # load environment variables from .env file
@@ -61,17 +65,42 @@ def open_video_stream(camera_id=None):
         raise Exception(f"Error opening '{camera_id}' video stream")
     else:
         print(f"Successfully opened video stream '{camera_id}'")
-    return stream
+
+    try:
+        yield stream
+    finally:
+        stream.release()
+
+
+def video_source(stream, report_error=True):
+    """Generator function, which returns video frames captured from given video stream.
+    Useful to pass to model batch_predict().
+
+    stream - video stream context manager object returned by open_video_stream()
+    report_error - when True, error is raised on stream end
+
+    Yields video frame captured from given video stream
+    """
+    while True:
+        ret, frame = stream.read()
+        if not ret:
+            if report_error:
+                raise Exception(
+                    "Fail to capture camera frame. May be camera was opened by another notebook?"
+                )
+            else:
+                break
+        yield frame
 
 
 @contextmanager
-def open_audio_stream(model_info, check_abort):
-    """Open model-specific audio stream
-    model_info - audio ML model info as returned by Model.model_info
-    check_abort - check-for-abort function or lambda; stream will be terminated when it returns True
+def open_audio_stream(sampling_rate_hz, buffer_size):
+    """Open PyAudio audio stream
 
-    We define context manager function, which opens PyAudio stream on enter, reads it and yields audio waveforms
-    of proper type, proper size, and with proper overlap. It properly closes PyAudio stream on exit.
+    sampling_rate_hz - desired sample rate in Hz
+    buffer_size - read buffer size
+
+    Returns context manager yielding audio stream object and closing it on exit
     """
 
     import numpy as np
@@ -81,32 +110,58 @@ def open_audio_stream(model_info, check_abort):
     except Exception as e:
         raise Exception(f"Error loading pyaudio package: {e}")
 
-    chunk_length = model_info.InputWaveformSize[0] // 2
     audio = pyaudio.PyAudio()
     stream = audio.open(
         format=pyaudio.paInt16,
         channels=1,
-        rate=int(model_info.InputSamplingRate[0]),
+        rate=int(sampling_rate_hz),
         input=True,
-        frames_per_buffer=chunk_length,
+        frames_per_buffer=int(buffer_size),
     )
 
-    data = np.zeros(2 * chunk_length, dtype=np.int16)
     try:
 
-        def out_stream():
-            while not check_abort():
-                data[:chunk_length] = data[chunk_length:]
-                data[chunk_length:] = np.frombuffer(
-                    stream.read(chunk_length), dtype=np.int16
-                )
-                yield data
-
-        yield out_stream
+        yield stream
     finally:
         stream.stop_stream()  # stop audio streaming
         stream.close()  # close audio stream
         audio.terminate()  # terminate audio library
+
+
+def audio_source(stream, check_abort):
+    """Generator function, which returns audio frames captured from given audio stream.
+    Useful to pass to model batch_predict().
+
+    stream - audio stream context manager object returned by open_audio_stream()
+    check_abort - check-for-abort function or lambda; stream will be terminated when it returns True
+
+    Yields audio waveform captured from given audio stream
+    """
+
+    import numpy as np
+
+    while not check_abort():
+        yield np.frombuffer(stream.read(stream._frames_per_buffer), dtype=np.int16)
+
+
+def audio_overlapped_source(stream, check_abort):
+    """Generator function, which returns audio frames captured from given audio stream with half-length overlap.
+    Useful to pass to model batch_predict().
+
+    stream - audio stream context manager object returned by open_audio_stream()
+    check_abort - check-for-abort function or lambda; stream will be terminated when it returns True
+
+    Yields audio waveform captured from given audio stream with half-length overlap.
+    """
+
+    import numpy as np
+
+    chunk_length = stream._frames_per_buffer
+    data = np.zeros(2 * chunk_length, dtype=np.int16)
+    while not check_abort():
+        data[:chunk_length] = data[chunk_length:]
+        data[chunk_length:] = np.frombuffer(stream.read(chunk_length), dtype=np.int16)
+        yield data
 
 
 class FPSMeter:
@@ -237,21 +292,3 @@ class Display:
                 if self._fps:
                     self._fps.reset()
                 raise KeyboardInterrupt
-
-
-def video_source(stream, report_error=True):
-    """Generator function, which returns video frames captured from given video stream
-    Useful to pass to model batch_predict()
-    stream - OpenCV VideoCapture object
-    report_error - when True, error is raised on stream end
-    """
-    while True:
-        ret, frame = stream.read()
-        if not ret:
-            if report_error:
-                raise Exception(
-                    "Fail to capture camera frame. May be camera was opened by another notebook?"
-                )
-            else:
-                break
-        yield frame
