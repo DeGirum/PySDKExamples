@@ -12,33 +12,67 @@ from contextlib import contextmanager
 
 # list of possible inference options
 inference_option_list = {
-    1: ("DeGirum Cloud Platform", "dgcps://cs.degirum.com", "DEGIRUM_CLOUD_TOKEN"),
-    2: ("AI server connected via P2P VPN", "P2P_VPN_SERVER_ADDRESS", ""),
-    3: ("AI server in your local network", "LOCAL_NETWORK_SERVER_ADDRESS", ""),
-    4: ("AI server running on this machine", "localhost", ""),
-    5: ("DeGirum Orca installed on this machine", "", "GITHUB_TOKEN"),
+    1: {
+        "desc": "DeGirum Cloud Platform",
+        "url": "DEGIRUM_CLOUD_SERVER_ADDRESS",
+        "url_default": "dgcps://cs.degirum.com",
+        "token": "DEGIRUM_CLOUD_TOKEN",
+    },
+    2: {
+        "desc": "AI server connected via P2P VPN",
+        "url": "P2P_VPN_SERVER_ADDRESS",
+        "url_default": None,
+        "token": "",
+    },
+    3: {
+        "desc": "AI server in your local network",
+        "url": "LOCAL_NETWORK_SERVER_ADDRESS",
+        "url_default": None,
+        "token": "",
+    },
+    4: {
+        "desc": "AI server running on this machine",
+        "url": "127.0.0.1",
+        "url_default": None,
+        "token": "",
+    },
+    5: {
+        "desc": "DeGirum Orca installed on this machine",
+        "url": None,
+        "url_default": None,
+        "token": "GITHUB_TOKEN",
+    },
 }
 
 
 def connect_model_zoo(inference_option=1):
-    """Connect to model zoo according to given inference option"""
+    """Connect to model zoo according to given inference option
+
+    Returns model zoo accessor object
+    """
 
     import degirum as dg  # import DeGirum PySDK
 
-    def _get_var(var):
-        ret = os.getenv(var) if var.isupper() else var
-        if ret is None:
-            raise Exception(
-                f"Please define environment variable {var} in .env file located in your CWD"
-            )
+    def _get_var(var, default_val=None):
+        if var is not None and var.isupper():  # treat `var` as env. var. name
+            ret = os.getenv(var)
+            if ret is None:
+                if default_val is None:
+                    raise Exception(
+                        f"Please define environment variable {var} in .env file located in your CWD"
+                    )
+                else:
+                    ret = default_val
+        else:  # treat `var` literally
+            ret = var
         return ret
 
     dotenv.load_dotenv(override=True)  # load environment variables from .env file
     my_cfg = inference_option_list[inference_option]
-    zoo = dg.connect_model_zoo(
-        _get_var(my_cfg[1]), _get_var(my_cfg[2])
-    )  # connect to the model zoo
-    print(f"Inference option = '{my_cfg[0]}'")
+    my_url = _get_var(my_cfg["url"], my_cfg["url_default"])
+    my_token = _get_var(my_cfg["token"])
+    zoo = dg.connect_model_zoo(my_url, my_token)  # connect to the model zoo
+    print(f"Inference option = '{my_cfg['desc']}'")
     return zoo
 
 
@@ -99,11 +133,10 @@ def open_audio_stream(sampling_rate_hz, buffer_size):
 
     sampling_rate_hz - desired sample rate in Hz
     buffer_size - read buffer size
-
     Returns context manager yielding audio stream object and closing it on exit
     """
 
-    import numpy as np
+    import numpy as np, queue
 
     try:
         import pyaudio
@@ -111,13 +144,26 @@ def open_audio_stream(sampling_rate_hz, buffer_size):
         raise Exception(f"Error loading pyaudio package: {e}")
 
     audio = pyaudio.PyAudio()
+    result_queue = queue.Queue()
+
+    def callback(
+        in_data,  # recorded data if input=True; else None
+        frame_count,  # number of frames
+        time_info,  # dictionary
+        status_flags,
+    ):  # PaCallbackFlags
+        result_queue.put(in_data)
+        return (None, pyaudio.paContinue)
+
     stream = audio.open(
         format=pyaudio.paInt16,
         channels=1,
         rate=int(sampling_rate_hz),
         input=True,
         frames_per_buffer=int(buffer_size),
+        stream_callback=callback,
     )
+    stream.result_queue = result_queue
 
     try:
 
@@ -128,40 +174,64 @@ def open_audio_stream(sampling_rate_hz, buffer_size):
         audio.terminate()  # terminate audio library
 
 
-def audio_source(stream, check_abort):
+def audio_source(stream, check_abort, non_blocking=False):
     """Generator function, which returns audio frames captured from given audio stream.
     Useful to pass to model batch_predict().
 
     stream - audio stream context manager object returned by open_audio_stream()
     check_abort - check-for-abort function or lambda; stream will be terminated when it returns True
+    non_blocking - True for non-blocking mode (immediately yields None if a block is not captured yet)
+        False for blocking mode (waits for the end of the block capture and always yields captured block)
 
     Yields audio waveform captured from given audio stream
     """
 
-    import numpy as np
+    import numpy as np, queue
 
     while not check_abort():
-        yield np.frombuffer(stream.read(stream._frames_per_buffer), dtype=np.int16)
+        if non_blocking:
+            try:
+                block = stream.result_queue.get_nowait()
+            except queue.Empty:
+                block = None
+        else:
+            block = stream.result_queue.get()
+
+        yield None if block is None else np.frombuffer(block, dtype=np.int16)
 
 
-def audio_overlapped_source(stream, check_abort):
+def audio_overlapped_source(stream, check_abort, non_blocking=False):
     """Generator function, which returns audio frames captured from given audio stream with half-length overlap.
     Useful to pass to model batch_predict().
 
     stream - audio stream context manager object returned by open_audio_stream()
     check_abort - check-for-abort function or lambda; stream will be terminated when it returns True
+    non_blocking - True for non-blocking mode (immediately yields None if a block is not captured yet)
+        False for blocking mode (waits for the end of the block capture and always yields captured block)
 
     Yields audio waveform captured from given audio stream with half-length overlap.
     """
 
-    import numpy as np
+    import numpy as np, queue
 
     chunk_length = stream._frames_per_buffer
     data = np.zeros(2 * chunk_length, dtype=np.int16)
     while not check_abort():
-        data[:chunk_length] = data[chunk_length:]
-        data[chunk_length:] = np.frombuffer(stream.read(chunk_length), dtype=np.int16)
-        yield data
+
+        if non_blocking:
+            try:
+                block = stream.result_queue.get_nowait()
+            except queue.Empty:
+                block = None
+        else:
+            block = stream.result_queue.get()
+
+        if block is None:
+            yield None
+        else:
+            data[:chunk_length] = data[chunk_length:]
+            data[chunk_length:] = np.frombuffer(block, dtype=np.int16)
+            yield data
 
 
 class FPSMeter:
@@ -169,6 +239,7 @@ class FPSMeter:
 
     def __init__(self, avg_len=100):
         """Constructor
+
         avg_len - number of samples to average
         """
         self._avg_len = avg_len
@@ -181,8 +252,9 @@ class FPSMeter:
         self._count = 0
 
     def record(self):
-        """Record timestamp and update average duration
-        Return current average FPS"""
+        """Record timestamp and update average duration.
+
+        Returns current average FPS"""
         t = time.time_ns()
         if self._timestamp_ns > 0:
             cur_dur_ns = t - self._timestamp_ns
@@ -203,6 +275,7 @@ class Display:
 
     def __init__(self, capt="<image>", show_fps=True, show_embedded=False):
         """Constructor
+
         show_fps - True to show FPS
         capt - window title
         """
@@ -221,7 +294,7 @@ class Display:
         return exc_type is KeyboardInterrupt  # ignore KeyboardInterrupt errors
 
     def crop(img, bbox):
-        """Crop opencv image to given bbox"""
+        """Crop and return opencv image to given bbox"""
         return img[int(bbox[1]) : int(bbox[3]), int(bbox[0]) : int(bbox[2])]
 
     def put_text(
@@ -233,6 +306,7 @@ class Display:
         font=cv2.FONT_HERSHEY_COMPLEX_SMALL,
     ):
         """Draw given text on given image at given point with given color
+
         img - numpy array with image
         text - text to draw
         position - text top left coordinate tuple (x,y)
@@ -262,7 +336,10 @@ class Display:
         )
 
     def _check_gui():
-        """Check if graphical display is supported"""
+        """Check if graphical display is supported
+
+        Returns False if not supported
+        """
         import os, platform
 
         if platform.system() == "Linux":
@@ -275,6 +352,7 @@ class Display:
 
     def show(self, img):
         """Show OpenCV image
+
         img - numpy array with valid OpenCV image
         """
         if self._fps:
@@ -292,3 +370,17 @@ class Display:
                 if self._fps:
                     self._fps.reset()
                 raise KeyboardInterrupt
+
+
+class Timer:
+    """Simple timer class"""
+
+    def __init__(self):
+        """Constructor. Records start time."""
+        self._start_time = time.time_ns()
+
+    def __call__(self):
+        """Call method.
+
+        Returns time elapsed (in seconds, since object construction)."""
+        return (time.time_ns() - self._start_time) * 1e-9
