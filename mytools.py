@@ -384,3 +384,84 @@ class Timer:
 
         Returns time elapsed (in seconds, since object construction)."""
         return (time.time_ns() - self._start_time) * 1e-9
+
+
+class Progress:
+    """Simple progress indicator"""
+
+    def __init__(self, last_step=None, start_step=0, bar_len=15):
+        """Constructor
+        last_step - last step
+        start_step - starting step
+        bar_len - progress bar length in symbols
+        """
+        self._display_id = None
+        self._len = 15
+        self._last_step = last_step
+        self._start_step = start_step
+        self.reset()
+
+    def reset(self):
+        self._start_time = time.time()
+        self._step = self._start_step
+        self._percent = 0.0
+        self._last_updated_percent = self._percent
+        self._update()
+
+    def step(self, steps=1):
+        """Update progress by given number of steps
+        steps - number of steps to advance
+        """
+        assert (
+            self._last_step is not None
+        ), "Progress indicator: to do stepping last step must be assigned on construction"
+        self._step += steps
+        self._percent = (
+            100 * (self._step - self._start_step) / (self._last_step - self._start_step)
+        )
+        if (
+            self._percent - self._last_updated_percent >= 100 / self._len
+            or self._percent >= 100
+        ):
+            self._update()
+
+    @property
+    def percent(self):
+        return self._percent
+
+    @percent.setter
+    def percent(self, value):
+        v = float(value)
+        delta = abs(self._last_updated_percent - v)
+        self._percent = v
+        if delta >= 100 / self._len:
+            self._update()
+
+    def _update(self):
+        """Update progress bar"""
+        self._last_updated_percent = self._percent
+        bars = round(self._percent / 100 * self._len)
+        elapsed_s = time.time() - self._start_time
+
+        prog_str = (
+            f"{round(self._percent):4d}% |{'█' * bars}{'-' * (self._len - bars)}|"
+        )
+        if self._last_step is not None:
+            prog_str += f" {self._step}/{self._last_step}"
+        prog_str += f" [{elapsed_s:.1f} s elapsed"
+        if self._last_step is not None and elapsed_s > 0:
+            prog_str += f", {(self._step - self._start_step) / elapsed_s:.1f} FPS]"
+        else:
+            prog_str += "]"
+
+        class printer(str):
+            def __repr__(self):
+                return self
+
+        prog_str = printer(prog_str)
+
+        if self._display_id is None:
+            self._display_id = str(time.time_ns())
+            IPython.display.display(prog_str, display_id=self._display_id)
+        else:
+            IPython.display.update_display(prog_str, display_id=self._display_id)
