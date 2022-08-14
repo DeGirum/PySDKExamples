@@ -76,6 +76,35 @@ def connect_model_zoo(inference_option=1):
     return zoo
 
 
+def import_optional_package(pkg_name, is_long=False):
+    """Import package with given name.
+    Returns the package object.
+    Raises error message if the package is not installed"""
+
+    import importlib
+
+    if is_long:
+        print(f"Loading '{pkg_name}' package, be patient...")
+    try:
+        ret = importlib.import_module(pkg_name)
+        if is_long:
+            print(f"...done; '{pkg_name}' version: {ret.__version__}")
+        return ret
+    except ModuleNotFoundError as e:
+        print(
+            f"\n*** Error loading '{pkg_name}' package: {e}. May be it is not installed?\n"
+        )
+        return None
+
+
+def import_fiftyone():
+    """Import 'fiftyone' package for dataset management
+    Returns the package.
+    Prints error message if the package is not installed"""
+
+    return import_optional_package("fiftyone", is_long=True)
+
+
 @contextmanager
 def open_video_stream(camera_id=None):
     """Open OpenCV video stream from camera with given identifier.
@@ -138,10 +167,7 @@ def open_audio_stream(sampling_rate_hz, buffer_size):
 
     import numpy as np, queue
 
-    try:
-        import pyaudio
-    except Exception as e:
-        raise Exception(f"Error loading pyaudio package: {e}")
+    pyaudio = import_optional_package("pyaudio")
 
     audio = pyaudio.PyAudio()
     result_queue = queue.Queue()
@@ -389,16 +415,18 @@ class Timer:
 class Progress:
     """Simple progress indicator"""
 
-    def __init__(self, last_step=None, start_step=0, bar_len=15):
+    def __init__(self, last_step=None, *, start_step=0, bar_len=15, speed_units="FPS"):
         """Constructor
         last_step - last step
         start_step - starting step
         bar_len - progress bar length in symbols
         """
         self._display_id = None
-        self._len = 15
+        self._len = bar_len
         self._last_step = last_step
         self._start_step = start_step
+        self._time_to_refresh = lambda: time.time() - self._last_update_time > 0.5
+        self._speed_units = speed_units
         self.reset()
 
     def reset(self):
@@ -406,6 +434,7 @@ class Progress:
         self._step = self._start_step
         self._percent = 0.0
         self._last_updated_percent = self._percent
+        self._last_update_time = 0
         self._update()
 
     def step(self, steps=1):
@@ -422,8 +451,17 @@ class Progress:
         if (
             self._percent - self._last_updated_percent >= 100 / self._len
             or self._percent >= 100
+            or self._time_to_refresh()
         ):
             self._update()
+
+    @property
+    def step_range(self):
+        """Get start-end step range (if defined)"""
+        if self._last_step is not None:
+            return (self._start_step, self._last_step)
+        else:
+            return None
 
     @property
     def percent(self):
@@ -434,7 +472,12 @@ class Progress:
         v = float(value)
         delta = abs(self._last_updated_percent - v)
         self._percent = v
-        if delta >= 100 / self._len:
+        if self._last_step is not None:
+            self._step = round(
+                0.01 * self._percent * (self._last_step - self._start_step)
+                + self._start_step
+            )
+        if delta >= 100 / self._len or self._time_to_refresh():
             self._update()
 
     def _update(self):
@@ -450,7 +493,7 @@ class Progress:
             prog_str += f" {self._step}/{self._last_step}"
         prog_str += f" [{elapsed_s:.1f} s elapsed"
         if self._last_step is not None and elapsed_s > 0:
-            prog_str += f", {(self._step - self._start_step) / elapsed_s:.1f} FPS]"
+            prog_str += f", {(self._step - self._start_step) / elapsed_s:.1f} {self._speed_units}]"
         else:
             prog_str += "]"
 
@@ -465,3 +508,5 @@ class Progress:
             IPython.display.display(prog_str, display_id=self._display_id)
         else:
             IPython.display.update_display(prog_str, display_id=self._display_id)
+
+        self._last_update_time = time.time()
