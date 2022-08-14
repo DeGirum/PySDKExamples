@@ -435,6 +435,7 @@ class Progress:
         self._percent = 0.0
         self._last_updated_percent = self._percent
         self._last_update_time = 0
+        self._tip_phase = 0
         self._update()
 
     def step(self, steps=1):
@@ -483,15 +484,21 @@ class Progress:
     def _update(self):
         """Update progress bar"""
         self._last_updated_percent = self._percent
-        bars = round(self._percent / 100 * self._len)
+        bars = int(self._percent / 100 * self._len)
         elapsed_s = time.time() - self._start_time
 
-        prog_str = (
-            f"{round(self._percent):4d}% |{'█' * bars}{'-' * (self._len - bars)}|"
-        )
+        tips = "−\\/"
+        tip = tips[self._tip_phase] if bars < self._len else ""
+        self._tip_phase = (self._tip_phase + 1) % len(tips)
+
+        prog_str = f"{round(self._percent):4d}% |{'█' * bars}{tip}{'-' * (self._len - bars - 1)}|"
         if self._last_step is not None:
             prog_str += f" {self._step}/{self._last_step}"
-        prog_str += f" [{elapsed_s:.1f} s elapsed"
+
+        prog_str += f" [{elapsed_s:.1f}s elapsed"
+        if self._percent > 0 and self._percent <= 100:
+            remaining_est_s = elapsed_s * (100 - self._percent) / self._percent
+            prog_str += f", {remaining_est_s:.1f}s remaining"
         if self._last_step is not None and elapsed_s > 0:
             prog_str += f", {(self._step - self._start_step) / elapsed_s:.1f} {self._speed_units}]"
         else:
