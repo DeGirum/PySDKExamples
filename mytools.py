@@ -156,6 +156,40 @@ def video_source(stream, report_error=True):
         yield frame
 
 
+def video2jpegs(
+    video_file, jpeg_path, *, jpeg_prefix="frame_", preprocessor=None
+) -> int:
+    """Decode video file into a set of jpeg images
+    video_file - filename of a video file
+    jpeg_path - directory path to store decoded jpeg files
+    jpeg_prefix - common prefix for jpeg file names
+    preprocessor - optional image preprocessing function to be applied to each frame before saving into file
+    Returns number of decoded frames
+
+    """
+    from pathlib import Path
+
+    jpeg_path = Path(jpeg_path)
+    if not jpeg_path.exists():  # create directory for annotated images
+        jpeg_path.mkdir()
+
+    with open_video_stream(video_file) as stream:  # open video stream form file
+
+        nframes = int(stream.get(cv2.CAP_PROP_FRAME_COUNT))
+        progress = Progress(nframes)
+        # decode video stream into files resized to model input size
+        fi = 0
+        for img in video_source(stream, report_error=False):
+            if preprocessor is not None:
+                img = preprocessor(img)
+            fname = str(jpeg_path / f"{jpeg_prefix}{fi:05d}.jpg")
+            cv2.imwrite(fname, img)
+            progress.step()
+            fi += 1
+
+        return fi
+
+
 @contextmanager
 def open_audio_stream(sampling_rate_hz, buffer_size):
     """Open PyAudio audio stream
