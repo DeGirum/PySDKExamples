@@ -51,7 +51,9 @@ To run the examples, clone this repo:
 git clone https://github.com/DeGirum/PySDKExamples.git
 ```
 
-Inside the repo, create an `.env` file and fill the required authentication details by assigning the following variables:
+Inside the repo, create an `.env` file and fill the required authentication details by assigning the following variables
+(you may use alternative name `env.ini` if you work under Jupyter Lab GUI, which does not allow you to create hidden 
+files):
 
 |Variable Name|Description|
 |-------------|-----------|
