@@ -45,8 +45,8 @@ inference_option_list = {
 }
 
 
-def _reload_env(custom_file = "env.ini"):
-    """ Reload environment variables from file 
+def _reload_env(custom_file="env.ini"):
+    """Reload environment variables from file
     custom_file - name of the custom env file to try first; if it is None or does not exist, `.env` file is loaded
     """
     from pathlib import Path
@@ -54,7 +54,9 @@ def _reload_env(custom_file = "env.ini"):
 
     if not Path(custom_file).exists():
         custom_file = None
-    dotenv.load_dotenv(dotenv_path = custom_file, override=True)  # load environment variables from file
+    dotenv.load_dotenv(
+        dotenv_path=custom_file, override=True
+    )  # load environment variables from file
 
 
 def connect_model_zoo(inference_option=1):
@@ -79,13 +81,15 @@ def connect_model_zoo(inference_option=1):
             ret = var
         return ret
 
-    _reload_env() # reload environment variables from file
+    _reload_env()  # reload environment variables from file
 
     my_cfg = inference_option_list[inference_option]
     my_url = _get_var(my_cfg["url"], my_cfg["url_default"])
     my_token = _get_var(my_cfg["token"])
     zoo = dg.connect_model_zoo(my_url, my_token)  # connect to the model zoo
-    print(f"Inference option = '{my_cfg['desc']}'")
+    print(
+        f"Inference option = '{my_cfg['desc']}'{'' if my_url is None else ' at ' + my_url}"
+    )
     return zoo
 
 
@@ -128,7 +132,7 @@ def open_video_stream(camera_id=None):
     Returns context manager yielding video stream object and closing it on exit
     """
     if camera_id is None:
-        _reload_env() # reload environment variables from file
+        _reload_env()  # reload environment variables from file
         camera_id = os.getenv("CAMERA_ID")
         if camera_id.isnumeric():
             camera_id = int(camera_id)
