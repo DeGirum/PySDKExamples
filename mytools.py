@@ -6,8 +6,15 @@
 #
 
 
-import os, time, string, cv2, PIL, IPython.display
+import sys, os, time, string, cv2, PIL
 from contextlib import contextmanager
+
+
+def in_notebook():
+    """Returns `True` if the module is running in IPython kernel,
+    `False` if in IPython shell or other Python shell.
+    """
+    return "ipykernel" in sys.modules
 
 
 # list of possible inference options
@@ -432,13 +439,17 @@ class Display:
 
         img - numpy array with valid OpenCV image
         """
+
         if self._fps:
             fps = self._fps.record()
             if fps > 0:
                 Display._show_fps(img, fps)
 
         if self._show_embedded or self._no_gui:
-            IPython.display.display(PIL.Image.fromarray(img[..., ::-1]), clear=True)
+            if in_notebook():
+                import IPython.display
+
+                IPython.display.display(PIL.Image.fromarray(img[..., ::-1]), clear=True)
         else:
             cv2.imshow(self._capt, img)
             self._need_destroy = True
@@ -561,10 +572,14 @@ class Progress:
 
         prog_str = printer(prog_str)
 
-        if self._display_id is None:
-            self._display_id = str(time.time_ns())
-            IPython.display.display(prog_str, display_id=self._display_id)
-        else:
-            IPython.display.update_display(prog_str, display_id=self._display_id)
+        if in_notebook():
+            import IPython.display
 
+            if self._display_id is None:
+                self._display_id = "dg_progress_" + str(time.time_ns())
+                IPython.display.display(prog_str, display_id=self._display_id)
+            else:
+                IPython.display.update_display(prog_str, display_id=self._display_id)
+        else:
+            print(prog_str, end="\r")
         self._last_update_time = time.time()
