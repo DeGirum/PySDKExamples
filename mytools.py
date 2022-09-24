@@ -180,10 +180,31 @@ def video_source(stream, report_error=True):
         yield frame
 
 
+@contextmanager
+def open_video_writer(fname, w, h, fps=30):
+    """Create, open, and return OpenCV video stream writer
+
+    fname - filename to save video
+    w, h - frame width/height
+    """
+
+    writer = cv2.VideoWriter()  # create stream writer
+    if not writer.open(
+        str(fname), cv2.VideoWriter_fourcc("m", "p", "g", "4"), fps, (int(w), int(h))
+    ):
+        raise Exception(f"Fail to open '{str(fname)}'")
+
+    try:
+        yield writer
+    finally:
+        writer.release()
+
+
 def video2jpegs(
     video_file, jpeg_path, *, jpeg_prefix="frame_", preprocessor=None
 ) -> int:
     """Decode video file into a set of jpeg images
+
     video_file - filename of a video file
     jpeg_path - directory path to store decoded jpeg files
     jpeg_prefix - common prefix for jpeg file names
@@ -378,7 +399,7 @@ class Display:
         return exc_type is KeyboardInterrupt  # ignore KeyboardInterrupt errors
 
     def crop(img, bbox):
-        """Crop and return opencv image to given bbox"""
+        """Crop and return OpenCV image to given bbox"""
         return img[int(bbox[1]) : int(bbox[3]), int(bbox[0]) : int(bbox[2])]
 
     def put_text(
@@ -389,7 +410,7 @@ class Display:
         back_color=None,
         font=cv2.FONT_HERSHEY_COMPLEX_SMALL,
     ):
-        """Draw given text on given image at given point with given color
+        """Draw given text on given OpenCV image at given point with given color
 
         img - numpy array with image
         text - text to draw
