@@ -604,3 +604,52 @@ class Progress:
         else:
             print(prog_str, end="\r")
         self._last_update_time = time.time()
+
+
+def area(box):
+    """
+    Computes bbox(es) area: is vectorized.
+
+    Parameters
+    ----------
+    box : np.array
+        Box(es) in format (x0, y0, x1, y1)
+
+    Returns
+    -------
+    np.array
+        area(s)
+    """
+    return (box[..., 2] - box[..., 0]) * (box[..., 3] - box[..., 1])
+
+
+def intersection(boxA, boxB):
+    """
+    Compute area of intersection of two boxes
+
+    Parameters
+    ----------
+    boxA : np.array
+        First boxes
+    boxB : np.array
+        Second box
+
+    Returns
+    -------
+    float64
+        Area of intersection
+    """
+    xA = max(boxA[..., 0], boxB[..., 0])
+    xB = min(boxA[..., 2], boxB[..., 2])
+    dx = xB - xA
+    if dx <= 0:
+        return 0.0
+
+    yA = max(boxA[..., 1], boxB[..., 1])
+    yB = min(boxA[..., 3], boxB[..., 3])
+    dy = yB - yA
+    if dy <= 0.0:
+        return 0.0
+
+    # compute the area of intersection rectangle
+    return dx * dy
