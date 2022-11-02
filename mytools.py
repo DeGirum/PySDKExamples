@@ -424,7 +424,7 @@ class Display:
         text_w = text_size[0][0]
         text_h = text_size[0][1] + text_size[1]
         margin = int(text_h / 4)
-        bl_corner = (position[0], position[1] + text_h)
+        bl_corner = (position[0], position[1] + text_h + 2 * margin)
         if back_color is not None:
             tr_corner = (
                 bl_corner[0] + text_w + 2 * margin,
@@ -453,7 +453,7 @@ class Display:
 
     def _show_fps(img, fps):
         """Helper method to display FPS"""
-        Display.put_text(img, f"{fps:5.1f} FPS", (1, 1), (0, 0, 0), (255, 255, 255))
+        Display.put_text(img, f"{fps:5.1f} FPS", (0, 0), (0, 0, 0), (255, 255, 255))
 
     def show(self, img):
         """Show OpenCV image
