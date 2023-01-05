@@ -29,25 +29,25 @@ inference_option_list = {
         "desc": "AI server connected via P2P VPN",
         "url": "P2P_VPN_SERVER_ADDRESS",
         "url_default": None,
-        "token": "",
+        "token": "DEGIRUM_CLOUD_TOKEN",
     },
     3: {
         "desc": "AI server in your local network",
         "url": "LOCAL_NETWORK_SERVER_ADDRESS",
         "url_default": None,
-        "token": "",
+        "token": "DEGIRUM_CLOUD_TOKEN",
     },
     4: {
         "desc": "AI server running on this machine",
         "url": "127.0.0.1",
         "url_default": None,
-        "token": "",
+        "token": "DEGIRUM_CLOUD_TOKEN",
     },
     5: {
         "desc": "DeGirum Orca installed on this machine",
         "url": None,
         "url_default": None,
-        "token": "GITHUB_TOKEN",
+        "token": "DEGIRUM_CLOUD_TOKEN",
     },
 }
 

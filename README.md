@@ -2,16 +2,25 @@
 
 ## Quick Start
 
-1. Install DeGirum PySDK. Refer to [DeGirum Developers Center](https://degirum.github.io) for instructions.
+1. Create an account on [DeGirum Cloud Portal](https://cs.degirum.com). Use *Request Access* button on a main page to request access.
+
+1. You should receive registration e-mail within one day. Follow instructions in e-mail to register your account.
+
+1. Log in to [DeGirum Cloud Portal](https://cs.degirum.com).
+
+1. Create cloud API access token on **My Tokens** page accessible via *Management > My Tokens* menu.
+
+1. Install DeGirum PySDK. Read instructions on **General Information** page accessible via
+*Documentation > General Information* menu.
 
 1. The following script will download *MobileNetv2+SSD* CPU model from 
-[DeGirum public mode zoo](https://github.com/DeGirum/public_model_zoo)
-and perform ML inference of a test image with two cats. The inference result will be displayed in both text 
-and graphical form.
+DeGirum public mode zoo and perform ML inference of a test image with two cats. 
+The inference result will be displayed in both text and graphical form.
 
     ```python
     import degirum as dg         # import DeGirum PySDK package
-    zoo = dg.connect_model_zoo() # connect to DeGirum public model zoo
+    # connect to DeGirum cloud platform and use DeGirum public model zoo
+    zoo = dg.connect_model_zoo("dgcps://cs.degirum.com", token="<my cloud API access token>")
     print(zoo.list_models())     # print all available models in the model zoo
 
     # load mobilenet_ssd model for CPU;
@@ -26,12 +35,6 @@ and graphical form.
     print(result)                # print numeric results
     result.image_overlay.show()  # show graphical results
     ```
-
-## Resources
-
-1. [DeGirum Developers Center](https://degirum.github.io): place to look for PySDK documentation
-1. [DeGirum Cloud Platform](https://cs.degirum.com): place to manage your cloud API access tokens 
-1. [DeGirum public mode zoo](https://github.com/DeGirum/public_model_zoo) GitHub repo
 
 ## Running PySDK Examples
 
@@ -59,9 +62,8 @@ files):
 |-------------|-----------|
 |`DEGIRUM_CLOUD_TOKEN`|DeGirum cloud platform API access token, obtained on [DeGirum Cloud Platform](https://cs.degirum.com) site.|
 |`P2P_VPN_SERVER_ADDRESS`|IP address of DeGirum-hosted AI server node shared via Peer-to-Peer VPN; please contact support@degirum.com to obtain one.|
-|`LOCAL_NETWORK_SERVER_ADDRESS`|IP address of AI server node hosted by you in your local network; refer to [DeGirum Developers Center](https://degirum.github.io) for AI server installation details.|
-|`GITHUB_TOKEN`|[GitHub personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) to access [DeGirum public mode zoo repo](https://github.com/DeGirum/public_model_zoo); any valid GitHub token will work.|
-|`CAMERA_ID`|Local camera index or web camera URL in the format `rtsp://<user>:<password>@<ip or hostname>`|
+|`LOCAL_NETWORK_SERVER_ADDRESS`|IP address of AI server node hosted by you in your local network; refer to *Documentation > General Information* page on [DeGirum Cloud Portal](https://cs.degirum.com) for AI server installation details.|
+|`CAMERA_ID`|Local camera index, or web camera URL in the format `rtsp://<user>:<password>@<ip or hostname>`, or path to video file.|
 
 This will allow loading the required information from the `.env` file instead of hard-coding the values in the script. 
 You can copy the below lines and fill in the missing information.
@@ -69,7 +71,6 @@ You can copy the below lines and fill in the missing information.
 DEGIRUM_CLOUD_TOKEN = 'Enter your DeGirum cloud platform token'
 P2P_VPN_SERVER_ADDRESS = 'Enter IP address of the DeGirum P2P AI server'
 LOCAL_NETWORK_SERVER_ADDRESS = 'Enter IP address of the AI server in your local network'
-GITHUB_TOKEN = 'Enter your GitHub personal access token'
 CAMERA_ID = 'rtsp://<user>:<password>@<ip or hostname>'
 ```
 
@@ -85,11 +86,13 @@ The `.env` file is added to `.gitignore` and will not be checked in. This will e
 |[ObjectDetectionDataset](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionDataset.ipynb)|How to do AI inference on an image dataset and calculate performance metrics. An image dataset is retrieved from the cloud using `fiftyone` API.|
 |[ObjectDetectionDatasetMultithreaded](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionDatasetMultithreaded.ipynb)|How to do **multi-threaded** AI inference on an image dataset. An image dataset is retrieved from the cloud using `fiftyone` API.|
 |[ObjectDetectionVideoFile2Images](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionVideoFile2Images.ipynb)|How to do AI inference of a video stream from a video file and save annotated frame images into a directory.|
-|[FaceHandDetectionParallelCameraStream](https://github.com/DeGirum/PySDKExamples/blob/main/FaceHandDetectionParallelCameraStream.ipynb)|How to run two models side-by-side and combine results of both models. A video stream from a video camera is processed simultaneously by the hand and face detection models. Combined result is then displayed.|
 |[PersonPoseDetectionPipelinedImage](https://github.com/DeGirum/PySDKExamples/blob/main/PersonPoseDetectionPipelinedImage.ipynb)|How to do AI inference of a graphical file using two AI models: person detection and pose detection. The person detection model is run on the image and the results are then processed by the pose detection model, one person bounding box at a time. Combined result is then displayed.|
 |[PersonPoseDetectionPipelinedCameraStream](https://github.com/DeGirum/PySDKExamples/blob/main/PersonPoseDetectionPipelinedCameraStream.ipynb)|A video stream from a video camera is processed by the person detection model. The person detection results are then processed by the pose detection model, one person bounding box at a time. Combined results are then displayed as an annotated video in real-time.|
+|[FaceMaskDetectionPipelinedImage](https://github.com/DeGirum/PySDKExamples/blob/main/FaceMaskDetectionPipelinedImage.ipynb)|How to do AI inference of a graphical file using two AI models: face detection and mask detection. The face detection model is run on the image and the results are then processed by the mask detection model, one face bounding box at a time. Combined result is then displayed.|
+|[FaceMaskDetectionPipelinedCameraStream](https://github.com/DeGirum/PySDKExamples/blob/main/FaceMaskDetectionPipelinedCameraStream.ipynb)|A video stream from a video camera is processed by the face detection model. The face detection results are then processed by the mask detection model, one face bounding box at a time. Combined results are then displayed as an annotated video in real-time.|
+|[FaceHandDetectionParallelCameraStream](https://github.com/DeGirum/PySDKExamples/blob/main/FaceHandDetectionParallelCameraStream.ipynb)|How to run two models side-by-side and combine results of both models. A video stream from a video camera is processed simultaneously by the hand and face detection models. Combined result is then displayed.|
 |[SoundClassificationAudioStream](https://github.com/DeGirum/PySDKExamples/blob/main/SoundClassificationAudioStream.ipynb)|How to do sound classification AI inference of an audio stream from a local microphone in real time. The result label with highest probability is displayed for each inference while keeping history few steps back.|
 |[SoundClassificationAndObjectDetectionAsynchronous](https://github.com/DeGirum/PySDKExamples/blob/main/SoundClassificationAndObjectDetectionAsynchronous.ipynb)|How to perform parallel inferences on two **asynchronous** data streams with different frame rates. To achieve maximum performance this example uses **non-blocking** batch prediction mode.|
-|[TiledObjectDetectionVideoFile](https://github.com/DeGirum/PySDKExamples/blob/main/TiledObjectDetectionVideoFile.ipynb)|How to use DeGirum PySDK to do tiled object detection of a video stream from a video file. Each video frame is divided by tiles with some overlap, each tile of the AI model input size (to avoid resizing). Object detection is performed for each tile, then results from different tiles are combined.|
+|[TiledObjectDetectionVideoFile](https://github.com/DeGirum/PySDKExamples/blob/main/TiledObjectDetectionVideoFile.ipynb)|How to do tiled object detection of a video stream from a video file. Each video frame is divided by tiles with some overlap, each tile of the AI model input size (to avoid resizing). Object detection is performed for each tile, then results from different tiles are combined. When motion detection mode is enabled, object detection is performed only for tiles where motion is detected.|
 |[MultiObjectTrackingVideoFile](https://github.com/DeGirum/PySDKExamples/blob/main/MultiObjectTrackingVideoFile.ipynb)|How to perform object detection with multi-object tracking (MOT) from a video file to count vehicle traffic.|
 |[ObjectDetectionMultiplexingMultipleStreams](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionMultiplexingMultipleStreams.ipynb)|How to perform object detection from multiple video files, multiplexing frames. This example demonstrates lowest possible and stable AI inference latency while maintaining decent throughput. This is achieved by using synchronous prediction mode and video decoding offloaded into separate thread.|
