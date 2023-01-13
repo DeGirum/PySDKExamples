@@ -4,6 +4,8 @@
 # Copyright DeGirum Corporation 2023
 # All rights reserved
 #
+# Please refer to `mystreamDemo.ipynb` notebook for examples of toolkit usage.
+#
 
 import threading
 import queue
@@ -18,6 +20,18 @@ import degirum as dg
 import mytools
 
 
+class StreamData:
+    """Single data element of the streaming pipelines"""
+
+    def __init__(self, data: Any, meta: Any):
+        """Constructor.
+
+        - data: data payload
+        - meta: metainfo"""
+        self.data = data
+        self.meta = meta
+
+
 class Stream(queue.Queue):
     """Queue-based iterable class with optional item drop"""
 
@@ -30,9 +44,9 @@ class Stream(queue.Queue):
         super().__init__(maxsize)
         self._allow_drop = allow_drop
 
-    _poison = object()
+    _poison = None
 
-    def put(self, item):
+    def put(self, item: Optional[StreamData]):
         """Put an item into the stream
 
         - item: item to put
@@ -71,8 +85,8 @@ class Gizmo(ABC):
     gizmo into one of its own input streams. Multiple gizmos can be connected to
     a single gizmo, so one gizmo can broadcast data to multiple destinations.
 
-    A data element is a tuple containing raw data as a first element, and meta info
-    dictionary as a second element.
+    A data element is a tuple containing raw data object as a first element, and meta info
+    object as a second element.
 
     Abstract run() method should be implemented in derived classes to run gizmo
     processing loop. It is not called directly, but is launched by Composition class
@@ -125,10 +139,10 @@ class Gizmo(ABC):
         other_gizmo.connect_to(self)
         return other_gizmo
 
-    def send_result(self, data: Optional[tuple[Any, dict]], clone_data: bool = False):
+    def send_result(self, data: Optional[StreamData], clone_data: bool = False):
         """Send result to all connected outputs.
 
-        - data: a tuple containing raw data as a first element, and meta info dictionary as a second element.
+        - data: a tuple containing raw data object as a first element, and meta info object as a second element.
         When None is passed, all outputs will be closed.
         - clone_data: clone data when sending to different outputs
         """
@@ -200,8 +214,12 @@ class Composition:
             for i in gizmo._inputs:
                 i.close()
 
-        for t in self._treads:
-            t.join()
+        def do_join():
+            for t in self._treads:
+                t.join()
+
+        threading.Thread(target=do_join).start()
+
         self._treads = []
         print("Composition stopped")
 
@@ -226,7 +244,7 @@ class VideoSourceGizmo(Gizmo):
                     self._abort = True
                     self.send_result(None)
                 else:
-                    self.send_result((data, {}))
+                    self.send_result(StreamData(data, {}))
 
 
 class VideoDisplayGizmo(Gizmo):
@@ -264,12 +282,12 @@ class VideoDisplayGizmo(Gizmo):
                         break
 
                     if self._show_ai_overlay and isinstance(
-                        data[1], dg.postprocessor.InferenceResults
+                        data.meta, dg.postprocessor.InferenceResults
                     ):
                         # show AI inference overlay if possible
-                        display.show(data[1].image_overlay)
+                        display.show(data.meta.image_overlay)
                     else:
-                        display.show(data[0])
+                        display.show(data.data)
 
                     if first_run:
                         cv2.setWindowProperty(
@@ -278,7 +296,8 @@ class VideoDisplayGizmo(Gizmo):
                         first_run = False
 
             except KeyboardInterrupt:
-                threading.Thread(target=self.composition.stop).start()
+                if self.composition is not None:
+                    self.composition.stop()
 
 
 class VideoSaverGizmo(Gizmo):
@@ -307,10 +326,10 @@ class VideoSaverGizmo(Gizmo):
         """Run gizmo"""
 
         get_img = (
-            lambda data: data[1].image_overlay
+            lambda data: data.meta.image_overlay
             if self._show_ai_overlay
-            and isinstance(data[1], dg.postprocessor.InferenceResults)
-            else data[0]
+            and isinstance(data.meta, dg.postprocessor.InferenceResults)
+            else data.data
         )
 
         img = get_img(self.get_input(0).get())
@@ -382,8 +401,8 @@ class ResizingGizmo(Gizmo):
         for data in self.get_input(0):
             if self._abort:
                 break
-            resized = self._resize(data[0])
-            self.send_result((resized, data[1]))
+            resized = self._resize(data.data)
+            self.send_result(StreamData(resized, data.meta))
 
 
 class AiGizmoBase(Gizmo):
@@ -407,7 +426,7 @@ class AiGizmoBase(Gizmo):
 
         def source():
             for data in self.get_input(0):
-                yield (data[0], data)
+                yield (data.data, data)
 
         for result in self.model.predict_batch(source()):
             self.on_result(result)
@@ -429,7 +448,7 @@ class AiSimpleGizmo(AiGizmoBase):
         """Result handler to be overloaded in derived classes.
 
         - result: inference result; result.info contains reference to data frame used for inference"""
-        self.send_result((result.image, result))
+        self.send_result(StreamData(result.image, result))
 
 
 class AiObjectDetectionCroppingGizmo(AiGizmoBase):
@@ -439,7 +458,16 @@ class AiObjectDetectionCroppingGizmo(AiGizmoBase):
     - "original_result": reference to original AI object detection result (contained only in the first crop)
     - "cropped_result": reference to sub-result for particular crop
     - "cropped_index": the number of that sub-result
+    The last two key are present only if at least one object is detected in a frame.
     """
+
+    def __init__(self, labels: list[str], *args, **kwargs):
+        """Constructor.
+
+        - labels: list of class labels to process
+        """
+        super().__init__(*args, **kwargs)
+        self._labels = labels
 
     def on_result(self, result):
         """Result handler to be overloaded in derived classes.
@@ -447,18 +475,20 @@ class AiObjectDetectionCroppingGizmo(AiGizmoBase):
         - result: inference result; result.info contains reference to data frame used for inference"""
 
         if len(result.results) == 0:  # no objects detected
-            self.send_result((result.image, {"original_result": result}))
+            self.send_result(StreamData(result.image, {"original_result": result}))
 
-        # send whole result with no data first
         is_first = True
         for i, r in enumerate(result.results):
+            if r["label"] not in self._labels:
+                continue
             crop = mytools.Display.crop(result.image, r["bbox"])
             # send all crops afterwards
             meta = {}
             if is_first:
+                # send whole result with no data first
                 meta["original_result"] = result
                 is_first = False
 
             meta["cropped_result"] = r
             meta["cropped_index"] = i
-            self.send_result((crop, meta))
+            self.send_result(StreamData(crop, meta))
