@@ -14,6 +14,7 @@ from typing import Optional, Any
 import cv2
 import numpy
 
+import degirum as dg
 import mytools
 
 
@@ -112,9 +113,16 @@ class Gizmo(ABC):
         other_gizmo._output_refs.append(self.get_input(inp))
 
     def __lshift__(self, other_gizmo):
-        """Operator synonym for connect_to().
+        """Operator synonym for connect_to(): connects self to other_gizmo
         Returns other_gizmo"""
         self.connect_to(other_gizmo)
+        return other_gizmo
+
+    def __rshift__(self, other_gizmo):
+        """Operator antonym for connect_to(): connects other_gizmo to self
+
+        Returns self"""
+        other_gizmo.connect_to(self)
         return other_gizmo
 
     def send_result(self, data: Optional[tuple[Any, dict]], clone_data: bool = False):
@@ -216,6 +224,7 @@ class VideoSourceGizmo(Gizmo):
                 ret, data = src.read()
                 if not ret:
                     self._abort = True
+                    self.send_result(None)
                 else:
                     self.send_result((data, {}))
 
@@ -226,6 +235,8 @@ class VideoDisplayGizmo(Gizmo):
     def __init__(
         self,
         window_title: str = "",
+        *,
+        show_ai_overlay=False,
         show_fps: bool = False,
         stream_depth: int = 10,
         allow_drop: bool = True,
@@ -234,12 +245,14 @@ class VideoDisplayGizmo(Gizmo):
 
         - window_title: window title string
         - show_fps: True to show FPS
+        - show_ai_overlay: True to show AI inference overlay image when possible
         - stream_depth: input stream depth
         - allow_drop: allow dropping frames from input stream on overflow
         """
         super().__init__([(stream_depth, allow_drop)])
         self._window_title = window_title
         self._show_fps = show_fps
+        self._show_ai_overlay = show_ai_overlay
 
     def run(self):
         """Run gizmo"""
@@ -249,7 +262,15 @@ class VideoDisplayGizmo(Gizmo):
                 for data in self.get_input(0):
                     if self._abort:
                         break
-                    display.show(data[0])
+
+                    if self._show_ai_overlay and isinstance(
+                        data[1], dg.postprocessor.InferenceResults
+                    ):
+                        # show AI inference overlay if possible
+                        display.show(data[1].image_overlay)
+                    else:
+                        display.show(data[0])
+
                     if first_run:
                         cv2.setWindowProperty(
                             self._window_title, cv2.WND_PROP_TOPMOST, 1
@@ -258,6 +279,49 @@ class VideoDisplayGizmo(Gizmo):
 
             except KeyboardInterrupt:
                 threading.Thread(target=self.composition.stop).start()
+
+
+class VideoSaverGizmo(Gizmo):
+    """OpenCV-based gizmo to save video to a file"""
+
+    def __init__(
+        self,
+        filename: str = "",
+        *,
+        show_ai_overlay=False,
+        stream_depth: int = 10,
+        allow_drop: bool = False,
+    ):
+        """Constructor.
+
+        - filename: output video file name
+        - show_ai_overlay: True to show AI inference overlay image when possible
+        - stream_depth: input stream depth
+        - allow_drop: allow dropping frames from input stream on overflow
+        """
+        super().__init__([(stream_depth, allow_drop)])
+        self._filename = filename
+        self._show_ai_overlay = show_ai_overlay
+
+    def run(self):
+        """Run gizmo"""
+
+        get_img = (
+            lambda data: data[1].image_overlay
+            if self._show_ai_overlay
+            and isinstance(data[1], dg.postprocessor.InferenceResults)
+            else data[0]
+        )
+
+        img = get_img(self.get_input(0).get())
+        with mytools.open_video_writer(
+            self._filename, img.shape[1], img.shape[0]
+        ) as writer:
+            writer.write(img)
+            for data in self.get_input(0):
+                if self._abort:
+                    break
+                writer.write(get_img(data))
 
 
 class ResizingGizmo(Gizmo):
@@ -273,8 +337,8 @@ class ResizingGizmo(Gizmo):
         """Constructor.
 
         - w, h: resulting image width/height
-        - pad_method - padding method: one of 'stretch', 'letterbox'
-        - resize_method: resampling method: one of cv2.INTER_xxx constants
+        - pad_method: padding method - one of 'stretch', 'letterbox'
+        - resize_method: resampling method - one of cv2.INTER_xxx constants
         """
         super().__init__([(0, False)])
         self._h = w
@@ -320,3 +384,81 @@ class ResizingGizmo(Gizmo):
                 break
             resized = self._resize(data[0])
             self.send_result((resized, data[1]))
+
+
+class AiGizmoBase(Gizmo):
+    """Base class for AI inference gizmos"""
+
+    def __init__(self, model, *, stream_depth: int = 10, allow_drop: bool = False):
+        """Constructor.
+
+        - model: PySDK model object
+        - stream_depth: input stream depth
+        - allow_drop: allow dropping frames from input stream on overflow
+        """
+        super().__init__([(stream_depth, allow_drop)])
+
+        model.image_backend = "opencv"  # select OpenCV backend
+        model.input_numpy_colorspace = "BGR"  # adjust colorspace to match OpenCV
+        self.model = model
+
+    def run(self):
+        """Run gizmo"""
+
+        def source():
+            for data in self.get_input(0):
+                yield (data[0], data)
+
+        for result in self.model.predict_batch(source()):
+            self.on_result(result)
+            if self._abort:
+                break
+
+    @abstractmethod
+    def on_result(self, result):
+        """Result handler to be overloaded in derived classes.
+
+        - result: inference result; result.info contains reference to data frame used for inference"""
+
+
+class AiSimpleGizmo(AiGizmoBase):
+    """AI inference gizmo with no result processing: it passes through input frames
+    attaching inference results as meta info"""
+
+    def on_result(self, result):
+        """Result handler to be overloaded in derived classes.
+
+        - result: inference result; result.info contains reference to data frame used for inference"""
+        self.send_result((result.image, result))
+
+
+class AiObjectDetectionCroppingGizmo(AiGizmoBase):
+    """AI object detection inference gizmo which sends crops of each detected object.
+    Output meta-info is a dictionary with the following keys:
+
+    - "original_result": reference to original AI object detection result (contained only in the first crop)
+    - "cropped_result": reference to sub-result for particular crop
+    - "cropped_index": the number of that sub-result
+    """
+
+    def on_result(self, result):
+        """Result handler to be overloaded in derived classes.
+
+        - result: inference result; result.info contains reference to data frame used for inference"""
+
+        if len(result.results) == 0:  # no objects detected
+            self.send_result((result.image, {"original_result": result}))
+
+        # send whole result with no data first
+        is_first = True
+        for i, r in enumerate(result.results):
+            crop = mytools.Display.crop(result.image, r["bbox"])
+            # send all crops afterwards
+            meta = {}
+            if is_first:
+                meta["original_result"] = result
+                is_first = False
+
+            meta["cropped_result"] = r
+            meta["cropped_index"] = i
+            self.send_result((crop, meta))
