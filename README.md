@@ -80,6 +80,7 @@ The `.env` file is added to `.gitignore` and will not be checked in. This will e
 
 | Example | Description |
 |---------|-------------|
+|[mystreamsDemo](https://github.com/DeGirum/PySDKExamples/blob/main/mystreamsDemo.ipynb)|Extensive demo notebook of `mystreams` toolkit: lightweight multi-threaded pipelining framework|
 |[ObjectDetectionImage](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionImage.ipynb)|One of the most simplest examples how to do AI inference of a graphical file using object detection model.|
 |[ObjectDetectionVideoFile](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionVideoFile.ipynb)|How to do AI inference of a video stream from a video file, show annotated video, and save it to another video file. |
 |[ObjectDetectionCameraStream](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionCameraStream.ipynb)|How to do AI inference of a video stream from a video camera and show annotated video in real-time.|
