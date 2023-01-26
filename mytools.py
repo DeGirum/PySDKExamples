@@ -66,28 +66,34 @@ def _reload_env(custom_file="env.ini"):
     )  # load environment variables from file
 
 
+def _get_var(var, default_val=None):
+    """Returns environment variable value
+    """
+    if var is not None and var.isupper():  # treat `var` as env. var. name
+        ret = os.getenv(var)
+        if ret is None:
+            if default_val is None:
+                raise Exception(
+                    f"Please define environment variable {var} in .env file located in your CWD"
+                )
+            else:
+                ret = default_val
+    else:  # treat `var` literally
+        ret = var
+    return ret
+
+def token_get():
+    """Returns a token from .env file
+    """
+    _reload_env()  # reload environment variables from file
+    return _get_var("DEGIRUM_CLOUD_TOKEN")
+    
 def connect_model_zoo(inference_option=1):
     """Connect to model zoo according to given inference option
 
     Returns model zoo accessor object
     """
-
     import degirum as dg  # import DeGirum PySDK
-
-    def _get_var(var, default_val=None):
-        if var is not None and var.isupper():  # treat `var` as env. var. name
-            ret = os.getenv(var)
-            if ret is None:
-                if default_val is None:
-                    raise Exception(
-                        f"Please define environment variable {var} in .env file located in your CWD"
-                    )
-                else:
-                    ret = default_val
-        else:  # treat `var` literally
-            ret = var
-        return ret
-
     _reload_env()  # reload environment variables from file
 
     my_cfg = inference_option_list[inference_option]

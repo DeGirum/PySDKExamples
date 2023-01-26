@@ -11,7 +11,7 @@ import threading
 import queue
 import copy
 from abc import ABC, abstractmethod
-from typing import Optional, Any
+from typing import Optional, Any, List
 
 import cv2
 import numpy
@@ -97,7 +97,7 @@ class Gizmo(ABC):
 
     """
 
-    def __init__(self, input_stream_sizes: list[tuple] = []):
+    def __init__(self, input_stream_sizes: List[tuple] = []):
         """Constructor
 
         - input_stream_size: a list of tuples containing constructor parameters of input streams;
@@ -461,7 +461,7 @@ class AiObjectDetectionCroppingGizmo(AiGizmoBase):
     The last two key are present only if at least one object is detected in a frame.
     """
 
-    def __init__(self, labels: list[str], *args, **kwargs):
+    def __init__(self, labels: List[str], *args, **kwargs):
         """Constructor.
 
         - labels: list of class labels to process
