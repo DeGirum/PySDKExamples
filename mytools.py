@@ -67,8 +67,7 @@ def _reload_env(custom_file="env.ini"):
 
 
 def _get_var(var, default_val=None):
-    """Returns environment variable value
-    """
+    """Returns environment variable value"""
     if var is not None and var.isupper():  # treat `var` as env. var. name
         ret = os.getenv(var)
         if ret is None:
@@ -82,18 +81,20 @@ def _get_var(var, default_val=None):
         ret = var
     return ret
 
+
 def token_get():
-    """Returns a token from .env file
-    """
+    """Returns a token from .env file"""
     _reload_env()  # reload environment variables from file
     return _get_var("DEGIRUM_CLOUD_TOKEN")
-    
+
+
 def connect_model_zoo(inference_option=1):
     """Connect to model zoo according to given inference option
 
     Returns model zoo accessor object
     """
     import degirum as dg  # import DeGirum PySDK
+
     _reload_env()  # reload environment variables from file
 
     my_cfg = inference_option_list[inference_option]
@@ -384,23 +385,29 @@ class FPSMeter:
 class Display:
     """Class to handle OpenCV image display"""
 
-    def __init__(self, capt="<image>", show_fps=True, show_embedded=False):
+    def __init__(
+        self, capt="<image>", show_fps=True, show_embedded=False, w=None, h=None
+    ):
         """Constructor
 
-        show_fps - True to show FPS
         capt - window title
+        show_fps - True to show FPS
+        show_embedded - True to show graph embedded into the notebook when possible
+        w, h - initial window width/hight in pixels; None for autoscale
         """
         self._fps = FPSMeter() if show_fps else None
         self._capt = capt
-        self._need_destroy = False
+        self._window_created = False
         self._show_embedded = show_embedded
         self._no_gui = not Display._check_gui()
+        self._w = w
+        self._h = h
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self._need_destroy:
+        if self._window_created:
             cv2.destroyWindow(self._capt)  # close OpenCV window
         return exc_type is KeyboardInterrupt  # ignore KeyboardInterrupt errors
 
@@ -478,13 +485,27 @@ class Display:
 
                 IPython.display.display(PIL.Image.fromarray(img[..., ::-1]), clear=True)
         else:
+
+            if not self._window_created:
+                cv2.namedWindow(self._capt, cv2.WINDOW_NORMAL)
+                if self._w is not None and self._h is not None:
+                    cv2.resizeWindow(self._capt, self._w, self._h)
+                else:
+                    cv2.resizeWindow(self._capt, img.shape[1], img.shape[0])
+
             cv2.imshow(self._capt, img)
-            self._need_destroy = True
+            self._window_created = True
             key = cv2.waitKey(1) & 0xFF
             if key == ord("x") or key == ord("q"):
                 if self._fps:
                     self._fps.reset()
                 raise KeyboardInterrupt
+            elif key == 43 or key == 45:  # +/-
+                _, _, w, h = cv2.getWindowImageRect(self._capt)
+                factor = 1.25 if key == 43 else 0.75
+                new_w = max(100, int(w * factor))
+                new_h = int(new_w * img.shape[0] / img.shape[1])
+                cv2.resizeWindow(self._capt, new_w, new_h)
 
 
 class Timer:
