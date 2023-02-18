@@ -196,7 +196,9 @@ class Composition:
 
         for gizmo in self._gizmos:
             gizmo.abort(False)
-            self._treads.append(threading.Thread(target=gizmo.run))
+            t = threading.Thread(target=gizmo.run)
+            t.name = t.name + "-" + type(gizmo).__name__
+            self._treads.append(t)
 
         for t in self._treads:
             t.start()
@@ -222,6 +224,15 @@ class Composition:
 
         self._treads = []
         print("Composition stopped")
+
+    def wait(self):
+        """Wait until all threads stopped"""
+
+        if len(self._treads) == 0:
+            raise Exception("Composition not started")
+
+        for t in self._treads:
+            t.join()
 
 
 class VideoSourceGizmo(Gizmo):
@@ -252,7 +263,7 @@ class VideoDisplayGizmo(Gizmo):
 
     def __init__(
         self,
-        window_title: str = "",
+        window_title: str = "Display",
         *,
         show_ai_overlay=False,
         show_fps: bool = False,
@@ -404,6 +415,8 @@ class ResizingGizmo(Gizmo):
             resized = self._resize(data.data)
             self.send_result(StreamData(resized, data.meta))
 
+        self.send_result(None)
+
 
 class AiGizmoBase(Gizmo):
     """Base class for AI inference gizmos"""
@@ -432,6 +445,8 @@ class AiGizmoBase(Gizmo):
             self.on_result(result)
             if self._abort:
                 break
+
+        self.send_result(None)
 
     @abstractmethod
     def on_result(self, result):
