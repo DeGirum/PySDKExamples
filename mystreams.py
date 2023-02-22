@@ -10,6 +10,7 @@
 import threading
 import queue
 import copy
+import time
 from abc import ABC, abstractmethod
 from typing import Optional, Any, List
 
@@ -42,7 +43,8 @@ class Stream(queue.Queue):
         - allow_drop: allow dropping elements on put() when stream is full
         """
         super().__init__(maxsize)
-        self._allow_drop = allow_drop
+        self.allow_drop = allow_drop
+        self.dropped_cnt = 0  # number of dropped items
 
     _poison = None
 
@@ -53,12 +55,13 @@ class Stream(queue.Queue):
         If there is no space left, and allow_drop flag is set, then oldest item will
         be popped to free space
         """
-        if self._allow_drop:
+        if self.allow_drop:
             while True:
                 try:
                     super().put(item, False)
                     break
                 except queue.Full:
+                    self.dropped_cnt += 1
                     try:
                         self.get_nowait()
                     finally:
@@ -111,12 +114,21 @@ class Gizmo(ABC):
         self._output_refs = []
         self._abort = False
         self.composition: Optional[Composition] = None
+        self.name = self.__class__.__name__
+        self.result_cnt = 0  # gizmo result counter
+        self.start_time_s = time.time()  # gizmo start time
+        self.elapsed_s = 0
+        self.fps = 0  # achieved FPS rate
 
     def get_input(self, inp: int) -> Stream:
         """Get inp-th input stream"""
         if inp >= len(self._inputs):
             raise Exception(f"Input {inp} is not assigned")
         return self._inputs[inp]
+
+    def get_inputs(self) -> List[Stream]:
+        """Get list of input streams"""
+        return self._inputs
 
     def connect_to(self, other_gizmo, inp: int = 0):
         """Connect given input to other gizmo.
@@ -146,6 +158,7 @@ class Gizmo(ABC):
         When None is passed, all outputs will be closed.
         - clone_data: clone data when sending to different outputs
         """
+        self.result_cnt += 1
         for out in self._output_refs:
             if data is None:
                 out.close()
@@ -188,14 +201,25 @@ class Composition:
         """Operator synonym for add()"""
         return self.add(gizmo)
 
-    def start(self):
-        """Start gizmo animation: launch run() method of every registered gizmo in a separate thread"""
+    def start(self, detect_bottlenecks: bool = False):
+        """Start gizmo animation: launch run() method of every registered gizmo in a separate thread.
+
+        - detect_bottlenecks: true to switch all streams into dropping mode to detect bottlenecks.
+        Use get_bottlenecks() method to return list of gizmos-bottlenecks
+        """
 
         if len(self._treads) > 0:
             raise Exception("Composition already started")
 
         def gizmo_run(gizmo):
+            gizmo.result_cnt = 0
+            if detect_bottlenecks:
+                for i in gizmo.get_inputs():
+                    i.allow_drop = True
+            gizmo.start_time_s = time.time()
             gizmo.run()
+            gizmo.elapsed_s = time.time() - gizmo.start_time_s
+            gizmo.fps = gizmo.result_cnt / gizmo.elapsed_s if gizmo.elapsed_s > 0 else 0
             gizmo.send_result(None)
 
         for gizmo in self._gizmos:
@@ -208,6 +232,18 @@ class Composition:
             t.start()
 
         print("Composition started")
+
+    def get_bottlenecks(self) -> List[str]:
+        """Return a list of gizmo names, which experienced bottlenecks during last run.
+        Composition should be started with detect_bottlenecks=True to use this feature.
+        """
+        ret = []
+        for gizmo in self._gizmos:
+            for i in gizmo.get_inputs():
+                if i.dropped_cnt > 0:
+                    ret.append(gizmo.name)
+                    break
+        return ret
 
     def stop(self):
         """Signal abort to all registered gizmos and wait until all threads stopped"""
@@ -295,6 +331,7 @@ class VideoDisplayGizmo(Gizmo):
                     if self._abort:
                         break
 
+                    self.result_cnt += 1
                     if self._show_ai_overlay and isinstance(
                         data.meta, dg.postprocessor.InferenceResults
                     ):
@@ -350,6 +387,7 @@ class VideoSaverGizmo(Gizmo):
         with mytools.open_video_writer(
             self._filename, img.shape[1], img.shape[0]
         ) as writer:
+            self.result_cnt += 1
             writer.write(img)
             for data in self.get_input(0):
                 if self._abort:
