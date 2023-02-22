@@ -194,9 +194,13 @@ class Composition:
         if len(self._treads) > 0:
             raise Exception("Composition already started")
 
+        def gizmo_run(gizmo):
+            gizmo.run()
+            gizmo.send_result(None)
+
         for gizmo in self._gizmos:
             gizmo.abort(False)
-            t = threading.Thread(target=gizmo.run)
+            t = threading.Thread(target=gizmo_run, args=(gizmo,))
             t.name = t.name + "-" + type(gizmo).__name__
             self._treads.append(t)
 
@@ -253,7 +257,6 @@ class VideoSourceGizmo(Gizmo):
                 ret, data = src.read()
                 if not ret:
                     self._abort = True
-                    self.send_result(None)
                 else:
                     self.send_result(StreamData(data, {}))
 
@@ -415,8 +418,6 @@ class ResizingGizmo(Gizmo):
             resized = self._resize(data.data)
             self.send_result(StreamData(resized, data.meta))
 
-        self.send_result(None)
-
 
 class AiGizmoBase(Gizmo):
     """Base class for AI inference gizmos"""
@@ -445,8 +446,6 @@ class AiGizmoBase(Gizmo):
             self.on_result(result)
             if self._abort:
                 break
-
-        self.send_result(None)
 
     @abstractmethod
     def on_result(self, result):
