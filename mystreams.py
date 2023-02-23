@@ -251,15 +251,26 @@ class Composition:
         if len(self._treads) == 0:
             raise Exception("Composition not started")
 
-        for gizmo in self._gizmos:
-            gizmo.abort()
-            for i in gizmo._inputs:
-                i.close()
-
         def do_join():
+
+            # first signal abort to all gizmos
+            for gizmo in self._gizmos:
+                gizmo.abort()
+
+            # then empty all streams
+            for gizmo in self._gizmos:
+                for i in gizmo._inputs:
+                    while not i.empty():
+                        try:
+                            i.get_nowait()
+                        except queue.Empty:
+                            break
+
+            # finally wait for completion of all threads
             for t in self._treads:
                 t.join()
 
+        # do it in a separate thread, because stop() may be called by some gizmo
         threading.Thread(target=do_join).start()
 
         self._treads = []
@@ -278,7 +289,7 @@ class Composition:
 class VideoSourceGizmo(Gizmo):
     """OpenCV-based video source gizmo"""
 
-    def __init__(self, video_source=0):
+    def __init__(self, video_source=None):
         """Constructor.
 
         - video_source: cv2.VideoCapture-compatible video source designator
