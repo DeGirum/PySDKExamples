@@ -9,48 +9,17 @@
 import sys, os, time, string, cv2, PIL
 from contextlib import contextmanager
 
+# Inference options: parameters for connect_model_zoo
+CloudInference = 1  # use DeGirum cloud server for inference
+AIServerInference = 2  # use AI server deployed in LAN/VPN
+LocalHWInference = 3  # use locally-installed AI HW accelerator
 
-def in_notebook():
-    """Returns `True` if the module is running in IPython kernel,
-    `False` if in IPython shell or other Python shell.
-    """
-    return "ipykernel" in sys.modules
-
-
-# list of possible inference options
-inference_option_list = {
-    1: {
-        "desc": "DeGirum Cloud Platform",
-        "url": "DEGIRUM_CLOUD_SERVER_ADDRESS",
-        "url_default": "dgcps://cs.degirum.com",
-        "token": "DEGIRUM_CLOUD_TOKEN",
-    },
-    2: {
-        "desc": "AI server connected via P2P VPN",
-        "url": "P2P_VPN_SERVER_ADDRESS",
-        "url_default": None,
-        "token": "DEGIRUM_CLOUD_TOKEN",
-    },
-    3: {
-        "desc": "AI server in your local network",
-        "url": "LOCAL_NETWORK_SERVER_ADDRESS",
-        "url_default": None,
-        "token": "DEGIRUM_CLOUD_TOKEN",
-    },
-    4: {
-        "desc": "AI server running on this machine",
-        "url": "127.0.0.1",
-        "url_default": None,
-        "token": "DEGIRUM_CLOUD_TOKEN",
-    },
-    5: {
-        "desc": "DeGirum Orca installed on this machine",
-        "url": None,
-        "url_default": None,
-        "token": "DEGIRUM_CLOUD_TOKEN",
-    },
-}
-
+# environment variable names
+_var_Token = "DEGIRUM_CLOUD_TOKEN"
+_var_CloudUrl = "DEGIRUM_CLOUD_PLATFORM_URL"
+_var_AiServer = "AISERVER_HOSTNAME_OR_IP"
+_var_CloudZoo = "CLOUD_ZOO_URL"
+_var_CameraID = "CAMERA_ID"
 
 def _reload_env(custom_file="env.ini"):
     """Reload environment variables from file
@@ -73,7 +42,7 @@ def _get_var(var, default_val=None):
         if ret is None:
             if default_val is None:
                 raise Exception(
-                    f"Please define environment variable {var} in .env file located in your CWD"
+                    f"Please define environment variable {var} in `.env` or `env.ini` file located in your CWD"
                 )
             else:
                 ret = default_val
@@ -82,14 +51,29 @@ def _get_var(var, default_val=None):
     return ret
 
 
-def token_get():
+def get_token():
     """Returns a token from .env file"""
     _reload_env()  # reload environment variables from file
-    return _get_var("DEGIRUM_CLOUD_TOKEN")
+    return _get_var(_var_Token)
 
 
-def connect_model_zoo(inference_option=1):
-    """Connect to model zoo according to given inference option
+def get_ai_server_hostname():
+    """Returns a AI server hostname/IP from .env file"""
+    _reload_env()  # reload environment variables from file
+    return _get_var(_var_AiServer)
+
+
+def get_cloud_zoo_url():
+    """Returns a cloud zoo URL from .env file"""
+    _reload_env()  # reload environment variables from file
+    url = _get_var(_var_CloudZoo, "")
+    return "/" + url if url else ""
+
+
+def connect_model_zoo(inference_option=CloudInference):
+    """Connect to model zoo according to given inference option.
+
+    inference_option: should be one of CloudInference, AIServerInference, or LocalHWInference
 
     Returns model zoo accessor object
     """
@@ -97,14 +81,51 @@ def connect_model_zoo(inference_option=1):
 
     _reload_env()  # reload environment variables from file
 
-    my_cfg = inference_option_list[inference_option]
-    my_url = _get_var(my_cfg["url"], my_cfg["url_default"])
-    my_token = _get_var(my_cfg["token"])
-    zoo = dg.connect_model_zoo(my_url, my_token)  # connect to the model zoo
-    print(
-        f"Inference option = '{my_cfg['desc']}'{'' if my_url is None else ' at ' + my_url}"
-    )
+    if inference_option == CloudInference:
+        # inference on cloud platform
+        token = _get_var(_var_Token)
+        zoo_url = _get_var(_var_CloudZoo, "")
+        cloud_url = "dgcps://" + _get_var(_var_CloudUrl, "cs.degirum.com")
+        if zoo_url:
+            cloud_url += "/" + zoo_url
+        zoo = dg.connect_model_zoo(cloud_url, token)
+
+    elif inference_option == AIServerInference:
+        # inference on AI server
+        hostname = _get_var(_var_AiServer)
+        zoo_url = _get_var(_var_CloudZoo, "")
+        if zoo_url:
+            token = _get_var(_var_Token)
+            cloud_url = "https://" + _get_var(_var_CloudUrl, "cs.degirum.com")
+            cloud_url += "/" + zoo_url
+            # use cloud zoo
+            zoo = dg.connect_model_zoo((hostname, cloud_url), token)
+        else:
+            # use local zoo
+            zoo = dg.connect_model_zoo(hostname)
+
+    elif inference_option == LocalHWInference:
+
+        token = _get_var(_var_Token)
+        zoo_url = _get_var(_var_CloudZoo, "")
+        cloud_url = "https://" + _get_var(_var_CloudUrl, "cs.degirum.com")
+        if zoo_url:
+            cloud_url += "/" + zoo_url
+        zoo = dg.connect_model_zoo(cloud_url, token)
+
+    else:
+        raise Exception(
+            f"Invalid value of inference_option parameter. Should be one of CloudInference, AIServerInference, or LocalHWInference"
+        )
+
     return zoo
+
+
+def in_notebook():
+    """Returns `True` if the module is running in IPython kernel,
+    `False` if in IPython shell or other Python shell.
+    """
+    return "ipykernel" in sys.modules
 
 
 def import_optional_package(pkg_name, is_long=False):
@@ -147,13 +168,10 @@ def open_video_stream(camera_id=None):
     """
     if camera_id is None:
         _reload_env()  # reload environment variables from file
-        camera_id = os.getenv("CAMERA_ID")
-        if camera_id.isnumeric():
+        camera_id = _get_var(_var_CameraID, 0)
+        if isinstance(camera_id, str) and camera_id.isnumeric():
             camera_id = int(camera_id)
-    if camera_id is None:
-        raise Exception(
-            "No camera ID specified. Either define 'CAMERA_ID' environment variable or pass as a parameter"
-        )
+
     stream = cv2.VideoCapture(camera_id)
     if not stream.isOpened():
         raise Exception(f"Error opening '{camera_id}' video stream")
@@ -488,6 +506,7 @@ class Display:
 
             if not self._window_created:
                 cv2.namedWindow(self._capt, cv2.WINDOW_NORMAL)
+                cv2.setWindowProperty(self._capt, cv2.WND_PROP_TOPMOST, 1)
                 if self._w is not None and self._h is not None:
                     cv2.resizeWindow(self._capt, self._w, self._h)
                 else:
