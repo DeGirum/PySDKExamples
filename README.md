@@ -2,7 +2,8 @@
 
 ## Quick Start
 
-1. Create an account on [DeGirum Cloud Portal](https://cs.degirum.com). Use *Request Access* button on a main page to request access.
+1. Create an account on [DeGirum Cloud Portal](https://cs.degirum.com). Use *Request Access* button on a main 
+page to request access.
 
 1. You should receive registration e-mail within one day. Follow instructions in e-mail to register your account.
 
@@ -23,8 +24,7 @@ The inference result will be displayed in both text and graphical form.
     zoo = dg.connect_model_zoo("dgcps://cs.degirum.com", token="<my cloud API access token>")
     print(zoo.list_models())     # print all available models in the model zoo
 
-    # load mobilenet_ssd model for CPU;
-    # model_name should be one returned by zoo.list_models()
+    # load mobilenet_ssd model for CPU; model_name should be one returned by zoo.list_models()
     model_name = "mobilenet_v2_ssd_coco--300x300_quant_n2x_cpu_1"     
     model = zoo.load_model(model_name)
 
@@ -41,12 +41,11 @@ The inference result will be displayed in both text and graphical form.
 This repository provides PySDK example scripts that can perform ML inferences on the following hosting options:
 
 1. Using [DeGirum Cloud Platform](https://cs.degirum.com),
-1. On DeGirum-hosted AI server node shared via Peer-to-Peer VPN,
-1. On AI server node hosted by you in your local network,
-1. On AI server running on your local machine,
-1. On DeGirum ORCA accelerator directly installed on your local machine.
+1. On DeGirum AI Server deployed on a localhost or on some computer in your LAN or VPN,
+1. On DeGirum ORCA accelerator directly installed on your local computer.
 
-To try different options, you need to just change the `inference_option` variable in the script code.
+To try different options, you just need to uncomment **one** of the lines in the code cell just below the
+*"Specify where do you want to run your inferences"* header.
 
 To run the examples, clone this repo:
 
@@ -54,27 +53,19 @@ To run the examples, clone this repo:
 git clone https://github.com/DeGirum/PySDKExamples.git
 ```
 
-Inside the repo, create an `.env` file and fill the required authentication details by assigning the following variables
-(you may use alternative name `env.ini` if you work under Jupyter Lab GUI, which does not allow you to create hidden 
-files):
+Inside the repo, open `env.ini` file and fill the required authentication details by assigning the following variables:
 
 |Variable Name|Description|
 |-------------|-----------|
-|`DEGIRUM_CLOUD_TOKEN`|DeGirum cloud platform API access token, obtained on [DeGirum Cloud Platform](https://cs.degirum.com) site.|
-|`P2P_VPN_SERVER_ADDRESS`|IP address of DeGirum-hosted AI server node shared via Peer-to-Peer VPN; please contact support@degirum.com to obtain one.|
-|`LOCAL_NETWORK_SERVER_ADDRESS`|IP address of AI server node hosted by you in your local network; refer to *Documentation > General Information* page on [DeGirum Cloud Portal](https://cs.degirum.com) for AI server installation details.|
-|`CAMERA_ID`|Local camera index, or web camera URL in the format `rtsp://<user>:<password>@<ip or hostname>`, or path to video file.|
+|`DEGIRUM_CLOUD_TOKEN`|DeGirum cloud platform API access token. To obtain a token, visit *Management > My Tokens* page on [DeGirum Cloud Portal](https://cs.degirum.com).|
+|`AISERVER_HOSTNAME_OR_IP`|The hostname or IP address of a computer in your LAN/VPN which hosts AI Server. For localhost server, specify "localhost". Refer to *Documentation > General Information* page on [DeGirum Cloud Portal](https://cs.degirum.com) for AI server installation details.|
+|`CLOUD_ZOO_URL`|The cloud zoo URL to get models from. Format: `<organization>/<zoo>`. To confirm zoo URL visit *Management > Models* page on [DeGirum Cloud Portal](https://cs.degirum.com).|
+|`CAMERA_ID`|Local camera index, or web camera URL in the format `rtsp://<user>:<password>@<ip or hostname>`, or path to a video file.|
 
-This will allow loading the required information from the `.env` file instead of hard-coding the values in the script. 
-You can copy the below lines and fill in the missing information.
-```
-DEGIRUM_CLOUD_TOKEN = 'Enter your DeGirum cloud platform token'
-P2P_VPN_SERVER_ADDRESS = 'Enter IP address of the DeGirum P2P AI server'
-LOCAL_NETWORK_SERVER_ADDRESS = 'Enter IP address of the AI server in your local network'
-CAMERA_ID = 'rtsp://<user>:<password>@<ip or hostname>'
-```
+This will allow loading the required information from the `env.ini` file instead of hard-coding the values in the script. 
 
-The `.env` file is added to `.gitignore` and will not be checked in. This will ensure that your token information is not leaked. 
+The `env.ini` file is added to `.gitignore` and will not be checked in. This will ensure that your token information 
+is not leaked. 
 
 ## Examples Directory
 
