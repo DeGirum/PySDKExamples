@@ -12,7 +12,8 @@ import queue
 import copy
 import time
 from abc import ABC, abstractmethod
-from typing import Optional, Any, List
+from typing import Optional, Any, List, Union
+from contextlib import ExitStack
 
 import cv2
 import numpy
@@ -241,7 +242,7 @@ class Composition:
         for gizmo in self._gizmos:
             for i in gizmo.get_inputs():
                 if i.dropped_cnt > 0:
-                    ret.append(gizmo.name)
+                    ret.append({gizmo.name: i.dropped_cnt})
                     break
         return ret
 
@@ -313,49 +314,76 @@ class VideoDisplayGizmo(Gizmo):
 
     def __init__(
         self,
-        window_title: str = "Display",
+        window_titles: Union[str, list[str]] = "Display",
         *,
         show_ai_overlay=False,
         show_fps: bool = False,
         stream_depth: int = 10,
-        allow_drop: bool = True,
+        allow_drop: bool = False,
     ):
         """Constructor.
 
-        - window_title: window title string
+        - window_titles: window title string or array of title strings for multiple displays
         - show_fps: True to show FPS
         - show_ai_overlay: True to show AI inference overlay image when possible
         - stream_depth: input stream depth
         - allow_drop: allow dropping frames from input stream on overflow
         """
-        super().__init__([(stream_depth, allow_drop)])
-        self._window_title = window_title
+
+        if isinstance(window_titles, str):
+            window_titles = [
+                window_titles,
+            ]
+
+        super().__init__([(stream_depth, allow_drop)] * len(window_titles))
+        self._window_titles = window_titles
         self._show_fps = show_fps
         self._show_ai_overlay = show_ai_overlay
 
     def run(self):
         """Run gizmo"""
-        first_run = True
-        with mytools.Display(self._window_title, self._show_fps) as display:
+
+        with ExitStack() as stack:
+
+            ndisplays = len(self._window_titles)
+            displays = [
+                stack.enter_context(mytools.Display(w, self._show_fps))
+                for w in self._window_titles
+            ]
+            first_run = [True] * ndisplays
+
             try:
-                for data in self.get_input(0):
+                while True:
                     if self._abort:
                         break
 
-                    self.result_cnt += 1
-                    if self._show_ai_overlay and isinstance(
-                        data.meta, dg.postprocessor.InferenceResults
-                    ):
-                        # show AI inference overlay if possible
-                        display.show(data.meta.image_overlay)
-                    else:
-                        display.show(data.data)
+                    for i, input in enumerate(self.get_inputs()):
+                        try:
+                            if ndisplays > 1:
+                                data = input.get_nowait()
+                            else:
+                                data = input.get()
+                                self.result_cnt += 1
+                        except queue.Empty:
+                            continue
 
-                    if first_run:
-                        cv2.setWindowProperty(
-                            self._window_title, cv2.WND_PROP_TOPMOST, 1
-                        )
-                        first_run = False
+                        if data == Stream._poison:
+                            self._abort = True
+                            break
+
+                        if self._show_ai_overlay and isinstance(
+                            data.meta, dg.postprocessor.InferenceResults
+                        ):
+                            # show AI inference overlay if possible
+                            displays[i].show(data.meta.image_overlay)
+                        else:
+                            displays[i].show(data.data)
+
+                        if first_run[i]:
+                            cv2.setWindowProperty(
+                                self._window_titles[i], cv2.WND_PROP_TOPMOST, 1
+                            )
+                            first_run[i] = False
 
             except KeyboardInterrupt:
                 if self.composition is not None:
@@ -415,14 +443,18 @@ class ResizingGizmo(Gizmo):
         h: int,
         pad_method: str = "letterbox",
         resize_method: int = cv2.INTER_LINEAR,
+        stream_depth: int = 10,
+        allow_drop: bool = False,
     ):
         """Constructor.
 
         - w, h: resulting image width/height
         - pad_method: padding method - one of 'stretch', 'letterbox'
         - resize_method: resampling method - one of cv2.INTER_xxx constants
+        - stream_depth: input stream depth
+        - allow_drop: allow dropping frames from input stream on overflow
         """
-        super().__init__([(0, False)])
+        super().__init__([(stream_depth, allow_drop)])
         self._h = w
         self._w = w
         self._pad_method = pad_method
@@ -555,3 +587,46 @@ class AiObjectDetectionCroppingGizmo(AiGizmoBase):
             meta["cropped_result"] = r
             meta["cropped_index"] = i
             self.send_result(StreamData(crop, meta))
+
+
+class AiResultCombiningGizmo(Gizmo):
+    """Gizmo to combine results from multiple AI gizmos with similar-typed results"""
+
+    def __init__(
+        self,
+        inp_cnt: int,
+        stream_depth: int = 10,
+        allow_drop: bool = False,
+    ):
+        """Constructor.
+
+        - inp_cnt: number of inputs to combine
+        - stream_depth: input stream depth
+        - allow_drop: allow dropping frames from input stream on overflow
+        """
+        self._inp_cnt = inp_cnt
+        super().__init__([(stream_depth, allow_drop)] * inp_cnt)
+
+    def run(self):
+        """Run gizmo"""
+
+        while True:
+            # get data from all inputs
+            all_data = []
+            for inp in self.get_inputs():
+                d = inp.get()
+                if d == Stream._poison:
+                    self._abort = True
+                    break
+                all_data.append(d)
+
+            if self._abort:
+                break
+
+            d0 = all_data[0]
+            for d in all_data[1:]:
+                # check that results are of the same type and from the same data
+                if type(d.meta) == type(d0.meta):
+                    d0.meta._inference_results += d.meta._inference_results
+
+            self.send_result(StreamData(d0.data, d0.meta))
