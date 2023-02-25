@@ -314,7 +314,7 @@ class VideoDisplayGizmo(Gizmo):
 
     def __init__(
         self,
-        window_titles: Union[str, list[str]] = "Display",
+        window_titles: Union[str, List[str]] = "Display",
         *,
         show_ai_overlay=False,
         show_fps: bool = False,
