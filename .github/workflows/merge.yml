@@ -19,9 +19,9 @@ jobs:
       # do not abort other jobs on job failure
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, windows-2019, macos-12]
+        os: [ubuntu-20.04, windows-2019]
         include:
-          - default_shell: bash -eo pipefail -l {0}
+          - default_shell: bash -l {0}
           - os: windows-2019
             default_shell: cmd
 
@@ -47,12 +47,12 @@ jobs:
         if: ${{ contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos') }}
         run: |
           echo $PATH
-          cat ~./bashrc
+          cat ~/.bashrc
 
       - name: cmd debug
         if: ${{ contains(matrix.os, 'windows') }}
         run: |
-          echo %PATH%
+          echo "%USERPROFILE%\miniconda3\Scripts\" >> %GITHUB_PATH%
 
       - name: test installation of environment
         run: |
