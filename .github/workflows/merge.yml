@@ -71,7 +71,7 @@ jobs:
         if: ${{ contains(matrix.os, 'windows') }}
         run: |
           @chcp 65001>nul
-          echo "%USERPROFILE%\miniconda3\Scripts\" >> %GITHUB_PATH%
+          echo %USERPROFILE%\miniconda3\Scripts\ >> %GITHUB_PATH%
 
       - name: test installation of environment
         if: ${{ contains(matrix.os, 'windows') }}
