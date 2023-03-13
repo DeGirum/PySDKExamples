@@ -1,0 +1,4 @@
+jupyterlab
+--extra-index-url https://degirum.github.io/simple
+degirum 
+
