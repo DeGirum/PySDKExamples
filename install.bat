@@ -51,7 +51,7 @@ if %errorlevel% neq 0 (
     ) 
 
     REM Install python requirements in degirum environment
-    call conda.bat activate degirum
+    call activate degirum
     if !ERRORLEVEL! neq 0 (
         echo Failed to activate degirum environment
         exit /b !ERRORLEVEL!
