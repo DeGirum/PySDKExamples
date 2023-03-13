@@ -425,7 +425,7 @@ class Display:
         show_embedded - True to show graph embedded into the notebook when possible
         w, h - initial window width/hight in pixels; None for autoscale
         """
-        self._fps = FPSMeter() if show_fps else None
+        self._fps = FPSMeter() if show_fps and not get_test_mode() else None
         self._capt = capt
         self._window_created = False
         self._show_embedded = show_embedded

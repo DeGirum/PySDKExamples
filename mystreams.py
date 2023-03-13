@@ -559,7 +559,8 @@ class AiGizmoBase(Gizmo):
 
         for result in self.model.predict_batch(source()):
             self.on_result(result)
-            if self._abort:
+            # finish processing all frames for tests
+            if self._abort and not mytools.get_test_mode():
                 break
 
     @abstractmethod
@@ -602,11 +603,8 @@ class AiObjectDetectionCroppingGizmo(AiGizmoBase):
         """Result handler to be overloaded in derived classes.
 
         - result: inference result; result.info contains reference to data frame used for inference"""
-
         if len(result.results) == 0:  # no objects detected
-            self.send_result(
-                StreamData(result.image, {"original_result": result, "flush": True})
-            )
+            self.send_result(StreamData(result.image, {"original_result": result}))
 
         is_first = True
         for i, r in enumerate(result.results):
@@ -622,9 +620,6 @@ class AiObjectDetectionCroppingGizmo(AiGizmoBase):
 
             meta["cropped_result"] = r
             meta["cropped_index"] = i
-
-            if r == result.results[-1]:  # last item
-                meta["flush"] = True
 
             self.send_result(StreamData(crop, meta))
 

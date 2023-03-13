@@ -16,7 +16,7 @@ output_dir.mkdir(exist_ok=True)
 
 
 def open_and_execute(
-    notebook_file: Path, code_cells_with_exception
+    notebook_file: Path, code_cells_with_exception=[]
 ) -> nbformat.NotebookNode:
     """Helper function for executing a notebook using nbclient"""
     with open(examples_dir / notebook_file, "r") as file:
@@ -41,20 +41,20 @@ def open_and_execute(
 
     nb = client.execute()
     # save notebook with output, useful for debugging
-    # nbformat.write(nb, output_dir / f"{notebook_file.stem}_output.ipynb")
+    nbformat.write(nb, output_dir / f"{notebook_file.stem}.ipynb")
     return nb
 
 
 _image_notebooks = [
-    ("mystreamsDemo.ipynb", "Mask1.jpg", [1, 2, 3, 4, 5, 6], []),
+    ("mystreamsDemo.ipynb", "Masked.mp4", [1, 2, 3, 4, 5, 6], []),
     # an expected exception arises in cell 5 when using a file instead of a camera
-    ("FaceHandDetectionParallelCameraStream.ipynb", "Mask1.jpg", [5], [5]),
-    ("FaceMaskDetectionPipelinedCameraStream.ipynb", "Mask1.jpg", [5], []),
+    ("FaceHandDetectionParallelCameraStream.ipynb", "Masked.mp4", [5], [5]),
+    ("FaceMaskDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [5], []),
     # dictionary with image count for notebooks with cells with > 1 image
     ("FaceMaskDetectionPipelinedImage.ipynb", None, {3: 3}, []),
-    ("ObjectDetectionCameraStream.ipynb", "Mask1.jpg", [4], []),
+    ("ObjectDetectionCameraStream.ipynb", "Masked.mp4", [4], []),
     ("ObjectDetectionImage.ipynb", None, [6], []),
-    ("PersonPoseDetectionPipelinedCameraStream.ipynb", "Mask1.jpg", [6], []),
+    ("PersonPoseDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [6], []),
     ("PersonPoseDetectionPipelinedImage.ipynb", None, {3: 3, 4: 1}, []),
     ("TiledObjectDetectionVideoFile.ipynb", None, [8], []),
 ]
@@ -99,7 +99,7 @@ def test_notebook_image_output(
 
         for image_count, image_datum in enumerate(image_data, 1):
             cell_image = Image.open(BytesIO(base64.b64decode(image_datum)))
-            # cell_image.save(output_dir / f"{filename.stem}_{id}.{image_count}_OUT.png")
+            cell_image.save(output_dir / f"{filename.stem}_{id}.{image_count}.png")
             ref_image = Image.open(
                 reference_dir / f"{filename.stem}_{id}.{image_count}.png"
             )
