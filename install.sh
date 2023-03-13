@@ -49,24 +49,30 @@ if [ $INSTALL_MINICONDA -eq 1 ] ; then
 
     # Clean up the installation files
     rm $MINICONDA_FILE
+else 
+    echo "conda already installed"
 fi
 
+if ! conda env list | grep -q "\bdegirum\b"; then
 # Create a new environment called "degirum" with the specified Python version.
-# Will recreate environment if one exists already
-echo "Creating the degirum environment"
-conda create --yes -n degirum python=$PYTHON_VERSION pip
+    echo "Creating the degirum environment"
+    conda create --yes -n degirum python=$PYTHON_VERSION pip
 
-# Install python requirements in degirum environment
-source $HOME/miniconda/bin/activate degirum
-pip install -r requirements.txt
+    # Install python requirements in degirum environment
+    source $HOME/miniconda/bin/activate degirum
+    pip install -r requirements.txt
+    
+    echo "The degirum conda environment has been installed!"
+else 
+    echo "The degirum conda environment already exists"
+fi 
 
 if [ $INSTALL_MINICONDA -eq 1 ] ; then
     conda init bash
 fi
 
-echo "The 'degirum' conda environment has been installed!"
 echo "Activate with 'conda activate degirum'"
-echo "Launch jupyterlab server by running 'jupyter notebook' from the PySDKExamples directory"
+echo "Launch jupyterlab server by running 'jupyter lab' from the PySDKExamples directory"
 
 # Launch a new bash with activated environment 
 bash --rcfile <(echo '. ~/.bashrc; conda activate degirum')

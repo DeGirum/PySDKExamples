@@ -20,7 +20,6 @@ if %INSTALL_MINICONDA% EQU 1 (
         echo Failed to download miniconda installer
         exit /b !ERRORLEVEL!
     ) 
-
     
     echo Installing miniconda to %MINICONDA_DIR%
     call miniconda.exe /InstallationType=JustMe /AddToPath=1 /RegisterPython=0 /S /D=%MINICONDA_DIR%
@@ -34,37 +33,46 @@ if %INSTALL_MINICONDA% EQU 1 (
 
     REM Clean up the installation files
     del "miniconda.exe"
+) else (
+    echo conda already installed
 )
 
-REM Create a new environment called "degirum" with the specified Python version.
-REM Will recreate environment if one exists already
 set "PYTHON_VERSION=3.9"
-echo Creating the degirum environment
-call conda create --yes -n degirum python=%PYTHON_VERSION% pip
-if %ERRORLEVEL% neq 0 (
-    echo Failed to create degirum environment
-    exit /b %ERRORLEVEL%
-) 
 
-REM Install python requirements in degirum environment
-call activate degirum
-if %ERRORLEVEL% neq 0 (
-    echo Failed to activate degirum environment
-    exit /b %ERRORLEVEL%
-) 
-call pip install -r requirements.txt
-if %ERRORLEVEL% neq 0 (
-    echo Failed to install requirements
-    exit /b %ERRORLEVEL%
-) 
+conda env list | findstr /C:"degirum" >nul
+if %errorlevel% neq 0 (
+    REM Create a new environment called "degirum" with the specified Python version.
+
+    echo Creating the degirum environment
+    call conda create --yes -n degirum python=%PYTHON_VERSION% pip
+    if !ERRORLEVEL! neq 0 (
+        echo Failed to create degirum environment
+        exit /b !ERRORLEVEL!
+    ) 
+
+    REM Install python requirements in degirum environment
+    call activate degirum
+    if !ERRORLEVEL! neq 0 (
+        echo Failed to activate degirum environment
+        exit /b !ERRORLEVEL!
+    ) 
+    call pip install -r requirements.txt
+    if !ERRORLEVEL! neq 0 (
+        echo Failed to install requirements
+        exit /b !ERRORLEVEL!
+    ) 
+    echo The degirum conda environment has been installed!
+) else (
+    echo The degirum conda environment already exists.
+)
+
 
 if %INSTALL_MINICONDA% EQU 1 (
     call conda init cmd.exe
 )
 
-echo The 'degirum' conda environment has been installed!
-echo Activate with 'conda activate degirum'
-echo Launch jupyterlab server by running 'jupyter notebook' from the PySDKExamples directory
+echo Activate degirum conda environment with 'conda activate degirum'
+echo Launch jupyterlab server by running 'jupyter lab' from the PySDKExamples directory
 popd
 pause
 start cmd /k activate degirum
