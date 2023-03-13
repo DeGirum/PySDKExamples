@@ -43,6 +43,17 @@ jobs:
         if: ${{ contains(matrix.os, 'windows') }}
         run: install.bat
 
+      - name: bash debug
+        if: ${{ contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos') }}
+        run: |
+          echo $PATH
+          cat ~./bashrc
+
+      - name: cmd debug
+        if: ${{ contains(matrix.os, 'windows') }}
+        run: |
+          echo %PATH%
+
       - name: test installation of environment
         run: |
           conda activate degirum

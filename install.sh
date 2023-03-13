@@ -19,21 +19,21 @@ else
     PYTHON_VERSION="3.9"
 fi
 
+if [[ $(uname) == "Linux" ]]; then
+    MINICONDA_OS="Linux"
+    MINICONDA_ARCH=$(uname -m)
+elif [[ $(uname) == "Darwin" ]]; then
+    MINICONDA_OS="MacOSX"
+    MINICONDA_ARCH=$(uname -m)
+    PYTHON_VERSION="3.9"
+else
+    echo "Unsupported operating system: $(uname)"
+    exit 1
+fi
+
 if [ $INSTALL_MINICONDA -eq 1 ] ; then
     # Specify the Miniconda installation directory
     MINICONDA_DIR="$HOME/miniconda"
-
-    if [[ $(uname) == "Linux" ]]; then
-        MINICONDA_OS="Linux"
-        MINICONDA_ARCH=$(uname -m)
-    elif [[ $(uname) == "Darwin" ]]; then
-        MINICONDA_OS="MacOSX"
-        MINICONDA_ARCH=$(uname -m)
-        PYTHON_VERSION="3.9"
-    else
-        echo "Unsupported operating system: $(uname)"
-        exit 1
-    fi
 
     MINICONDA_FILE="Miniconda3-latest-${MINICONDA_OS}-${MINICONDA_ARCH}.sh"
     MINICONDA_URL="https://repo.anaconda.com/miniconda/$MINICONDA_FILE"
