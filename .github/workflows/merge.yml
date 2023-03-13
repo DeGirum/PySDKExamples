@@ -21,7 +21,7 @@ jobs:
       matrix:
         os: [ubuntu-20.04, windows-2019, macos-12]
         include:
-          - default_shell: bash
+          - default_shell: bash -eo pipefail -l {0}
           - os: windows-2019
             default_shell: cmd
 
@@ -37,13 +37,13 @@ jobs:
 
       - name: run bash install script
         if: ${{ contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos') }}
-        run: install.sh
+        run: ./install.sh
 
       - name: run batch install script
         if: ${{ contains(matrix.os, 'windows') }}
         run: install.bat
 
-      - name: test installation
+      - name: test installation of environment
         run: |
           conda activate degirum
           python -c 'import degirum; print(degirum.__version__)'
