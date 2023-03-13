@@ -70,11 +70,13 @@ jobs:
       - name: cmd debug
         if: ${{ contains(matrix.os, 'windows') }}
         run: |
+          @chcp 65001>nul
           echo "%USERPROFILE%\miniconda3\Scripts\" >> %GITHUB_PATH%
 
       - name: test installation of environment
         if: ${{ contains(matrix.os, 'windows') }}
         run: |
+          echo %PATH%
           conda activate degirum
           python -c 'import degirum; print(degirum.__version__)'
           jupyter --version
