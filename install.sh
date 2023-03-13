@@ -54,7 +54,7 @@ else
 fi
 
 if ! conda env list | grep -q "\bdegirum\b"; then
-# Create a new environment called "degirum" with the specified Python version.
+    # Create a new environment called "degirum" with the specified Python version.
     echo "Creating the degirum environment"
     conda create --yes -n degirum python=$PYTHON_VERSION pip
 
