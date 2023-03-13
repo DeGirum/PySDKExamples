@@ -2,3 +2,5 @@
 env.ini
 .ipynb_checkpoints/
 __pycache__/
+test/output/
+.vscode/

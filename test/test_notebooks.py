@@ -41,7 +41,7 @@ def open_and_execute(
 
     nb = client.execute()
     # save notebook with output, useful for debugging
-    nbformat.write(nb, output_dir / f"{notebook_file.stem}.ipynb")
+    # nbformat.write(nb, output_dir / f"{notebook_file.stem}.ipynb")
     return nb
 
 
@@ -99,7 +99,7 @@ def test_notebook_image_output(
 
         for image_count, image_datum in enumerate(image_data, 1):
             cell_image = Image.open(BytesIO(base64.b64decode(image_datum)))
-            cell_image.save(output_dir / f"{filename.stem}_{id}.{image_count}.png")
+            # cell_image.save(output_dir / f"{filename.stem}_{id}.{image_count}.png")
             ref_image = Image.open(
                 reference_dir / f"{filename.stem}_{id}.{image_count}.png"
             )
