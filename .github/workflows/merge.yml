@@ -1,0 +1,56 @@
+#
+# DeGirum GitHub CI build script
+# Copyright 2023 DeGirum Corporation
+#
+# PySDKExamples merge workflow: runs tests on PySDKExamples install scripts and jupyter notebooks
+#
+
+name: CI Merge
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Setup matrix on Ubuntu, Windows and MacOS runners
+    strategy:
+      # do not abort other jobs on job failure
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, windows-2019, macos-12]
+        include:
+          - default_shell: bash
+          - os: windows-2019
+            default_shell: cmd
+
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        shell: ${{ matrix.default_shell }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: run bash install script
+        if: ${{ contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos') }}
+        run: install.sh
+
+      - name: run batch install script
+        if: ${{ contains(matrix.os, 'windows') }}
+        run: install.bat
+
+      - name: test installation
+        run: |
+          conda activate degirum
+          python -c 'import degirum; print(degirum.__version__)'
+          jupyter --version
+
+      - name: install test dependencies and run tests
+        run: |
+          conda activate degirum
+          pip install pytest pytest-xdist
+          python -m pytest -n auto -vs --token=${{ secrets.CS_CLOUD_TOKEN }}
