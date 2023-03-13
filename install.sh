@@ -59,7 +59,7 @@ if ! conda env list | grep -q "\bdegirum\b"; then
     conda create --yes -n degirum python=$PYTHON_VERSION pip
 
     # Install python requirements in degirum environment
-    source $HOME/miniconda/bin/activate degirum
+    conda activate degirum
     pip install -r requirements.txt
     
     echo "The degirum conda environment has been installed!"
