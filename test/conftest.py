@@ -1,6 +1,4 @@
 import pytest
-from pytest_mock import MockerFixture
-import mytools
 from os import environ
 
 def pytest_addoption(parser):
@@ -15,7 +13,7 @@ def cloud_token(request):
     return request.config.getoption("--token")
 
 @pytest.fixture(autouse=True)
-def mock_env(cloud_token: str) -> None:
+def setup_env(cloud_token: str) -> None:
     environ["CLOUD_ZOO_URL"] = "degirum_com/public"
     environ["DEGIRUM_CLOUD_TOKEN"] = cloud_token
     environ["TEST_MODE"] = "1"
