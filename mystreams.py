@@ -320,6 +320,7 @@ class VideoDisplayGizmo(Gizmo):
         show_fps: bool = False,
         stream_depth: int = 10,
         allow_drop: bool = False,
+        multiplex = False,
     ):
         """Constructor.
 
@@ -328,6 +329,8 @@ class VideoDisplayGizmo(Gizmo):
         - show_ai_overlay: True to show AI inference overlay image when possible
         - stream_depth: input stream depth
         - allow_drop: allow dropping frames from input stream on overflow
+        - multiplex: then True, single input data is multiplexed to multiple displays;
+          when False, each input is displayed on individual display
         """
 
         if isinstance(window_titles, str):
@@ -335,10 +338,12 @@ class VideoDisplayGizmo(Gizmo):
                 window_titles,
             ]
 
-        super().__init__([(stream_depth, allow_drop)] * len(window_titles))
+        inp_cnt = 1 if multiplex else len(window_titles)
+        super().__init__([(stream_depth, allow_drop)] * inp_cnt)
         self._window_titles = window_titles
         self._show_fps = show_fps
         self._show_ai_overlay = show_ai_overlay
+        self._multiplex = multiplex
 
     def run(self):
         """Run gizmo"""
@@ -346,26 +351,34 @@ class VideoDisplayGizmo(Gizmo):
         with ExitStack() as stack:
 
             ndisplays = len(self._window_titles)
+            ninputs = len(self.get_inputs())
+
             displays = [
                 stack.enter_context(mytools.Display(w, self._show_fps))
                 for w in self._window_titles
             ]
             first_run = [True] * ndisplays
 
+            di = 0 # di is display index
             try:
                 while True:
                     if self._abort:
                         break
 
-                    for i, input in enumerate(self.get_inputs()):
+                    for ii, input in enumerate(self.get_inputs()): # ii is input index
                         try:
-                            if ndisplays > 1:
+                            if ninputs > 1: 
+                                # non-multiplexing multi-input case
                                 data = input.get_nowait()
                             else:
+                                # single input or multiplexing case
                                 data = input.get()
                                 self.result_cnt += 1
                         except queue.Empty:
                             continue
+
+                        # select display to show this frame
+                        di = (di + 1) % ndisplays if self._multiplex else ii
 
                         if data == Stream._poison:
                             self._abort = True
@@ -375,15 +388,15 @@ class VideoDisplayGizmo(Gizmo):
                             data.meta, dg.postprocessor.InferenceResults
                         ):
                             # show AI inference overlay if possible
-                            displays[i].show(data.meta.image_overlay)
+                            displays[di].show(data.meta.image_overlay)
                         else:
-                            displays[i].show(data.data)
+                            displays[di].show(data.data)
 
-                        if first_run[i]:
+                        if first_run[di]:
                             cv2.setWindowProperty(
-                                self._window_titles[i], cv2.WND_PROP_TOPMOST, 1
+                                self._window_titles[di], cv2.WND_PROP_TOPMOST, 1
                             )
-                            first_run[i] = False
+                            first_run[di] = False
 
             except KeyboardInterrupt:
                 if self.composition is not None:
@@ -503,14 +516,14 @@ class ResizingGizmo(Gizmo):
 class AiGizmoBase(Gizmo):
     """Base class for AI inference gizmos"""
 
-    def __init__(self, model, *, stream_depth: int = 10, allow_drop: bool = False):
+    def __init__(self, model, *, stream_depth: int = 10, allow_drop: bool = False, inp_cnt: int = 1):
         """Constructor.
 
         - model: PySDK model object
         - stream_depth: input stream depth
         - allow_drop: allow dropping frames from input stream on overflow
         """
-        super().__init__([(stream_depth, allow_drop)])
+        super().__init__([(stream_depth, allow_drop)] * inp_cnt)
 
         model.image_backend = "opencv"  # select OpenCV backend
         model.input_numpy_colorspace = "BGR"  # adjust colorspace to match OpenCV
@@ -520,8 +533,18 @@ class AiGizmoBase(Gizmo):
         """Run gizmo"""
 
         def source():
-            for data in self.get_input(0):
-                yield (data.data, data)
+
+            while True:
+                # get data from all inputs
+                for inp in self.get_inputs():
+                    d = inp.get()
+                    if d == Stream._poison:
+                        self._abort = True
+                        break
+                    yield (d.data, d)
+
+                if self._abort:
+                    break
 
         for result in self.model.predict_batch(source()):
             self.on_result(result)
@@ -630,3 +653,27 @@ class AiResultCombiningGizmo(Gizmo):
                     d0.meta._inference_results += d.meta._inference_results
 
             self.send_result(StreamData(d0.data, d0.meta))
+
+
+class FanoutGizmo(Gizmo):
+    """Gizmo to fan-out single input into multiple outputs.
+    NOTE: by default it drops frames when experiencing back-pressure."""
+
+    def __init__(
+        self,
+        stream_depth: int = 2,
+        allow_drop: bool = True,
+    ):
+        """Constructor.
+
+        - stream_depth: input stream depth
+        - allow_drop: allow dropping frames from input stream on overflow
+        """
+        super().__init__([(stream_depth, allow_drop)])
+
+    def run(self):
+        """Run gizmo"""
+        for data in self.get_input(0):
+            if self._abort:
+                break
+            self.send_result(data)
