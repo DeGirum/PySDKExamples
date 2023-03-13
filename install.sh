@@ -59,6 +59,7 @@ if ! conda env list | grep -q "\bdegirum\b"; then
     conda create --yes -n degirum python=$PYTHON_VERSION pip
 
     # Install python requirements in degirum environment
+    eval "$(conda shell.bash hook)"
     conda activate degirum
     pip install -r requirements.txt
     
