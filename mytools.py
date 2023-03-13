@@ -6,7 +6,7 @@
 #
 
 
-import sys, os, time, string, cv2, PIL
+import sys, os, time, string, cv2, PIL.Image
 from contextlib import contextmanager
 
 # Inference options: parameters for connect_model_zoo
@@ -15,11 +15,13 @@ AIServerInference = 2  # use AI server deployed in LAN/VPN
 LocalHWInference = 3  # use locally-installed AI HW accelerator
 
 # environment variable names
+_var_TestMode = "TEST_MODE"
 _var_Token = "DEGIRUM_CLOUD_TOKEN"
 _var_CloudUrl = "DEGIRUM_CLOUD_PLATFORM_URL"
 _var_AiServer = "AISERVER_HOSTNAME_OR_IP"
 _var_CloudZoo = "CLOUD_ZOO_URL"
 _var_CameraID = "CAMERA_ID"
+
 
 def _reload_env(custom_file="env.ini"):
     """Reload environment variables from file
@@ -49,6 +51,12 @@ def _get_var(var, default_val=None):
     else:  # treat `var` literally
         ret = var
     return ret
+
+
+def get_test_mode():
+    """Returns enable status of test mode from .env file"""
+    _reload_env()  # reload environment variables from file
+    return _get_var(_var_TestMode, False)
 
 
 def get_token():
@@ -193,6 +201,10 @@ def video_source(stream, report_error=True):
 
     Yields video frame captured from given video stream
     """
+
+    if get_test_mode():
+        report_error = False  # since we're not using a camera
+
     while True:
         ret, frame = stream.read()
         if not ret:
@@ -417,7 +429,7 @@ class Display:
         self._capt = capt
         self._window_created = False
         self._show_embedded = show_embedded
-        self._no_gui = not Display._check_gui()
+        self._no_gui = not Display._check_gui() or get_test_mode()
         self._w = w
         self._h = h
 

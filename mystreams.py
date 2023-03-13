@@ -15,7 +15,7 @@ from abc import ABC, abstractmethod
 from typing import Optional, Any, List, Union
 from contextlib import ExitStack
 
-import cv2
+import cv2, PIL
 import numpy
 
 import degirum as dg
@@ -108,7 +108,7 @@ class Gizmo(ABC):
             pass empty list to have no inputs; zero means unlimited depth
         """
 
-        self._inputs = []
+        self._inputs: List[Stream] = []
         for s in input_stream_sizes:
             self._inputs.append(Stream(*s))
 
@@ -184,8 +184,8 @@ class Composition:
 
     def __init__(self):
         """Constructor."""
-        self._gizmos = []
-        self._treads = []
+        self._gizmos: List[Gizmo] = []
+        self._threads: List[threading.Thread] = []
 
     def add(self, gizmo: Gizmo) -> Gizmo:
         """Add a gizmo to composition
@@ -209,7 +209,7 @@ class Composition:
         Use get_bottlenecks() method to return list of gizmos-bottlenecks
         """
 
-        if len(self._treads) > 0:
+        if len(self._threads) > 0:
             raise Exception("Composition already started")
 
         def gizmo_run(gizmo):
@@ -221,18 +221,22 @@ class Composition:
             gizmo.run()
             gizmo.elapsed_s = time.time() - gizmo.start_time_s
             gizmo.fps = gizmo.result_cnt / gizmo.elapsed_s if gizmo.elapsed_s > 0 else 0
-            gizmo.send_result(None)
+            gizmo.send_result(Stream._poison)
 
         for gizmo in self._gizmos:
             gizmo.abort(False)
             t = threading.Thread(target=gizmo_run, args=(gizmo,))
             t.name = t.name + "-" + type(gizmo).__name__
-            self._treads.append(t)
+            self._threads.append(t)
 
-        for t in self._treads:
+        for t in self._threads:
             t.start()
 
         print("Composition started")
+
+        # test mode has limited inputs
+        if mytools.get_test_mode():
+            self.wait()
 
     def get_bottlenecks(self) -> List[str]:
         """Return a list of gizmo names, which experienced bottlenecks during last run.
@@ -249,7 +253,7 @@ class Composition:
     def stop(self):
         """Signal abort to all registered gizmos and wait until all threads stopped"""
 
-        if len(self._treads) == 0:
+        if len(self._threads) == 0:
             raise Exception("Composition not started")
 
         def do_join():
@@ -268,22 +272,22 @@ class Composition:
                             break
 
             # finally wait for completion of all threads
-            for t in self._treads:
+            for t in self._threads:
                 t.join()
 
         # do it in a separate thread, because stop() may be called by some gizmo
         threading.Thread(target=do_join).start()
 
-        self._treads = []
+        self._threads = []
         print("Composition stopped")
 
     def wait(self):
         """Wait until all threads stopped"""
 
-        if len(self._treads) == 0:
+        if len(self._threads) == 0:
             raise Exception("Composition not started")
 
-        for t in self._treads:
+        for t in self._threads:
             t.join()
 
 
@@ -379,7 +383,7 @@ class VideoDisplayGizmo(Gizmo):
                         else:
                             displays[i].show(data.data)
 
-                        if first_run[i]:
+                        if first_run[i] and not displays[i]._no_gui:
                             cv2.setWindowProperty(
                                 self._window_titles[i], cv2.WND_PROP_TOPMOST, 1
                             )
@@ -570,7 +574,9 @@ class AiObjectDetectionCroppingGizmo(AiGizmoBase):
         - result: inference result; result.info contains reference to data frame used for inference"""
 
         if len(result.results) == 0:  # no objects detected
-            self.send_result(StreamData(result.image, {"original_result": result}))
+            self.send_result(
+                StreamData(result.image, {"original_result": result, "flush": True})
+            )
 
         is_first = True
         for i, r in enumerate(result.results):
@@ -586,6 +592,10 @@ class AiObjectDetectionCroppingGizmo(AiGizmoBase):
 
             meta["cropped_result"] = r
             meta["cropped_index"] = i
+
+            if r == result.results[-1]:  # last item
+                meta["flush"] = True
+
             self.send_result(StreamData(crop, meta))
 
 
