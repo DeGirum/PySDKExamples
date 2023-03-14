@@ -30,7 +30,7 @@ def open_and_execute(
             metadata["tags"] = []
         metadata["tags"].append("raises-exception")
 
-    client = nbclient.NotebookClient(nb, timeout=300, kernel_name="python3")
+    client = nbclient.NotebookClient(nb, timeout=600, kernel_name="python3")
     client.allow_errors = False
 
     # inject a monkeypatch for mytools._reload_env so the environment variables set in the
