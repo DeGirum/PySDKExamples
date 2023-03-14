@@ -227,7 +227,7 @@ def open_video_writer(fname, w, h, fps=30):
 
     writer = cv2.VideoWriter()  # create stream writer
     if not writer.open(
-        str(fname), cv2.VideoWriter_fourcc("m", "p", "4", "v"), fps, (int(w), int(h))
+        str(fname), cv2.VideoWriter_fourcc("v", "p", "0", "9"), fps, (int(w), int(h))
     ):
         raise Exception(f"Fail to open '{str(fname)}'")
 
