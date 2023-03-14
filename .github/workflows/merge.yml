@@ -58,7 +58,7 @@ jobs:
       - name: verify batch install
         if: ${{ contains(matrix.os, 'windows') }}
         run: |
-          %USERPROFILE%\miniconda3\Scripts\conda.exe activate degirum
+          call %USERPROFILE%\miniconda3\condabin\conda.bat activate degirum
           python -c 'import degirum; print(degirum.__version__)'
           jupyter --version
           pip install pytest pytest-xdist
