@@ -62,6 +62,7 @@ if ! conda env list | grep -q "\bdegirum\b"; then
     eval "$(conda shell.bash hook)"
     conda activate degirum
     pip install -r requirements.txt
+    python -m ipykernel install --user --name degirum --display-name "Python (degirum)"
     
     echo "The degirum conda environment has been installed!"
 else 

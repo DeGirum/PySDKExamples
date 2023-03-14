@@ -61,6 +61,12 @@ if %errorlevel% neq 0 (
         echo Failed to install requirements
         exit /b !ERRORLEVEL!
     ) 
+    python -m ipykernel install --user --name degirum --display-name "Python (degirum)"
+    if !ERRORLEVEL! neq 0 (
+        echo Failed to add degirum kernel
+        exit /b !ERRORLEVEL!
+    ) 
+
     echo The degirum conda environment has been installed!
 ) else (
     echo The degirum conda environment already exists.
