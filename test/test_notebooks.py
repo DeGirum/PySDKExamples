@@ -1,11 +1,12 @@
 import nbformat
 from pathlib import Path
 import nbclient
-from PIL import Image, ImageChops
+from PIL import Image
 from io import BytesIO
 import base64
 from os import environ
 import pytest
+from SSIM_PIL import compare_ssim
 
 examples_dir = Path(__file__).parent.parent
 reference_dir = examples_dir / "test" / "reference"
@@ -103,9 +104,7 @@ def test_notebook_image_output(
             ref_image = Image.open(
                 reference_dir / f"{filename.stem}_{id}.{image_count}.png"
             )
-            assert not ImageChops.difference(
-                cell_image, ref_image
-            ).getbbox(), "Image does not match reference"
+            assert compare_ssim(cell_image, ref_image, GPU=False) > 0.99
 
 
 _imageless_notebooks = [

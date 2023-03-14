@@ -48,7 +48,7 @@ jobs:
           conda activate degirum
           python -c 'import degirum; print(degirum.__version__)'
           jupyter --version
-          python -m pip install pytest pytest-xdist
+          python -m pip install pytest pytest-xdist SSIM-PIL
           python -m pytest -n auto -vs --token=${{ secrets.CS_TOKEN }}
 
       # batch install
@@ -62,5 +62,5 @@ jobs:
           call %USERPROFILE%\miniconda3\condabin\conda.bat activate degirum
           python -c "import degirum; print(degirum.__version__)"
           jupyter --version
-          python -m pip install pytest pytest-xdist
+          python -m pip install pytest pytest-xdist SSIM-PIL
           python -m pytest -n auto -vs --token=${{ secrets.CS_TOKEN }}
