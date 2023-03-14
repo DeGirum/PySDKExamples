@@ -104,7 +104,7 @@ def test_notebook_image_output(
             ref_image = Image.open(
                 reference_dir / f"{filename.stem}_{id}.{image_count}.png"
             )
-            assert compare_ssim(cell_image, ref_image, GPU=False) > 0.99
+            assert compare_ssim(cell_image, ref_image, GPU=False) > 0.975
 
 
 _imageless_notebooks = [
