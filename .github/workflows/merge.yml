@@ -59,7 +59,7 @@ jobs:
         if: ${{ contains(matrix.os, 'windows') }}
         run: |
           call %USERPROFILE%\miniconda3\condabin\conda.bat activate degirum
-          python -c 'import degirum; print(degirum.__version__)'
+          python -c "import degirum; print(degirum.__version__)"
           jupyter --version
           pip install pytest pytest-xdist
           python -m pytest -n auto -vs --token=${{ secrets.CS_TOKEN }}
