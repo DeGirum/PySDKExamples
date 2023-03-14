@@ -21,7 +21,7 @@ jobs:
       matrix:
         os: [ubuntu-20.04, windows-2019]
         include:
-          - default_shell: bash -l {0}
+          - default_shell: bash -eo pipefail -l {0}
           - os: windows-2019
             default_shell: cmd
 
@@ -40,6 +40,7 @@ jobs:
         if: ${{ contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos') }}
         run: |
           ./install.sh
+          conda activate degirum
           python -c 'import degirum; print(degirum.__version__)'
           jupyter --version
           pip install pytest pytest-xdist
@@ -50,6 +51,7 @@ jobs:
         if: ${{ contains(matrix.os, 'windows') }}
         run: |
           install.bat
+          conda activate degirum
           python -c 'import degirum; print(degirum.__version__)'
           jupyter --version
           pip install pytest pytest-xdist
