@@ -1,3 +1,12 @@
+#
+# conftest.py: Tests configurations for PySDK Example notebooks
+#
+# Copyright DeGirum Corporation 2023
+# All rights reserved
+#
+# Contains pytest fixtures to set up tests.
+#
+
 import pytest
 from os import environ
 

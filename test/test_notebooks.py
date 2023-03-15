@@ -1,3 +1,12 @@
+#
+# test_notebooks.py: Tests for PySDK Examples notebooks
+#
+# Copyright DeGirum Corporation 2023
+# All rights reserved
+#
+# Contains tests for notebooks
+#
+
 import nbformat
 from pathlib import Path
 import nbclient
@@ -14,6 +23,58 @@ images_dir = examples_dir / "images"
 
 output_dir = examples_dir / "test" / "output"
 output_dir.mkdir(exist_ok=True)
+
+# In order to add a new notebook to the test, add it as a tuple to the appropriate list of test
+# parametrizations
+
+# _image_notebooks is a list of notebooks with image outputs to test
+# Tuple of (notebook_filename, input_file, cells_with_image, cells_with_exception)
+# notebook_filename is filename relative to the PySDKExamples root directory
+# input_file is name of file in the PySDKExamples/images directory to use as input for the test
+#    input is patched in for notebooks that use mytools.open_video_stream
+#    None means use the notebook's input (currently used for Image notebooks)
+# cells_with_image is a list or a dictionary of code cells with image outputs
+#    if it is a list: each entry is a code cell index with 1 expected image output
+#    if it is a dictionary: each key:value pair is a mapping of cell index and number of images expected in that code cell
+#    code cells with no image output are omitted from the lists
+#    NOTE: code cell indexes and image indexes start with 1
+# cells_with_exception is a list of code cells with an expected exception during execution
+#    NOTE: code cell indexes start with 1
+# used to parametrize the 'test_notebook_image_output' test
+# cell output is verified by checking the output image against a reference image in PySDKExamples/test/reference
+# reference image names are of the format {notebook_name}_{cell_index}.{image_within_cell_index}.png
+_image_notebooks = [
+    ("mystreamsDemo.ipynb", "Masked.mp4", [1, 2, 3, 4, 5, 6], []),
+    # an expected exception arises in cell 5 when using a file instead of a camera
+    ("FaceHandDetectionParallelCameraStream.ipynb", "Masked.mp4", [5], [5]),
+    ("FaceMaskDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [5], []),
+    # dictionary with image count for notebooks with cells with > 1 image
+    ("FaceMaskDetectionPipelinedImage.ipynb", None, {3: 3}, []),
+    ("ObjectDetectionCameraStream.ipynb", "Masked.mp4", [4], []),
+    ("ObjectDetectionImage.ipynb", None, [6], []),
+    ("PersonPoseDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [6], []),
+    ("PersonPoseDetectionPipelinedImage.ipynb", None, {3: 3, 4: 1}, []),
+    ("TiledObjectDetectionVideoFile.ipynb", "TrafficHD_short.mp4", [8], []),
+]
+
+# _imageless_notebooks is a list of notebooks without an image cell output
+# they are tested for exceptionless execution without output verification
+# Tuple of (notebook_filename, input_file) see _image_notebooks doc for more info
+# used to parametrize the 'test_notebook' test
+_imageless_notebooks = [
+    ("ObjectDetectionMultiplexingMultipleStreams.ipynb", "Masked.mp4"),
+    ("ObjectDetectionVideoFile.ipynb", "Masked.mp4"),
+    ("ObjectDetectionVideoFile2Images.ipynb", "Masked.mp4"),
+]
+
+# list of notebooks that are excluded from tests for a variety of reasons
+_skipped_notebooks = [
+    "ObjectDetectionDataset.ipynb",
+    "ObjectDetectionDatasetMultithreaded.ipynb",
+    "MultiObjectTrackingVideoFile.ipynb",
+    "SoundClassificationAndObjectDetectionAsynchronous.ipynb",
+    "SoundClassificationAudioStream.ipynb",
+]
 
 
 def open_and_execute(
@@ -44,21 +105,6 @@ def open_and_execute(
     # save notebook with output, useful for debugging
     # nbformat.write(nb, output_dir / f"{notebook_file.stem}.ipynb")
     return nb
-
-
-_image_notebooks = [
-    ("mystreamsDemo.ipynb", "Masked.mp4", [1, 2, 3, 4, 5, 6], []),
-    # an expected exception arises in cell 5 when using a file instead of a camera
-    ("FaceHandDetectionParallelCameraStream.ipynb", "Masked.mp4", [5], [5]),
-    ("FaceMaskDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [5], []),
-    # dictionary with image count for notebooks with cells with > 1 image
-    ("FaceMaskDetectionPipelinedImage.ipynb", "Mask1.jpg", {3: 3}, []),
-    ("ObjectDetectionCameraStream.ipynb", "Masked.mp4", [4], []),
-    ("ObjectDetectionImage.ipynb", "TwoCats.jpg", [6], []),
-    ("PersonPoseDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [6], []),
-    ("PersonPoseDetectionPipelinedImage.ipynb", "ThreePeople.jpg", {3: 3, 4: 1}, []),
-    ("TiledObjectDetectionVideoFile.ipynb", "TrafficHD_short.mp4", [8], []),
-]
 
 
 @pytest.mark.parametrize(
@@ -107,13 +153,6 @@ def test_notebook_image_output(
             assert compare_ssim(cell_image, ref_image, GPU=False) > 0.975
 
 
-_imageless_notebooks = [
-    ("ObjectDetectionMultiplexingMultipleStreams.ipynb", "Masked.mp4"),
-    ("ObjectDetectionVideoFile.ipynb", "Masked.mp4"),
-    ("ObjectDetectionVideoFile2Images.ipynb", "Masked.mp4"),
-]
-
-
 @pytest.mark.parametrize("notebook_file, input_file", _imageless_notebooks)
 def test_notebook(notebook_file, input_file):
     """Test notebook by executing it"""
@@ -122,13 +161,3 @@ def test_notebook(notebook_file, input_file):
         environ["CAMERA_ID"] = str(images_dir / input_file)
 
     open_and_execute(filename)
-
-
-# currently skipped
-_skipped_notebooks = [
-    "ObjectDetectionDataset.ipynb",
-    "ObjectDetectionDatasetMultithreaded.ipynb",
-    "MultiObjectTrackingVideoFile.ipynb",
-    "SoundClassificationAndObjectDetectionAsynchronous.ipynb",
-    "SoundClassificationAudioStream.ipynb",
-]

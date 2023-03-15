@@ -14,7 +14,7 @@ on:
 
 jobs:
   build:
-    # Setup matrix on Ubuntu, Windows and MacOS runners
+    # Setup matrix on Ubuntu and Windows runners
     strategy:
       # do not abort other jobs on job failure
       fail-fast: false

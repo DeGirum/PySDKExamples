@@ -15,7 +15,7 @@ from abc import ABC, abstractmethod
 from typing import Optional, Any, List, Union
 from contextlib import ExitStack
 
-import cv2, PIL
+import cv2
 import numpy
 
 import degirum as dg
