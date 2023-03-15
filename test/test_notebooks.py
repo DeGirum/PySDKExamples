@@ -52,12 +52,12 @@ _image_notebooks = [
     ("FaceHandDetectionParallelCameraStream.ipynb", "Masked.mp4", [5], [5]),
     ("FaceMaskDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [5], []),
     # dictionary with image count for notebooks with cells with > 1 image
-    ("FaceMaskDetectionPipelinedImage.ipynb", None, {3: 3}, []),
+    ("FaceMaskDetectionPipelinedImage.ipynb", "Mask1.jpg", {3: 3}, []),
     ("ObjectDetectionCameraStream.ipynb", "Masked.mp4", [4], []),
-    ("ObjectDetectionImage.ipynb", None, [6], []),
+    ("ObjectDetectionImage.ipynb", "TwoCats.jpg", [6], []),
     ("PersonPoseDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [6], []),
-    ("PersonPoseDetectionPipelinedImage.ipynb", None, {3: 3, 4: 1}, []),
-    ("TiledObjectDetectionVideoFile.ipynb", None, [8], []),
+    ("PersonPoseDetectionPipelinedImage.ipynb", "ThreePeople.jpg", {3: 3, 4: 1}, []),
+    ("TiledObjectDetectionVideoFile.ipynb", "TrafficHD_short.mp4", [8], []),
 ]
 
 
@@ -108,9 +108,9 @@ def test_notebook_image_output(
 
 
 _imageless_notebooks = [
-    ("ObjectDetectionMultiplexingMultipleStreams.ipynb", None),
-    ("ObjectDetectionVideoFile.ipynb", None),
-    ("ObjectDetectionVideoFile2Images.ipynb", None),
+    ("ObjectDetectionMultiplexingMultipleStreams.ipynb", "Masked.mp4"),
+    ("ObjectDetectionVideoFile.ipynb", "Masked.mp4"),
+    ("ObjectDetectionVideoFile2Images.ipynb", "Masked.mp4"),
 ]
 
 
