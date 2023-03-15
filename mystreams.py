@@ -320,11 +320,11 @@ class VideoDisplayGizmo(Gizmo):
         self,
         window_titles: Union[str, List[str]] = "Display",
         *,
-        show_ai_overlay=False,
+        show_ai_overlay: bool = False,
         show_fps: bool = False,
         stream_depth: int = 10,
         allow_drop: bool = False,
-        multiplex=False,
+        multiplex: bool = False,
     ):
         """Constructor.
 
