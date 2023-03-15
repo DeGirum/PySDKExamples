@@ -6,7 +6,7 @@
 #
 
 
-import sys, os, time, string, cv2, PIL
+import sys, os, time, string, cv2, PIL.Image
 from contextlib import contextmanager
 
 # Inference options: parameters for connect_model_zoo
@@ -15,11 +15,13 @@ AIServerInference = 2  # use AI server deployed in LAN/VPN
 LocalHWInference = 3  # use locally-installed AI HW accelerator
 
 # environment variable names
+_var_TestMode = "TEST_MODE"
 _var_Token = "DEGIRUM_CLOUD_TOKEN"
 _var_CloudUrl = "DEGIRUM_CLOUD_PLATFORM_URL"
 _var_AiServer = "AISERVER_HOSTNAME_OR_IP"
 _var_CloudZoo = "CLOUD_ZOO_URL"
 _var_CameraID = "CAMERA_ID"
+
 
 def _reload_env(custom_file="env.ini"):
     """Reload environment variables from file
@@ -49,6 +51,12 @@ def _get_var(var, default_val=None):
     else:  # treat `var` literally
         ret = var
     return ret
+
+
+def get_test_mode():
+    """Returns enable status of test mode from .env file"""
+    _reload_env()  # reload environment variables from file
+    return _get_var(_var_TestMode, False)
 
 
 def get_token():
@@ -166,7 +174,7 @@ def open_video_stream(camera_id=None):
 
     Returns context manager yielding video stream object and closing it on exit
     """
-    if camera_id is None:
+    if camera_id is None or get_test_mode():
         _reload_env()  # reload environment variables from file
         camera_id = _get_var(_var_CameraID, 0)
         if isinstance(camera_id, str) and camera_id.isnumeric():
@@ -193,6 +201,10 @@ def video_source(stream, report_error=True):
 
     Yields video frame captured from given video stream
     """
+
+    if get_test_mode():
+        report_error = False  # since we're not using a camera
+
     while True:
         ret, frame = stream.read()
         if not ret:
@@ -215,7 +227,7 @@ def open_video_writer(fname, w, h, fps=30):
 
     writer = cv2.VideoWriter()  # create stream writer
     if not writer.open(
-        str(fname), cv2.VideoWriter_fourcc("m", "p", "g", "4"), fps, (int(w), int(h))
+        str(fname), cv2.VideoWriter_fourcc("v", "p", "0", "9"), fps, (int(w), int(h))
     ):
         raise Exception(f"Fail to open '{str(fname)}'")
 
@@ -413,11 +425,11 @@ class Display:
         show_embedded - True to show graph embedded into the notebook when possible
         w, h - initial window width/hight in pixels; None for autoscale
         """
-        self._fps = FPSMeter() if show_fps else None
+        self._fps = FPSMeter() if show_fps and not get_test_mode() else None
         self._capt = capt
         self._window_created = False
         self._show_embedded = show_embedded
-        self._no_gui = not Display._check_gui()
+        self._no_gui = not Display._check_gui() or get_test_mode()
         self._w = w
         self._h = h
 

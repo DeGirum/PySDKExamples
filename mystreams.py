@@ -108,7 +108,7 @@ class Gizmo(ABC):
             pass empty list to have no inputs; zero means unlimited depth
         """
 
-        self._inputs = []
+        self._inputs: List[Stream] = []
         for s in input_stream_sizes:
             self._inputs.append(Stream(*s))
 
@@ -184,8 +184,8 @@ class Composition:
 
     def __init__(self):
         """Constructor."""
-        self._gizmos = []
-        self._treads = []
+        self._gizmos: List[Gizmo] = []
+        self._threads: List[threading.Thread] = []
 
     def add(self, gizmo: Gizmo) -> Gizmo:
         """Add a gizmo to composition
@@ -209,7 +209,7 @@ class Composition:
         Use get_bottlenecks() method to return list of gizmos-bottlenecks
         """
 
-        if len(self._treads) > 0:
+        if len(self._threads) > 0:
             raise Exception("Composition already started")
 
         def gizmo_run(gizmo):
@@ -221,18 +221,22 @@ class Composition:
             gizmo.run()
             gizmo.elapsed_s = time.time() - gizmo.start_time_s
             gizmo.fps = gizmo.result_cnt / gizmo.elapsed_s if gizmo.elapsed_s > 0 else 0
-            gizmo.send_result(None)
+            gizmo.send_result(Stream._poison)
 
         for gizmo in self._gizmos:
             gizmo.abort(False)
             t = threading.Thread(target=gizmo_run, args=(gizmo,))
             t.name = t.name + "-" + type(gizmo).__name__
-            self._treads.append(t)
+            self._threads.append(t)
 
-        for t in self._treads:
+        for t in self._threads:
             t.start()
 
         print("Composition started")
+
+        # test mode has limited inputs
+        if mytools.get_test_mode():
+            self.wait()
 
     def get_bottlenecks(self) -> List[str]:
         """Return a list of gizmo names, which experienced bottlenecks during last run.
@@ -249,7 +253,7 @@ class Composition:
     def stop(self):
         """Signal abort to all registered gizmos and wait until all threads stopped"""
 
-        if len(self._treads) == 0:
+        if len(self._threads) == 0:
             raise Exception("Composition not started")
 
         def do_join():
@@ -268,22 +272,22 @@ class Composition:
                             break
 
             # finally wait for completion of all threads
-            for t in self._treads:
+            for t in self._threads:
                 t.join()
 
         # do it in a separate thread, because stop() may be called by some gizmo
         threading.Thread(target=do_join).start()
 
-        self._treads = []
+        self._threads = []
         print("Composition stopped")
 
     def wait(self):
         """Wait until all threads stopped"""
 
-        if len(self._treads) == 0:
+        if len(self._threads) == 0:
             raise Exception("Composition not started")
 
-        for t in self._treads:
+        for t in self._threads:
             t.join()
 
 
@@ -316,11 +320,11 @@ class VideoDisplayGizmo(Gizmo):
         self,
         window_titles: Union[str, List[str]] = "Display",
         *,
-        show_ai_overlay=False,
+        show_ai_overlay: bool = False,
         show_fps: bool = False,
         stream_depth: int = 10,
         allow_drop: bool = False,
-        multiplex = False,
+        multiplex: bool = False,
     ):
         """Constructor.
 
@@ -359,15 +363,15 @@ class VideoDisplayGizmo(Gizmo):
             ]
             first_run = [True] * ndisplays
 
-            di = 0 # di is display index
+            di = 0  # di is display index
             try:
                 while True:
                     if self._abort:
                         break
 
-                    for ii, input in enumerate(self.get_inputs()): # ii is input index
+                    for ii, input in enumerate(self.get_inputs()):  # ii is input index
                         try:
-                            if ninputs > 1: 
+                            if ninputs > 1:
                                 # non-multiplexing multi-input case
                                 data = input.get_nowait()
                             else:
@@ -392,7 +396,7 @@ class VideoDisplayGizmo(Gizmo):
                         else:
                             displays[di].show(data.data)
 
-                        if first_run[di]:
+                        if first_run[di] and not displays[di]._no_gui:
                             cv2.setWindowProperty(
                                 self._window_titles[di], cv2.WND_PROP_TOPMOST, 1
                             )
@@ -516,7 +520,14 @@ class ResizingGizmo(Gizmo):
 class AiGizmoBase(Gizmo):
     """Base class for AI inference gizmos"""
 
-    def __init__(self, model, *, stream_depth: int = 10, allow_drop: bool = False, inp_cnt: int = 1):
+    def __init__(
+        self,
+        model,
+        *,
+        stream_depth: int = 10,
+        allow_drop: bool = False,
+        inp_cnt: int = 1,
+    ):
         """Constructor.
 
         - model: PySDK model object
@@ -548,7 +559,8 @@ class AiGizmoBase(Gizmo):
 
         for result in self.model.predict_batch(source()):
             self.on_result(result)
-            if self._abort:
+            # finish processing all frames for tests
+            if self._abort and not mytools.get_test_mode():
                 break
 
     @abstractmethod
@@ -591,7 +603,6 @@ class AiObjectDetectionCroppingGizmo(AiGizmoBase):
         """Result handler to be overloaded in derived classes.
 
         - result: inference result; result.info contains reference to data frame used for inference"""
-
         if len(result.results) == 0:  # no objects detected
             self.send_result(StreamData(result.image, {"original_result": result}))
 
@@ -609,6 +620,7 @@ class AiObjectDetectionCroppingGizmo(AiGizmoBase):
 
             meta["cropped_result"] = r
             meta["cropped_index"] = i
+
             self.send_result(StreamData(crop, meta))
 
 
