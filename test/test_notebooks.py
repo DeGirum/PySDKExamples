@@ -46,7 +46,7 @@ output_dir.mkdir(exist_ok=True)
 _image_notebooks = [
     ("mystreamsDemo.ipynb", "Masked.mp4", [1, 2, 3, 4, 5, 6], []),
     # an expected exception arises in cell 5 when using a file instead of a camera
-    ("FaceHandDetectionParallelCameraStream.ipynb", "Masked.mp4", [5], [5]),
+    ("FaceHandDetectionParallelCameraStream.ipynb", "Masked.mp4", [5], []),
     ("FaceMaskDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [5], []),
     # dictionary with image count for notebooks with cells with > 1 image
     ("FaceMaskDetectionPipelinedImage.ipynb", None, {3: 3}, []),
@@ -55,6 +55,7 @@ _image_notebooks = [
     ("PersonPoseDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [6], []),
     ("PersonPoseDetectionPipelinedImage.ipynb", None, {3: 3, 4: 1}, []),
     ("TiledObjectDetectionVideoFile.ipynb", "TrafficHD_short.mp4", [8], []),
+    ("MultiCameraMultiModelDetection.ipynb", "Masked.mp4", [3], []),
 ]
 
 # _imageless_notebooks is a list of notebooks without an image cell output
@@ -146,11 +147,12 @@ def test_notebook_image_output(
 
         for image_count, image_datum in enumerate(image_data, 1):
             cell_image = Image.open(BytesIO(base64.b64decode(image_datum)))
-            # cell_image.save(output_dir / f"{filename.stem}_{id}.{image_count}.png")
-            ref_image = Image.open(
-                reference_dir / f"{filename.stem}_{id}.{image_count}.png"
-            )
-            assert compare_ssim(cell_image, ref_image, GPU=False) > 0.975
+            cell_image.save(output_dir / f"{filename.stem}_{id}.{image_count}.png")
+            ref_filename = f"{filename.stem}_{id}.{image_count}.png"
+            ref_image = Image.open(reference_dir / ref_filename)
+            assert (
+                compare_ssim(cell_image, ref_image, GPU=False) > 0.975
+            ), f"Image {ref_filename} in cell {id} of notebook {notebook_file} does not match reference"
 
 
 @pytest.mark.parametrize("notebook_file, input_file", _imageless_notebooks)

@@ -238,8 +238,9 @@ class Composition:
         if mytools.get_test_mode():
             self.wait()
 
-    def get_bottlenecks(self) -> List[str]:
-        """Return a list of gizmo names, which experienced bottlenecks during last run.
+    def get_bottlenecks(self) -> List[dict]:
+        """Return a list of gizmos, which experienced bottlenecks during last run.
+        Each list element is a dictionary. Key is gizmo name, value is # of dropped frames.
         Composition should be started with detect_bottlenecks=True to use this feature.
         """
         ret = []
@@ -248,6 +249,19 @@ class Composition:
                 if i.dropped_cnt > 0:
                     ret.append({gizmo.name: i.dropped_cnt})
                     break
+        return ret
+
+    def get_current_queue_sizes(self) -> List[dict]:
+        """Return a list of gizmo input queue size at point of call.
+        Can be used to analyze deadlocks
+        Each list element is a dictionary. Key is gizmo name, value is a list of current queue sizes.
+        """
+        ret = []
+        for gizmo in self._gizmos:
+            qsizes = [gizmo.result_cnt]
+            for i in gizmo.get_inputs():
+                qsizes.append(i.qsize())
+            ret.append({gizmo.name: qsizes})
         return ret
 
     def stop(self):
@@ -371,8 +385,8 @@ class VideoDisplayGizmo(Gizmo):
 
                     for ii, input in enumerate(self.get_inputs()):  # ii is input index
                         try:
-                            if ninputs > 1:
-                                # non-multiplexing multi-input case
+                            if ninputs > 1 and not mytools.get_test_mode():
+                                # non-multiplexing multi-input case (do not use it in test mode to avoid race conditions)
                                 data = input.get_nowait()
                             else:
                                 # single input or multiplexing case
@@ -558,6 +572,30 @@ class AiGizmoBase(Gizmo):
                     break
 
         for result in self.model.predict_batch(source()):
+
+            if isinstance(result._input_image, bytes):
+                if isinstance(result.info.meta, dict) and (
+                    "image_input" in result.info.meta
+                ):
+
+                    # patch raw bytes image in result when possible to provide better result visualization
+                    result._input_image = result.info.meta["image_input"]
+
+                    # recalculate bbox coordinates to original image
+                    converter = (
+                        result.info.meta["converter"]
+                        if "converter" in result.info.meta
+                        else None
+                    )
+                    if converter is not None:
+                        for res in result._inference_results:
+                            if "bbox" in res:
+                                box = res["bbox"]
+                                res["bbox"] = [
+                                    *converter(*box[:2]),
+                                    *converter(*box[2:]),
+                                ]
+
             self.on_result(result)
             # finish processing all frames for tests
             if self._abort and not mytools.get_test_mode():
@@ -581,8 +619,11 @@ class AiSimpleGizmo(AiGizmoBase):
         self.send_result(StreamData(result.image, result))
 
 
-class AiObjectDetectionCroppingGizmo(AiGizmoBase):
-    """AI object detection inference gizmo which sends crops of each detected object.
+class AiObjectDetectionCroppingGizmo(Gizmo):
+    """A gizmo, which receives images at input #0 and corresponding object detection results at input #1,
+    then for each detected object it crops input image and sends cropped result.
+
+    Output image is the crop of original image.
     Output meta-info is a dictionary with the following keys:
 
     - "original_result": reference to original AI object detection result (contained only in the first crop)
@@ -591,37 +632,60 @@ class AiObjectDetectionCroppingGizmo(AiGizmoBase):
     The last two key are present only if at least one object is detected in a frame.
     """
 
-    def __init__(self, labels: List[str], *args, **kwargs):
+    def __init__(
+        self,
+        labels: List[str],
+        *,
+        stream_depth: int = 10,
+        allow_drop: bool = False,
+    ):
         """Constructor.
 
         - labels: list of class labels to process
+        - stream_depth: input stream depth
+        - allow_drop: allow dropping frames from input stream on overflow
         """
-        super().__init__(*args, **kwargs)
+
+        # we use unlimited frame queue #0 to not block any source gizmo
+        super().__init__([(0, allow_drop), (stream_depth, allow_drop)])
+
         self._labels = labels
 
-    def on_result(self, result):
-        """Result handler to be overloaded in derived classes.
+    def run(self):
+        """Run gizmo"""
 
-        - result: inference result; result.info contains reference to data frame used for inference"""
-        if len(result.results) == 0:  # no objects detected
-            self.send_result(StreamData(result.image, {"original_result": result}))
+        while True:
+            d0 = self.get_input(0).get()
+            d1 = self.get_input(1).get()
 
-        is_first = True
-        for i, r in enumerate(result.results):
-            if r["label"] not in self._labels:
-                continue
-            crop = mytools.Display.crop(result.image, r["bbox"])
-            # send all crops afterwards
-            meta = {}
-            if is_first:
-                # send whole result with no data first
-                meta["original_result"] = result
+            if d0 == Stream._poison or d1 == Stream._poison:
+                self._abort = True
+
+            if self._abort:
+                break
+
+            img = d0.data
+            result = d1.meta
+
+            is_first = True
+            for i, r in enumerate(result.results):
+                if "label" not in r or r["label"] not in self._labels:
+                    continue
+                crop = mytools.Display.crop(result.image, r["bbox"])
+                # send all crops afterwards
+                meta = {}
+                if is_first:
+                    # send whole result with no data first
+                    meta["original_result"] = result
+
+                meta["cropped_result"] = r
+                meta["cropped_index"] = i
+
                 is_first = False
+                self.send_result(StreamData(crop, meta))
 
-            meta["cropped_result"] = r
-            meta["cropped_index"] = i
-
-            self.send_result(StreamData(crop, meta))
+            if is_first:  # no objects detected: send just original result
+                self.send_result(StreamData(img, {"original_result": result}))
 
 
 class AiResultCombiningGizmo(Gizmo):
@@ -630,6 +694,7 @@ class AiResultCombiningGizmo(Gizmo):
     def __init__(
         self,
         inp_cnt: int,
+        *,
         stream_depth: int = 10,
         allow_drop: bool = False,
     ):
@@ -667,12 +732,49 @@ class AiResultCombiningGizmo(Gizmo):
             self.send_result(StreamData(d0.data, d0.meta))
 
 
+class AiPreprocessGizmo(Gizmo):
+    """Preprocessing gizmo. It applies AI model preprocessor to the input images.
+
+    Output data is the result of preprocessing: raw bytes array to be sent to AI model.
+    Output meta-info is a dictionary with the following keys
+        "image_input": reference to the input image
+        "converter": coordinate conversion lambda
+        "image_result": pre-processed image (optional, only when model.save_model_image is set)
+    """
+
+    def __init__(
+        self,
+        model,
+        *,
+        stream_depth: int = 10,
+        allow_drop: bool = False,
+    ):
+        """Constructor.
+        - model: PySDK model object
+        - stream_depth: input stream depth
+        - allow_drop: allow dropping frames from input stream on overflow
+        """
+        super().__init__([(stream_depth, allow_drop)])
+        self.model = model
+        pass
+
+    def run(self):
+        """Run gizmo"""
+        for data in self.get_input(0):
+            if self._abort:
+                break
+
+            res = self.model._preprocessor.forward(data.data)
+            self.send_result(StreamData(res[0], res[1]))
+
+
 class FanoutGizmo(Gizmo):
     """Gizmo to fan-out single input into multiple outputs.
     NOTE: by default it drops frames when experiencing back-pressure."""
 
     def __init__(
         self,
+        *,
         stream_depth: int = 2,
         allow_drop: bool = True,
     ):
