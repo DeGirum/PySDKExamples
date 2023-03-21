@@ -385,8 +385,8 @@ class VideoDisplayGizmo(Gizmo):
 
                     for ii, input in enumerate(self.get_inputs()):  # ii is input index
                         try:
-                            if ninputs > 1:
-                                # non-multiplexing multi-input case
+                            if ninputs > 1 and not mytools.get_test_mode():
+                                # non-multiplexing multi-input case (do not use it in test mode to avoid race conditions)
                                 data = input.get_nowait()
                             else:
                                 # single input or multiplexing case
@@ -591,7 +591,10 @@ class AiGizmoBase(Gizmo):
                         for res in result._inference_results:
                             if "bbox" in res:
                                 box = res["bbox"]
-                                res["bbox"] = [*converter(*box[:2]), *converter(*box[2:])]
+                                res["bbox"] = [
+                                    *converter(*box[:2]),
+                                    *converter(*box[2:]),
+                                ]
 
             self.on_result(result)
             # finish processing all frames for tests
