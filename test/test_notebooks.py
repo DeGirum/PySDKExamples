@@ -146,11 +146,12 @@ def test_notebook_image_output(
 
         for image_count, image_datum in enumerate(image_data, 1):
             cell_image = Image.open(BytesIO(base64.b64decode(image_datum)))
-            # cell_image.save(output_dir / f"{filename.stem}_{id}.{image_count}.png")
-            ref_image = Image.open(
-                reference_dir / f"{filename.stem}_{id}.{image_count}.png"
-            )
-            assert compare_ssim(cell_image, ref_image, GPU=False) > 0.975
+            cell_image.save(output_dir / f"{filename.stem}_{id}.{image_count}.png")
+            ref_filename = f"{filename.stem}_{id}.{image_count}.png"
+            ref_image = Image.open(reference_dir / ref_filename)
+            assert (
+                compare_ssim(cell_image, ref_image, GPU=False) > 0.975
+            ), f"Image {ref_filename} in cell {id} of notebook {notebook_file} does not match reference"
 
 
 @pytest.mark.parametrize("notebook_file, input_file", _imageless_notebooks)
