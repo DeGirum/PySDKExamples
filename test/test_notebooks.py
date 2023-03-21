@@ -46,7 +46,7 @@ output_dir.mkdir(exist_ok=True)
 _image_notebooks = [
     ("mystreamsDemo.ipynb", "Masked.mp4", [1, 2, 3, 4, 5, 6], []),
     # an expected exception arises in cell 5 when using a file instead of a camera
-    ("FaceHandDetectionParallelCameraStream.ipynb", "Masked.mp4", [5], [5]),
+    ("FaceHandDetectionParallelCameraStream.ipynb", "Masked.mp4", [5], []),
     ("FaceMaskDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [5], []),
     # dictionary with image count for notebooks with cells with > 1 image
     ("FaceMaskDetectionPipelinedImage.ipynb", None, {3: 3}, []),
@@ -55,6 +55,7 @@ _image_notebooks = [
     ("PersonPoseDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [6], []),
     ("PersonPoseDetectionPipelinedImage.ipynb", None, {3: 3, 4: 1}, []),
     ("TiledObjectDetectionVideoFile.ipynb", "TrafficHD_short.mp4", [8], []),
+    ("MultiCameraMultiModelDetection.ipynb", "Masked.mp4", [3], []),
 ]
 
 # _imageless_notebooks is a list of notebooks without an image cell output
