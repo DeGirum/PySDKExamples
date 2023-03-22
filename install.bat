@@ -39,7 +39,7 @@ if %INSTALL_MINICONDA% EQU 1 (
 
 set "PYTHON_VERSION=3.9"
 
-conda env list | findstr /C:"degirum" >nul
+conda env list | findstr /B /C:"degirum " >nul
 if %errorlevel% neq 0 (
     REM Create a new environment called "degirum" with the specified Python version.
 

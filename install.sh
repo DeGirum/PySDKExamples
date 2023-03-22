@@ -53,7 +53,7 @@ else
     echo "conda already installed"
 fi
 
-if ! conda env list | grep -q "\bdegirum\b"; then
+if ! conda env list | grep -q "^degirum\s"; then
     # Create a new environment called "degirum" with the specified Python version.
     echo "Creating the degirum environment"
     conda create --yes -n degirum python=$PYTHON_VERSION pip
