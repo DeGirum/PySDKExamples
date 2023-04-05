@@ -12,12 +12,7 @@ else
     INSTALL_MINICONDA=1
 fi
 
-# check which version of python is installed on the system if any
-if command -v python3 &> /dev/null ; then
-    PYTHON_VERSION=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-else
-    PYTHON_VERSION="3.9"
-fi
+PYTHON_VERSION=${1:-"3.9"}
 
 if [[ $(uname) == "Linux" ]]; then
     MINICONDA_OS="Linux"
@@ -26,6 +21,7 @@ elif [[ $(uname) == "Darwin" ]]; then
     MINICONDA_OS="MacOSX"
     MINICONDA_ARCH=$(uname -m)
     PYTHON_VERSION="3.9"
+    echo "MacOSX only supported with python 3.9"
 else
     echo "Unsupported operating system: $(uname)"
     exit 1
@@ -63,6 +59,7 @@ if ! conda env list | grep -q "^degirum\s"; then
     conda activate degirum
     pip install -r requirements.txt
     python -m ipykernel install --user --name degirum --display-name "Python (degirum)"
+    conda env config vars set LD_LIBRARY_PATH="$CONDA_PREFIX/lib"
     
     echo "The degirum conda environment has been installed!"
 else 
