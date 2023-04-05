@@ -38,6 +38,9 @@ if %INSTALL_MINICONDA% EQU 1 (
 )
 
 set "PYTHON_VERSION=3.9"
+IF NOT "%1"=="" (
+    SET PYTHON_VERSION=%1
+)
 
 conda env list | findstr /B /C:"degirum " >nul
 if %errorlevel% neq 0 (
