@@ -20,10 +20,17 @@ if [[ $(uname) == "Linux" ]]; then
 elif [[ $(uname) == "Darwin" ]]; then
     MINICONDA_OS="MacOSX"
     MINICONDA_ARCH=$(uname -m)
-    PYTHON_VERSION="3.9"
-    echo "MacOSX only supported with python 3.9"
+    if [ "$PYTHON_VERSION" != "3.9" ] ; then
+        echo "MacOSX only supported with python 3.9"
+        exit 1
+    fi
 else
     echo "Unsupported operating system: $(uname)"
+    exit 1
+fi
+
+if [[ ! $PYTHON_VERSION =~ ^(3.8|3.9|3.10|3.11)$ ]]; then
+    echo "Unsupported Python version: $PYTHON_VERSION, only 3.8, 3.9, 3.10, and 3.11 are currently supported"
     exit 1
 fi
 
