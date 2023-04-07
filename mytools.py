@@ -75,7 +75,7 @@ def get_cloud_zoo_url():
     """Returns a cloud zoo URL from .env file"""
     _reload_env()  # reload environment variables from file
     url = _get_var(_var_CloudZoo, "")
-    return "/" + url if url else ""
+    return "https://cs.degirum.com" + ("/" + url if url else "")
 
 
 def connect_model_zoo(inference_option=CloudInference):
