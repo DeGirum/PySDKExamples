@@ -12,6 +12,17 @@ if %ERRORLEVEL% EQU 0 (
     set "INSTALL_MINICONDA=1"
 )
 
+set "PYTHON_VERSION=3.9"
+IF NOT "%1"=="" (
+    SET PYTHON_VERSION=%1
+)
+
+echo ",3.8,3.9,3.10,3.11," | findstr /C:",%PYTHON_VERSION%," >nul
+if %errorlevel% neq 0 (
+    echo "Unsupported Python version !PYTHON_VERSION!. supported versions are 3.8, 3.9, 3.10, 3.11"
+    exit /b 1
+)
+
 set "MINICONDA_DIR=%USERPROFILE%\miniconda3"
 if %INSTALL_MINICONDA% EQU 1 (
     echo Downloading miniconda installer.
@@ -37,9 +48,7 @@ if %INSTALL_MINICONDA% EQU 1 (
     echo conda already installed
 )
 
-set "PYTHON_VERSION=3.9"
-
-conda env list | findstr /C:"degirum" >nul
+conda env list | findstr /B /C:"degirum " >nul
 if %errorlevel% neq 0 (
     REM Create a new environment called "degirum" with the specified Python version.
 

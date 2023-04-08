@@ -586,14 +586,18 @@ class AiGizmoBase(Gizmo):
         for result in self.model.predict_batch(source()):
 
             if isinstance(result._input_image, bytes):
-                if isinstance(result.info, dict) and ("image_input" in result.info):
+                if isinstance(result.info, dict) and (
+                    "image_input" in result.info
+                ):
 
                     # patch raw bytes image in result when possible to provide better result visualization
                     result._input_image = result.info["image_input"]
 
                     # recalculate bbox coordinates to original image
                     converter = (
-                        result.info["converter"] if "converter" in result.info else None
+                        result.info["converter"]
+                        if "converter" in result.info
+                        else None
                     )
                     if converter is not None:
                         for res in result._inference_results:
