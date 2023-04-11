@@ -66,6 +66,8 @@ _imageless_notebooks = [
     ("ObjectDetectionMultiplexingMultipleStreams.ipynb", "Masked.mp4"),
     ("ObjectDetectionVideoFile.ipynb", "Masked.mp4"),
     ("ObjectDetectionVideoFile2Images.ipynb", "Masked.mp4"),
+    ("SingleModelPerformaceTest.ipynb", ""),
+    ("MultiModelPerformaceTest.ipynb", ""),
 ]
 
 # list of notebooks that are excluded from tests for a variety of reasons
