@@ -1,6 +1,7 @@
-jupyterlab
+numpy
 scipy
 lap
+jupyterlab
 -e git+https://github.com/Alpereny/cython_bbox.git#egg=cython-bbox
 --extra-index-url https://degirum.github.io/simple
 degirum 
