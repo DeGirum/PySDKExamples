@@ -56,6 +56,7 @@ _image_notebooks = [
     ("PersonPoseDetectionPipelinedImage.ipynb", None, {3: 3, 4: 1}, []),
     ("TiledObjectDetectionVideoFile.ipynb", "TrafficHD_short.mp4", [8], []),
     ("MultiCameraMultiModelDetection.ipynb", "Masked.mp4", [3], []),
+    ("MultiObjectTrackingVideoFile.ipynb", "Masked.mp4", [7], []),
 ]
 
 # _imageless_notebooks is a list of notebooks without an image cell output
@@ -74,7 +75,6 @@ _imageless_notebooks = [
 _skipped_notebooks = [
     "ObjectDetectionDataset.ipynb",
     "ObjectDetectionDatasetMultithreaded.ipynb",
-    "MultiObjectTrackingVideoFile.ipynb",
     "SoundClassificationAndObjectDetectionAsynchronous.ipynb",
     "SoundClassificationAudioStream.ipynb",
 ]

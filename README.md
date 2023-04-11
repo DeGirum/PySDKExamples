@@ -47,25 +47,39 @@ This repository provides PySDK example scripts that can perform ML inferences on
 To try different options, you just need to uncomment **one** of the lines in the code cell just below the
 *"Specify where do you want to run your inferences"* header.
 
-To run the examples, clone this repo:
+To run examples, please perform the following steps:
 
-```
-git clone https://github.com/DeGirum/PySDKExamples.git
-```
+1. Make sure you have installed Python version 3.9, 3.10, or 3.11. For convenience of future maintenance we recommend 
+you to work in the virtual environment, such as [Miniconda](https://docs.conda.io/en/latest/miniconda.html). 
+Make sure you activated your Python virtual environment.
 
-Inside the repo, open `env.ini` file and fill the required authentication details by assigning the following variables:
+1. Clone DeGirum PySDKExamples repo by executing the following command in the terminal / command prompt:
 
-|Variable Name|Description|
-|-------------|-----------|
-|`DEGIRUM_CLOUD_TOKEN`|DeGirum cloud platform API access token. To obtain a token, visit *Management > My Tokens* page on [DeGirum Cloud Portal](https://cs.degirum.com).|
-|`AISERVER_HOSTNAME_OR_IP`|The hostname or IP address of a computer in your LAN/VPN which hosts AI Server. For localhost server, specify "localhost". Refer to *Documentation > General Information* page on [DeGirum Cloud Portal](https://cs.degirum.com) for AI server installation details.|
-|`CLOUD_ZOO_URL`|The cloud zoo URL to get models from. Format: `<organization>/<zoo>`. To confirm zoo URL visit *Management > Models* page on [DeGirum Cloud Portal](https://cs.degirum.com).|
-|`CAMERA_ID`|Local camera index, or web camera URL in the format `rtsp://<user>:<password>@<ip or hostname>`, or path to a video file.|
+    ```
+    git clone https://github.com/DeGirum/PySDKExamples.git
+    ```
 
-This will allow loading the required information from the `env.ini` file instead of hard-coding the values in the script. 
+1. In the terminal / command prompt, change the current directory to the repo directory, and install necessary Python
+dependencies by executing the following command:
 
-The `env.ini` file is added to `.gitignore` and will not be checked in. This will ensure that your token information 
-is not leaked. 
+    ``` Python
+    pip install -r requirements.txt
+    ```
+
+1. Inside the repo directory, open `env.ini` file and fill the required authentication details by assigning the
+following variables:
+
+    |Variable Name|Description|
+    |-------------|-----------|
+    |`DEGIRUM_CLOUD_TOKEN`|DeGirum cloud platform API access token. To obtain a token, visit *Management > My Tokens* page on [DeGirum Cloud Portal](https://cs.degirum.com).|
+    |`AISERVER_HOSTNAME_OR_IP`|The hostname or IP address of a computer in your LAN/VPN which hosts AI Server. For localhost server, specify "localhost". Refer to *Documentation > General Information* page on [DeGirum Cloud Portal](https://cs.degirum.com) for AI server installation details.|
+    |`CLOUD_ZOO_URL`|The cloud zoo URL to get models from. Format: `<organization>/<zoo>`. To confirm zoo URL visit *Management > Models* page on [DeGirum Cloud Portal](https://cs.degirum.com).|
+    |`CAMERA_ID`|Local camera index, or web camera URL in the format `rtsp://<user>:<password>@<ip or hostname>`, or path to a video file.|
+
+    This will allow loading the required information from the `env.ini` file instead of hard-coding the values in the script. 
+
+    The `env.ini` file is added to `.gitignore` and will not be checked in. This will ensure that your token information 
+    is not leaked. 
 
 ## Examples Directory
 
