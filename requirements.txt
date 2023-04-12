@@ -1,7 +1,7 @@
 numpy
 scipy
 jupyterlab
--e git+https://github.com/DeGirum/lap.git#egg=lap
--e git+https://github.com/DeGirum/cython_bbox.git#egg=cython-bbox
+git+https://github.com/DeGirum/lap.git
+git+https://github.com/DeGirum/cython_bbox.git
 --extra-index-url https://degirum.github.io/simple
 degirum 
