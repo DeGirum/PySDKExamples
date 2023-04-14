@@ -37,6 +37,7 @@ def _check_pysdk_ver():
             + f"Please install PySDK version {min_compatible_pysdk_ver} or higher."
         )
 
+_check_pysdk_ver()
 
 def _reload_env(custom_file="env.ini"):
     """Reload environment variables from file
@@ -44,8 +45,6 @@ def _reload_env(custom_file="env.ini"):
     """
     from pathlib import Path
     import dotenv
-
-    _check_pysdk_ver()
 
     if not Path(custom_file).exists():
         custom_file = None
