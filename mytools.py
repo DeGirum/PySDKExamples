@@ -7,7 +7,11 @@
 
 
 import sys, os, time, string, cv2, PIL.Image
+from packaging import version as pkg_version
 from contextlib import contextmanager
+
+# minimum compatible PySDK version
+min_compatible_pysdk_ver = pkg_version.parse("0.6.0")
 
 # Inference options: parameters for connect_model_zoo
 CloudInference = 1  # use DeGirum cloud server for inference
@@ -22,6 +26,18 @@ _var_AiServer = "AISERVER_HOSTNAME_OR_IP"
 _var_CloudZoo = "CLOUD_ZOO_URL"
 _var_CameraID = "CAMERA_ID"
 
+
+def _check_pysdk_ver():
+    """Check that PySDK version is compatible with this script"""
+    import degirum as dg  # import DeGirum PySDK
+
+    if pkg_version.parse(dg.__version__) < min_compatible_pysdk_ver:
+        raise Exception(
+            f"Currently installed Degirum PySDK version {dg.__version__} is not compatible with this script. "
+            + f"Please install PySDK version {min_compatible_pysdk_ver} or higher."
+        )
+
+_check_pysdk_ver()
 
 def _reload_env(custom_file="env.ini"):
     """Reload environment variables from file
