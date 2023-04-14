@@ -115,6 +115,7 @@ class Gizmo(ABC):
         self._output_refs = []
         self._abort = False
         self.composition: Optional[Composition] = None
+        self.error: Optional[Exception] = None
         self.name = self.__class__.__name__
         self.result_cnt = 0  # gizmo result counter
         self.start_time_s = time.time()  # gizmo start time
@@ -213,15 +214,21 @@ class Composition:
             raise Exception("Composition already started")
 
         def gizmo_run(gizmo):
-            gizmo.result_cnt = 0
-            if detect_bottlenecks:
-                for i in gizmo.get_inputs():
-                    i.allow_drop = True
-            gizmo.start_time_s = time.time()
-            gizmo.run()
-            gizmo.elapsed_s = time.time() - gizmo.start_time_s
-            gizmo.fps = gizmo.result_cnt / gizmo.elapsed_s if gizmo.elapsed_s > 0 else 0
-            gizmo.send_result(Stream._poison)
+            try:
+                gizmo.result_cnt = 0
+                if detect_bottlenecks:
+                    for i in gizmo.get_inputs():
+                        i.allow_drop = True
+                gizmo.start_time_s = time.time()
+                gizmo.run()
+                gizmo.elapsed_s = time.time() - gizmo.start_time_s
+                gizmo.fps = (
+                    gizmo.result_cnt / gizmo.elapsed_s if gizmo.elapsed_s > 0 else 0
+                )
+                gizmo.send_result(Stream._poison)
+            except Exception as e:
+                gizmo.error = e
+                gizmo.composition.stop()
 
         for gizmo in self._gizmos:
             gizmo.abort(False)
@@ -294,6 +301,11 @@ class Composition:
 
         self._threads = []
         print("Composition stopped")
+        for gizmo in self._gizmos:
+            if gizmo.error is not None:
+                print(
+                    f"Error detected during execution of {gizmo.name}:\n  {type(gizmo.error)}: {str(gizmo.error)}"
+                )
 
     def wait(self):
         """Wait until all threads stopped"""
@@ -566,7 +578,7 @@ class AiGizmoBase(Gizmo):
                     if d == Stream._poison:
                         self._abort = True
                         break
-                    yield (d.data, d)
+                    yield (d.data, d.meta)
 
                 if self._abort:
                     break
@@ -574,17 +586,17 @@ class AiGizmoBase(Gizmo):
         for result in self.model.predict_batch(source()):
 
             if isinstance(result._input_image, bytes):
-                if isinstance(result.info.meta, dict) and (
-                    "image_input" in result.info.meta
+                if isinstance(result.info, dict) and (
+                    "image_input" in result.info
                 ):
 
                     # patch raw bytes image in result when possible to provide better result visualization
-                    result._input_image = result.info.meta["image_input"]
+                    result._input_image = result.info["image_input"]
 
                     # recalculate bbox coordinates to original image
                     converter = (
-                        result.info.meta["converter"]
-                        if "converter" in result.info.meta
+                        result.info["converter"]
+                        if "converter" in result.info
                         else None
                     )
                     if converter is not None:
@@ -755,8 +767,7 @@ class AiPreprocessGizmo(Gizmo):
         - allow_drop: allow dropping frames from input stream on overflow
         """
         super().__init__([(stream_depth, allow_drop)])
-        self.model = model
-        pass
+        self._preprocessor = model._preprocessor
 
     def run(self):
         """Run gizmo"""
@@ -764,7 +775,7 @@ class AiPreprocessGizmo(Gizmo):
             if self._abort:
                 break
 
-            res = self.model._preprocessor.forward(data.data)
+            res = self._preprocessor.forward(data.data)
             self.send_result(StreamData(res[0], res[1]))
 
 

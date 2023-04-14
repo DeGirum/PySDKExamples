@@ -75,7 +75,7 @@ def get_cloud_zoo_url():
     """Returns a cloud zoo URL from .env file"""
     _reload_env()  # reload environment variables from file
     url = _get_var(_var_CloudZoo, "")
-    return "/" + url if url else ""
+    return "https://cs.degirum.com" + ("/" + url if url else "")
 
 
 def connect_model_zoo(inference_option=CloudInference):
@@ -225,10 +225,14 @@ def open_video_writer(fname, w, h, fps=30):
     w, h - frame width/height
     """
 
+    codec = (
+        cv2.VideoWriter_fourcc(*"vp09")
+        if get_test_mode() or sys.platform != "win32"
+        else cv2.VideoWriter_fourcc(*"mp4v")
+    )
+
     writer = cv2.VideoWriter()  # create stream writer
-    if not writer.open(
-        str(fname), cv2.VideoWriter_fourcc("v", "p", "0", "9"), fps, (int(w), int(h))
-    ):
+    if not writer.open(str(fname), codec, fps, (int(w), int(h))):
         raise Exception(f"Fail to open '{str(fname)}'")
 
     try:
