@@ -1,3 +1,6 @@
+# ORCA Performance Benchmarks Now Available
+[CLick here](ORCABenchmarks.md) to see the latest performance benchmarks on ORCA
+
 # DeGirum PySDK Examples
 
 ## Quick Start
