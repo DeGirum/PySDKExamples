@@ -6,7 +6,7 @@
 #
 
 
-import sys, os, time, string, cv2, PIL.Image
+import sys, os, time, string, urllib, cv2, PIL.Image
 from packaging import version as pkg_version
 from contextlib import contextmanager
 
@@ -186,15 +186,22 @@ def open_video_stream(camera_id=None):
     """Open OpenCV video stream from camera with given identifier.
 
     camera_id - 0-based index for local cameras
-       or IP camera URL in the format "rtsp://<user>:<password>@<ip or hostname>"
+       or IP camera URL in the format "rtsp://<user>:<password>@<ip or hostname>",
+       or URL to mp4 video file,
+       or YouTube video URL
 
     Returns context manager yielding video stream object and closing it on exit
     """
+    
     if camera_id is None or get_test_mode():
         _reload_env()  # reload environment variables from file
         camera_id = _get_var(_var_CameraID, 0)
         if isinstance(camera_id, str) and camera_id.isnumeric():
             camera_id = int(camera_id)
+
+    if urllib.parse.urlparse(camera_id).hostname in ('www.youtube.com', 'youtube.com', 'youtu.be'):  # if source is YouTube video
+        import pafy
+        camera_id = pafy.new(camera_id).getbest(preftype='mp4').url
 
     stream = cv2.VideoCapture(camera_id)
     if not stream.isOpened():
