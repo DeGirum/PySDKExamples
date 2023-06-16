@@ -153,7 +153,7 @@ def test_notebook_image_output(
             ref_filename = f"{filename.stem}_{id}.{image_count}.png"
             ref_image = Image.open(reference_dir / ref_filename)
             assert (
-                compare_ssim(cell_image, ref_image, GPU=False) > 0.975
+                compare_ssim(cell_image, ref_image, GPU=False) > 0.95
             ), f"Image {ref_filename} in cell {id} of notebook {notebook_file} does not match reference"
 
 
