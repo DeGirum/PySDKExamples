@@ -4,3 +4,5 @@ env.ini
 __pycache__/
 test/output/
 .vscode/
+imagenet
+TopAccuracyTestClassificationModel_Internal.ipynb
