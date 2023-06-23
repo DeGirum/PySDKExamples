@@ -11,3 +11,4 @@ mobilenet_v2_imagenet--224x224_float_n2x_orca_1,49.0,75.8
 mobilenet_v2_imagenet--224x224_quant_n2x_orca_1,53.9,80.0
 resnet50_imagenet--224x224_pruned_quant_n2x_orca_1,62.6,85.3
 resnet50_imagenet--224x224_pruned_quant_n2x_cpu_1,62.6,85.3
+mobilenet_v2_imagenet--224x224_float_n2x_orca_1,56.91,80.318
