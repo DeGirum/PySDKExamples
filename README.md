@@ -17,8 +17,7 @@ page to request access.
 
 1. Create cloud API access token on **My Tokens** page accessible via *Management > My Tokens* menu.
 
-1. Install DeGirum PySDK. Read instructions on **General Information** page accessible via
-*Documentation > General Information* menu.
+1. Install DeGirum PySDK. Read the instructions [here](https://docs.degirum.com/content/pysdk/installation/).
 
 1. The following script will download *MobileNetv2+SSD* CPU model from 
 DeGirum public mode zoo and perform ML inference of a test image with two cats. 
@@ -100,11 +99,12 @@ following variables:
 
 | Example | Description |
 |---------|-------------|
-|[mystreamsDemo](https://github.com/DeGirum/PySDKExamples/blob/main/mystreamsDemo.ipynb)|Extensive demo notebook of `mystreams` toolkit: lightweight multi-threaded pipelining framework|
 |[ObjectDetectionImage](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionImage.ipynb)|One of the most simplest examples how to do AI inference of a graphical file using object detection model.|
 |[ObjectDetectionVideoFile](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionVideoFile.ipynb)|How to do AI inference of a video stream from a video file, show annotated video, and save it to another video file. |
 |[ObjectDetectionCameraStream](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionCameraStream.ipynb)|How to do AI inference of a video stream from a video camera and show annotated video in real-time.|
 |[ObjectDetectionVideoFile2Images](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionVideoFile2Images.ipynb)|How to do AI inference of a video stream from a video file and save annotated frame images into a directory.|
+|[ObjectDetectionSimple](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionSimple.ipynb)|A simple version of the ObjectDetectionImage sample, with cloud-related code removed for clarity.|
+|[mystreamsDemo](https://github.com/DeGirum/PySDKExamples/blob/main/mystreamsDemo.ipynb)|Extensive demo notebook of `mystreams` toolkit: lightweight multi-threaded pipelining framework|
 
 
 ### Combining Multiple Models
