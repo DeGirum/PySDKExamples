@@ -37,7 +37,9 @@ def _check_pysdk_ver():
             + f"Please install PySDK version {min_compatible_pysdk_ver} or higher."
         )
 
+
 _check_pysdk_ver()
+
 
 def _reload_env(custom_file="env.ini"):
     """Reload environment variables from file
@@ -129,7 +131,6 @@ def connect_model_zoo(inference_option=CloudInference):
             zoo = dg.connect_model_zoo(hostname)
 
     elif inference_option == LocalHWInference:
-
         token = _get_var(_var_Token)
         zoo_url = _get_var(_var_CloudZoo, "")
         cloud_url = "https://" + _get_var(_var_CloudUrl, "cs.degirum.com")
@@ -192,16 +193,21 @@ def open_video_stream(camera_id=None):
 
     Returns context manager yielding video stream object and closing it on exit
     """
-    
+
     if camera_id is None or get_test_mode():
         _reload_env()  # reload environment variables from file
         camera_id = _get_var(_var_CameraID, 0)
         if isinstance(camera_id, str) and camera_id.isnumeric():
             camera_id = int(camera_id)
 
-    if urllib.parse.urlparse(camera_id).hostname in ('www.youtube.com', 'youtube.com', 'youtu.be'):  # if source is YouTube video
+    if isinstance(camera_id, str) and urllib.parse.urlparse(camera_id).hostname in (
+        "www.youtube.com",
+        "youtube.com",
+        "youtu.be",
+    ):  # if source is YouTube video
         import pafy
-        camera_id = pafy.new(camera_id).getbest(preftype='mp4').url
+
+        camera_id = pafy.new(camera_id).getbest(preftype="mp4").url
 
     stream = cv2.VideoCapture(camera_id)
     if not stream.isOpened():
@@ -283,7 +289,6 @@ def video2jpegs(
         jpeg_path.mkdir()
 
     with open_video_stream(video_file) as stream:  # open video stream form file
-
         nframes = int(stream.get(cv2.CAP_PROP_FRAME_COUNT))
         progress = Progress(nframes)
         # decode video stream into files resized to model input size
@@ -335,7 +340,6 @@ def open_audio_stream(sampling_rate_hz, buffer_size):
     stream.result_queue = result_queue
 
     try:
-
         yield stream
     finally:
         stream.stop_stream()  # stop audio streaming
@@ -386,7 +390,6 @@ def audio_overlapped_source(stream, check_abort, non_blocking=False):
     chunk_length = stream._frames_per_buffer
     data = np.zeros(2 * chunk_length, dtype=np.int16)
     while not check_abort():
-
         if non_blocking:
             try:
                 block = stream.result_queue.get_nowait()
@@ -542,7 +545,6 @@ class Display:
 
                 IPython.display.display(PIL.Image.fromarray(img[..., ::-1]), clear=True)
         else:
-
             if not self._window_created:
                 cv2.namedWindow(self._capt, cv2.WINDOW_NORMAL)
                 cv2.setWindowProperty(self._capt, cv2.WND_PROP_TOPMOST, 1)
