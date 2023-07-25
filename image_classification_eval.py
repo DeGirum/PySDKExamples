@@ -121,8 +121,7 @@ def run_dg_model():
 
     top1_correct, top5_correct = 0, 0
     with zoo.load_model(model_name) as model:
-        image_counter = 0
-        for dg_prediction in model.predict_batch(iter(images)):
+        for image_counter, dg_prediction in enumerate(model.predict_batch(iter(images))):
             image = images[image_counter].split("/")[-1].strip()
             expected_class = GROUND_TRUTH_MAPPING[image]
             top_dg_predicts = extract_dg_results(dg_prediction, verbose=False)
