@@ -233,7 +233,6 @@ def run_dg_model() -> dict:
                     top5_correct += 1
                     if expected_class == top_dg_predicts[0]:
                         top1_correct += 1
-                image_counter += 1
         top1_accuracy = top1_correct / SUBSET_SIZE
         top5_accuracy = top5_correct / SUBSET_SIZE
         print("Top-1 Accuracy: {}".format(top1_accuracy))
