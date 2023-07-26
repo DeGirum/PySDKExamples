@@ -1,0 +1,35 @@
+# This YAML file contains the variables to run a DeGirum PySDK Image Classification evaluation script.
+# The variables are:
+
+CloudPortalUtils:
+  # INFERENCE TYPE: 
+  #   - Cloud Inference: 1
+  #     - Token 
+  #     - Cloud URL (Optional, Defaults to cs.degirum.com)
+  #     -  Cloud Zoo URL (Optional, Defaults to degirum/public)
+  #   - AI Server Inference: 2
+  #     - AI Server Hostname
+  #     - Cloud URL (Optional, Defaults to cs.degirum.com)
+  #     - Cloud Zoo URL (Optional, Defaults to degirum/public)
+  #     - Token (Not required for Local Zoo Usage)
+  #   - Local HW Accelerator Inference: 3
+  #     - Token
+  #     - Cloud URL (Optional, Defaults to cs.degirum.com)
+  #     - Cloud Zoo URL (Optional, Defaults to degirum/public)
+  INFERENCE_TYPE: 1
+  DEGIRUM_CLOUD_TOKEN: "<your DeGirum Cloud Portal Token>"
+  CLOUD_URL: "cs.degirum.com"
+  CLOUD_ZOO_URL: "degirum/public"
+  AI_SERVER_HOSTNAME : "localhost"
+
+# Expected format for Dataset and Ground Truth JSON
+# Dataset: 
+#   The dataset path should be a folder containing sub-folders where each sub-folder is a class and contains images of that class.
+#   The dataset path should be a glob pattern. For example, "<path>/*/*" where <path> is the path to the dataset folder.
+# Ground Truth JSON:
+#  The ground truth JSON should be a JSON file where each element contains a key-value pair {"category_id" : <class_id>} and a key-value pair of 
+#  {"images" : <list of image paths>}.
+
+ModelName: "<model_name>"
+DatasetPath: "<path_to_dataset>"
+GroundTruthJSONPath: "<path_to_ground_truth_json>"
