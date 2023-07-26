@@ -1,34 +1,31 @@
+#
+# image_classification_eval.py: This script is used to perform inference on Image Classification models using DeGirum PySDK 
+# Usage: python3 image_classification_eval.py --args-file-path <path>
+# Copyright DeGirum Corporation 2023
+# All rights reserved
+#
+
+import argparse
+import sys
+from enum import Enum
 import degirum as dg
-from mytools import connect_model_zoo
+from random import shuffle
 
 
-def arg_parser():
+def parse_args():
     try:
-        import argparse
-        import sys
-
         parser = argparse.ArgumentParser()
-        parser.add_argument("--dataset", type=str, help="Dataset Path")
         parser.add_argument(
-            "--config-json",
+            "--args-file-path",
             type=str,
-            help="DeGirum Cloud Zoo JSON Config File Path",
-        )
-        parser.add_argument(
-            "--ground-truth-json", type=str, help="Ground Truth JSON File Path"
+            help="Path to arguments YAML file required for evaluation",
         )
         args = parser.parse_args()
-        if (
-            args.dataset is None
-            or args.config_json is None
-            or args.ground_truth_json is None
-        ):
-            raise Exception("Config JSON Path or Ground Truth JSON Path is None")
-        return args.dataset, args.config_json, args.ground_truth_json
+        if args.args_file_path is None:
+            raise Exception("Please provide script args path")
+        return args.args_file_path
     except Exception as e:
-        print(
-            "python3 image_classification_eval.py --dataset-path <path> --config-json-path <path> --ground-truth-json-path <path>"
-        )
+        print("Usage: python image_classification_eval.py -args-file-path <path>")
         sys.exit(1)
 
 
@@ -45,24 +42,73 @@ def load_dataset_from_path(dataset_path: str):
         return []
 
 
-def parse_json_config(config_json_path: str) -> dict:
-    import json
+def get_script_args(script_args_yaml_path: str) -> dict:
+    import yaml
 
     try:
-        with open(config_json_path, "r") as f:
-            config = json.load(f)
-            return config
+        with open(script_args_yaml_path, "r") as f:
+            script_args = yaml.load(f, Loader=yaml.SafeLoader)
+            return script_args
     except Exception as e:
-        print("An error occurred while parsing json file: {}".format(e))
+        print("An error occurred while parsing yaml file: {}".format(e))
         return None
 
 
-def get_model_name(config: dict) -> str:
+class InferenceType(Enum):
+    CloudInference = 1
+    AIServerInference = 2
+    LocalHWInference = 3
+
+
+def connect_to_model_zoo(script_args: dict):
     try:
-        model_name = config["MODEL_PARAMETERS"][0]["ModelPath"]
-        return model_name.split(".")[0].strip()
+        CLOUD_ZOO_URL = script_args["CloudPortalUtils"]["CLOUD_ZOO_URL"]
+        if (
+            script_args["CloudPortalUtils"]["INFERENCE_TYPE"]
+            == InferenceType.CloudInference.value
+        ):
+            # Inference on Cloud Platform
+            DEGIRUM_CLOUD_TOKEN = script_args["CloudPortalUtils"]["DEGIRUM_CLOUD_TOKEN"]
+            CLOUD_URL = script_args["CloudPortalUtils"]["CLOUD_URL"]
+            cloud_url = "dgcps://" + CLOUD_URL if CLOUD_URL != "" else "cs.degirum.com"
+            if CLOUD_ZOO_URL != "":
+                cloud_url += "/" + CLOUD_ZOO_URL
+            zoo = dg.connect_model_zoo(cloud_url, DEGIRUM_CLOUD_TOKEN)
+        elif (
+            script_args["CloudPortalUtils"]["INFERENCE_TYPE"]
+            == InferenceType.AIServerInference.value
+        ):
+            hostname = script_args["CloudPortalUtils"]["AI_SERVER_HOSTNAME"]
+            if hostname == "":
+                hostname = "localhost"
+            if CLOUD_ZOO_URL != "":
+                # Using Cloud Zoo
+                CLOUD_URL = script_args["CloudPortalUtils"]["CLOUD_URL"]
+                DEGIRUM_CLOUD_TOKEN = script_args["CloudPortalUtils"][
+                    "DEGIRUM_CLOUD_TOKEN"
+                ]
+                cloud_url = (
+                    "https://" + CLOUD_URL if CLOUD_URL != "" else "cs.degirum.com"
+                )
+                cloud_url += "/" + CLOUD_ZOO_URL
+                zoo = dg.connect_model_zoo((hostname, cloud_url), DEGIRUM_CLOUD_TOKEN)
+            else:
+                # Using Local Zoo
+                zoo = dg.connect_model_zoo(hostname)
+        elif (
+            script_args["CloudPortalUtils"]["INFERENCE_TYPE"]
+        ) == InferenceType.LocalHWInference.value:
+            DEGIRUM_CLOUD_TOKEN = script_args["CloudPortalUtils"]["DEGIRUM_CLOUD_TOKEN"]
+            CLOUD_URL = script_args["CloudPortalUtils"]["CLOUD_URL"]
+            cloud_url = "https://" + CLOUD_URL if CLOUD_URL != "" else "cs.degirum.com"
+            if CLOUD_ZOO_URL != "":
+                cloud_url += "/" + CLOUD_ZOO_URL
+            zoo = dg.connect_model_zoo(cloud_url, DEGIRUM_CLOUD_TOKEN)
+        else:
+            raise Exception("Invalid Inference Type")
+        return zoo
     except Exception as e:
-        print("An error occurred while getting model name: {}".format(e))
+        print("An error occurred while connecting to model zoo: {}".format(e))
         return None
 
 
@@ -100,38 +146,42 @@ def extract_dg_results(dg_predictions: object, verbose=False) -> list:
         return None
 
 
-def run_dg_model():
-    # dataset_path, config_json_path, ground_truth_json_path = arg_parser()
-    ## Developmental Code
-    from random import shuffle
+def run_dg_model() -> dict:
+    try:
+        script_args_yaml_path = parse_args()
+        script_args = get_script_args(script_args_yaml_path=script_args_yaml_path)
+        SUBSET_SIZE = 10
+        images = load_dataset_from_path(dataset_path=script_args["DatasetPath"])[
+            :SUBSET_SIZE
+        ]
+        shuffle(images)
+        GROUND_TRUTH_MAPPING = form_ground_truth_mapping(
+            ground_truth_json_path=script_args["GroundTruthJSONPath"]
+        )
+        zoo = connect_to_model_zoo(script_args=script_args)
+        model_name = script_args["ModelName"]
 
-    dataset_path = "/home/degirum/srv1.share/exchange/ml_data/imagenet/val_images/*/*"
-    config_json_path = "efficientnet_es_imagenet--224x224_float_n2x_orca_1.json"
-    ground_truth_json_path = "imagenet_labels.json"
-    SUBSET_SIZE = 10
-    ##
-    images = load_dataset_from_path(dataset_path=dataset_path)[:SUBSET_SIZE]
-    shuffle(images)
-    GROUND_TRUTH_MAPPING = form_ground_truth_mapping(
-        ground_truth_json_path=ground_truth_json_path
-    )
-    zoo = connect_model_zoo()
-    config = parse_json_config(config_json_path=config_json_path)
-    model_name = get_model_name(config)
-
-    top1_correct, top5_correct = 0, 0
-    with zoo.load_model(model_name) as model:
-        for image_counter, dg_prediction in enumerate(model.predict_batch(iter(images))):
-            image = images[image_counter].split("/")[-1].strip()
-            expected_class = GROUND_TRUTH_MAPPING[image]
-            top_dg_predicts = extract_dg_results(dg_prediction, verbose=False)
-            if expected_class in top_dg_predicts:
-                top5_correct += 1
-                if expected_class == top_dg_predicts[0]:
-                    top1_correct += 1
-            image_counter += 1
-    print("Top-1 Accuracy: {}".format(top1_correct / SUBSET_SIZE))
-    print("Top-5 Accuracy: {}".format(top5_correct / SUBSET_SIZE))
+        top1_correct, top5_correct = 0, 0
+        with zoo.load_model(model_name) as model:
+            for image_counter, dg_prediction in enumerate(
+                model.predict_batch(iter(images))
+            ):
+                image = images[image_counter].split("/")[-1].strip()
+                expected_class = GROUND_TRUTH_MAPPING[image]
+                top_dg_predicts = extract_dg_results(dg_prediction, verbose=False)
+                if expected_class in top_dg_predicts:
+                    top5_correct += 1
+                    if expected_class == top_dg_predicts[0]:
+                        top1_correct += 1
+                image_counter += 1
+        top1_accuracy = top1_correct / SUBSET_SIZE
+        top5_accuracy = top5_correct / SUBSET_SIZE
+        print("Top-1 Accuracy: {}".format(top1_accuracy))
+        print("Top-5 Accuracy: {}".format(top5_accuracy))
+        return {"top1_accuracy": top1_accuracy, "top5_accuracy": top5_accuracy}
+    except Exception as e:
+        print("An error occurred while running dg model: {}".format(e))
+        return {}
 
 
 if __name__ == "__main__":
