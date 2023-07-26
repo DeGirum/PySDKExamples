@@ -1,6 +1,7 @@
 #
-# image_classification_eval.py: This script is used to perform inference on Image Classification models using DeGirum PySDK 
+# image_classification_eval.py: This script is used to perform inference on Image Classification models using DeGirum PySDK
 # Usage: python3 image_classification_eval.py --args-file-path <path>
+# Arguments needed for evaluation are provided in the eval_script_args.yaml file. Please update the file with required values.
 # Copyright DeGirum Corporation 2023
 # All rights reserved
 #
@@ -12,7 +13,15 @@ import degirum as dg
 from random import shuffle
 
 
-def parse_args():
+def parse_args() -> str:
+    """Parse script arguments
+
+    Raises:
+        Exception: An exception occurred while parsing script arguments
+
+    Returns:
+        str: Path to arguments YAML file required for evaluation
+    """
     try:
         parser = argparse.ArgumentParser()
         parser.add_argument(
@@ -29,7 +38,15 @@ def parse_args():
         sys.exit(1)
 
 
-def load_dataset_from_path(dataset_path: str):
+def load_dataset_from_path(dataset_path: str) -> list:
+    """Load images from dataset path
+
+    Args:
+        dataset_path (str): Glob path to dataset
+
+    Returns:
+        list: List of images
+    """
     from glob import glob
 
     try:
@@ -43,6 +60,14 @@ def load_dataset_from_path(dataset_path: str):
 
 
 def get_script_args(script_args_yaml_path: str) -> dict:
+    """Get script arguments from YAML file
+
+    Args:
+        script_args_yaml_path (str): The path to YAML file containing script arguments
+
+    Returns:
+        dict: Script arguments
+    """
     import yaml
 
     try:
@@ -55,12 +80,25 @@ def get_script_args(script_args_yaml_path: str) -> dict:
 
 
 class InferenceType(Enum):
+    """Inference Type Enum"""
+
     CloudInference = 1
     AIServerInference = 2
     LocalHWInference = 3
 
 
-def connect_to_model_zoo(script_args: dict):
+def connect_to_model_zoo(script_args: dict) -> object:
+    """Connect to DeGirum Model Zoo
+
+    Args:
+        script_args (dict): Script arguments dictionary
+
+    Raises:
+        Exception: If invalid inference type is provided
+
+    Returns:
+        object: DeGirum Model Zoo object
+    """
     try:
         CLOUD_ZOO_URL = script_args["CloudPortalUtils"]["CLOUD_ZOO_URL"]
         if (
@@ -113,6 +151,14 @@ def connect_to_model_zoo(script_args: dict):
 
 
 def form_ground_truth_mapping(ground_truth_json_path: str) -> dict:
+    """Form image to class mapping from ground truth json file
+
+    Args:
+        ground_truth_json_path (str): Path to ground truth json file
+
+    Returns:
+        dict: Image to class mapping for evaluation
+    """
     import json
 
     try:
@@ -122,7 +168,7 @@ def form_ground_truth_mapping(ground_truth_json_path: str) -> dict:
         f.close()
         for idx, ele in enumerate(labels):
             for img in ele["images"]:
-                IMAGE_CLASS_MAP[img] = idx
+                IMAGE_CLASS_MAP[img] = ele["category_id"]
         return IMAGE_CLASS_MAP
     except Exception as e:
         print("An error occurred while parsing json file: {}".format(e))
@@ -130,6 +176,15 @@ def form_ground_truth_mapping(ground_truth_json_path: str) -> dict:
 
 
 def extract_dg_results(dg_predictions: object, verbose=False) -> list:
+    """Extract results from DeGirum PySDK Object
+
+    Args:
+        dg_predictions (object): DeGirum Image Classification Postprocessing Object
+        verbose (bool, optional): Option for results directed to stdout . Defaults to False.
+
+    Returns:
+        list: Top Predictions
+    """
     try:
         top_predicts = []
         for index, pred in enumerate(dg_predictions.results):
@@ -147,6 +202,11 @@ def extract_dg_results(dg_predictions: object, verbose=False) -> list:
 
 
 def run_dg_model() -> dict:
+    """Run DeGirum Image Classification Model
+
+    Returns:
+        dict: Top-1 and Top-5 Accuracy
+    """
     try:
         script_args_yaml_path = parse_args()
         script_args = get_script_args(script_args_yaml_path=script_args_yaml_path)
@@ -186,3 +246,4 @@ def run_dg_model() -> dict:
 
 if __name__ == "__main__":
     run_dg_model()
+
