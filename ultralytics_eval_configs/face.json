@@ -1,0 +1,22 @@
+{
+    "PRE_PROCESS": 
+    [
+      {
+        "ImageBackend": "auto",
+        "InputResizeMethod": "bilinear",
+        "InputPadMethod": "letterbox"
+      }
+    ],
+    "POST_PROCESS": 
+    [
+      {
+        "OutputConfThreshold": 0.001,
+        "MaxDetections": 300,
+        "OutputNMSThreshold": 0.6,
+        "MaxDetectionsPerClass": 20,
+        "MaxClassesPerDetection": 20,
+        "UseRegularNMS": true,
+        "ClassMap": [1]     
+      }
+    ]
+  }
