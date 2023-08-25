@@ -221,18 +221,18 @@ def open_video_stream(camera_id=None):
         stream.release()
 
 
-def video_source(stream, report_error=True):
+def video_source(stream):
     """Generator function, which returns video frames captured from given video stream.
     Useful to pass to model batch_predict().
 
     stream - video stream context manager object returned by open_video_stream()
-    report_error - when True, error is raised on stream end
 
     Yields video frame captured from given video stream
     """
 
-    if get_test_mode():
-        report_error = False  # since we're not using a camera
+    # do not report errors for files and in test mode;
+    # report errors only for camera streams
+    report_error = False if get_test_mode() or stream.get(cv2.CAP_PROP_FRAME_COUNT) > 0 else True
 
     while True:
         ret, frame = stream.read()
@@ -293,7 +293,7 @@ def video2jpegs(
         progress = Progress(nframes)
         # decode video stream into files resized to model input size
         fi = 0
-        for img in video_source(stream, report_error=False):
+        for img in video_source(stream):
             if preprocessor is not None:
                 img = preprocessor(img)
             fname = str(jpeg_path / f"{jpeg_prefix}{fi:05d}.jpg")
