@@ -221,18 +221,18 @@ def open_video_stream(camera_id=None):
         stream.release()
 
 
-def video_source(stream, report_error=True):
+def video_source(stream):
     """Generator function, which returns video frames captured from given video stream.
     Useful to pass to model batch_predict().
 
     stream - video stream context manager object returned by open_video_stream()
-    report_error - when True, error is raised on stream end
 
     Yields video frame captured from given video stream
     """
 
-    if get_test_mode():
-        report_error = False  # since we're not using a camera
+    # do not report errors for files and in test mode;
+    # report errors only for camera streams
+    report_error = False if get_test_mode() or stream.get(cv2.CAP_PROP_FRAME_COUNT) > 0 else True
 
     while True:
         ret, frame = stream.read()
@@ -293,7 +293,7 @@ def video2jpegs(
         progress = Progress(nframes)
         # decode video stream into files resized to model input size
         fi = 0
-        for img in video_source(stream, report_error=False):
+        for img in video_source(stream):
             if preprocessor is not None:
                 img = preprocessor(img)
             fname = str(jpeg_path / f"{jpeg_prefix}{fi:05d}.jpg")
@@ -529,43 +529,54 @@ class Display:
         Display.put_text(img, f"{fps:5.1f} FPS", (0, 0), (0, 0, 0), (255, 255, 255))
 
     def show(self, img):
-        """Show OpenCV image
+        """Show OpenCV image or model result
 
-        img - numpy array with valid OpenCV image
+        img - numpy array with valid OpenCV image or model result object
         """
 
-        if self._fps:
-            fps = self._fps.record()
-            if fps > 0:
-                Display._show_fps(img, fps)
+        import degirum as dg  # import DeGirum PySDK
+        import numpy as np
 
-        if self._show_embedded or self._no_gui:
-            if in_notebook():
-                import IPython.display
+        if isinstance(img, dg.postprocessor.InferenceResults):
+            self.show(img.image_overlay)
 
-                IPython.display.display(PIL.Image.fromarray(img[..., ::-1]), clear=True)
+        elif isinstance(img, np.ndarray):
+            if self._fps:
+                fps = self._fps.record()
+                if fps > 0:
+                    Display._show_fps(img, fps)
+
+            if self._show_embedded or self._no_gui:
+                if in_notebook():
+                    import IPython.display
+
+                    IPython.display.display(
+                        PIL.Image.fromarray(img[..., ::-1]), clear=True
+                    )
+            else:
+                if not self._window_created:
+                    cv2.namedWindow(self._capt, cv2.WINDOW_NORMAL)
+                    cv2.setWindowProperty(self._capt, cv2.WND_PROP_TOPMOST, 1)
+                    if self._w is not None and self._h is not None:
+                        cv2.resizeWindow(self._capt, self._w, self._h)
+                    else:
+                        cv2.resizeWindow(self._capt, img.shape[1], img.shape[0])
+
+                cv2.imshow(self._capt, img)
+                self._window_created = True
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord("x") or key == ord("q"):
+                    if self._fps:
+                        self._fps.reset()
+                    raise KeyboardInterrupt
+                elif key == 43 or key == 45:  # +/-
+                    _, _, w, h = cv2.getWindowImageRect(self._capt)
+                    factor = 1.25 if key == 43 else 0.75
+                    new_w = max(100, int(w * factor))
+                    new_h = int(new_w * img.shape[0] / img.shape[1])
+                    cv2.resizeWindow(self._capt, new_w, new_h)
         else:
-            if not self._window_created:
-                cv2.namedWindow(self._capt, cv2.WINDOW_NORMAL)
-                cv2.setWindowProperty(self._capt, cv2.WND_PROP_TOPMOST, 1)
-                if self._w is not None and self._h is not None:
-                    cv2.resizeWindow(self._capt, self._w, self._h)
-                else:
-                    cv2.resizeWindow(self._capt, img.shape[1], img.shape[0])
-
-            cv2.imshow(self._capt, img)
-            self._window_created = True
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord("x") or key == ord("q"):
-                if self._fps:
-                    self._fps.reset()
-                raise KeyboardInterrupt
-            elif key == 43 or key == 45:  # +/-
-                _, _, w, h = cv2.getWindowImageRect(self._capt)
-                factor = 1.25 if key == 43 else 0.75
-                new_w = max(100, int(w * factor))
-                new_h = int(new_w * img.shape[0] / img.shape[1])
-                cv2.resizeWindow(self._capt, new_w, new_h)
+            raise Exception("Unsupported image type")
 
 
 class Timer:
@@ -740,3 +751,21 @@ def intersection(boxA, boxB):
 
     # compute the area of intersection rectangle
     return dx * dy
+
+
+def predict_stream(model, camera_id):
+    """Run a model on a video stream
+    model - model to run
+    camera_id - 0-based index for local cameras
+       or IP camera URL in the format "rtsp://<user>:<password>@<ip or hostname>",
+       or URL to mp4 video file,
+       or YouTube video URL
+    """
+
+    # select OpenCV backend and matching colorspace
+    model.image_backend = "opencv"
+    model.input_numpy_colorspace = "BGR"
+
+    with open_video_stream(camera_id) as stream:
+        for res in model.predict_batch(video_source(stream)):
+            yield res
