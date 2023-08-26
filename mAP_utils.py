@@ -5,7 +5,7 @@ from dg_coco_utils import *
 from tqdm import tqdm
 
 
-class ObjectDetectionModelEvaluate:
+class ObjectDetectionModelEvaluator:
     def __init__(
         self,
         dg_model,
@@ -23,6 +23,7 @@ class ObjectDetectionModelEvaluate:
         input_pad_method="letterbox",
         image_backend="opencv",
         input_img_fmt="JPEG",
+        print_frequency=0,
     ):
         """
         Constructor.
@@ -44,6 +45,7 @@ class ObjectDetectionModelEvaluate:
                 input_pad_method (str): Input Pad Method
                 image_backend (str): Image Backend
                 input_img_fmt (str): InputImgFmt
+                print_frequency (int): Number of image batches to be evaluated at a time.
 
         """
         self._dg_model = dg_model
@@ -61,8 +63,9 @@ class ObjectDetectionModelEvaluate:
         self._input_pad_method = input_pad_method
         self._image_backend = image_backend
         self._input_img_fmt = input_img_fmt
+        self._print_frequency = print_frequency
 
-    def evaluation(self):
+    def evaluate(self):
         """Evaluation for the Detection model.
 
         Returns the mAP statistics.
@@ -94,7 +97,6 @@ class ObjectDetectionModelEvaluate:
         num_images = len(anno.dataset["images"])
         files_dict = anno.dataset["images"][0:num_images]
         path_list = []
-        print_frequency = 50
         for image_number in tqdm(range(0, num_images)):
             image_id = files_dict[image_number]["id"]
             path = self._image_folder_path + files_dict[image_number]["file_name"]
@@ -103,9 +105,12 @@ class ObjectDetectionModelEvaluate:
             for image_number, predictions in enumerate(
                 self._dg_model.predict_batch(path_list)
             ):
-                if image_number % print_frequency == print_frequency - 1:
-                    image_number = image_number + 1
-                    print(image_number + 1)
+                if self._print_frequency > 0:
+                    if (
+                        image_number % self._print_frequency
+                        == self._print_frequency - 1
+                    ):
+                        print(image_number + 1)
                 image_id = files_dict[image_number]["id"]
                 save_results_coco_json(
                     predictions.results, jdict, image_id, self._class_map
