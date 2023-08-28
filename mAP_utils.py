@@ -8,24 +8,24 @@ from tqdm import tqdm
 
 class ObjectDetectionModelEvaluator:
     
-    image_folder_path = ""
-    ground_truth_annotations_path = ""
-    class_map = ""
-    pred_path = ""
     def __init__(
-              self,
-              dg_model,
-              output_conf_threshold=0.001,
-              output_nms_threshold=0.6,
-              max_detections=100,
-              max_detections_per_class=20,
-              max_classes_per_detection=1,
-              use_regular_nms=True,
-              input_resize_method="bilinear",
-              input_pad_method="letterbox",
-              image_backend="opencv",
-              input_img_fmt="JPEG",
-              print_frequency=0
+            self,
+            dg_model,
+            image_folder_path,
+            ground_truth_annotations_path,
+            classmap,
+            pred_path,
+            output_conf_threshold=0.001,
+            output_nms_threshold=0.6,
+            max_detections=100,
+            max_detections_per_class=20,
+            max_classes_per_detection=1,
+            use_regular_nms=True,
+            input_resize_method="bilinear",
+            input_pad_method="letterbox",
+            image_backend="opencv",
+            input_img_fmt="JPEG",
+            print_frequency=0,
       ):
     
         """
@@ -51,6 +51,7 @@ class ObjectDetectionModelEvaluator:
                 print_frequency (int): Number of image batches to be evaluated at a time.
 
         """
+           
         self.dg_model = dg_model
         self.output_conf_threshold = output_conf_threshold
         self.output_nms_threshold = output_nms_threshold
@@ -63,8 +64,28 @@ class ObjectDetectionModelEvaluator:
         self.image_backend = image_backend
         self.input_img_fmt = input_img_fmt
         self.print_frequency = print_frequency
+        self.image_folder_path = image_folder_path
+        self.ground_truth_annotations_path = ground_truth_annotations_path
+        self.classmap = classmap
+        self.pred_path = pred_path
+        self.print_frequency = print_frequency
+
+        if self.dg_model.output_postprocess_type == "Detection" or "DetectionYolo" or "DetectionYoloV8":    
+            self.dg_model.OutputConfThreshold  = self.output_conf_threshold
+            self.dg_model.output_nms_threshold=self.output_nms_threshold
+            self.dg_model.output_max_detections=self.max_detections 
+            self.dg_model.output_max_detections_per_class=self.max_detections_per_class
+            self.dg_model.output_max_classes_per_detection=self.max_classes_per_detection
+            self.dg_model.output_use_regular_nms=self.use_regular_nms
+            self.dg_model.input_resize_method=self.input_resize_method
+            self.dg_model.input_pad_method=self.input_pad_method
+            self.dg_model.image_backend=self.image_backend 
+            self.dg_model.input_image_format=self.input_img_fmt
+        else:
+            raise Exception("Model loaded for evaluation is not a Detection Model")
+        
     
-    @classmethod
+    @classmethod 
     def init_from_yaml(cls, dg_model, config_yaml):
         """ 
         args_yaml (str) : Path of the yaml file that contains all the arguments.
@@ -73,53 +94,40 @@ class ObjectDetectionModelEvaluator:
         with open(config_yaml) as f:
             load_yaml = yaml.load(f, Loader=yaml.FullLoader)
          
-        if dg_model.output_postprocess_type == "Detection" or "DetectionYolo" or "DetectionYoloV8":    
-            dg_model.output_confidence_threshold = load_yaml["OutputConfThreshold"]
-            dg_model.output_nms_threshold=load_yaml["OutputNMSThreshold"]
-            dg_model.output_max_detections=load_yaml["MaxDetections"]
-            dg_model.output_max_detections_per_class=load_yaml["MaxDetectionsPerClass"]
-            dg_model.output_max_classes_per_detection=load_yaml["MaxClassesPerDetection"]
-            dg_model.output_use_regular_nms=load_yaml["UseRegularNMS"]
-            dg_model.input_resize_method=load_yaml["InputResizeMethod"]
-            dg_model.input_pad_method=load_yaml["InputPadMethod"]
-            dg_model.image_backend=load_yaml["ImageBackend"]
-            dg_model.input_image_format=load_yaml["InputImgFmt"]  
-        else:
-            raise Exception("Model loaded for evaluation is not a Detection Model")
-        
-        ObjectDetectionModelEvaluator.dg_model =dg_model
-        ObjectDetectionModelEvaluator.image_folder_path = load_yaml["ImageFolderPath"]
-        ObjectDetectionModelEvaluator.ground_truth_annotations_path = load_yaml["GroundTruthAnnotationsPath"]
-        ObjectDetectionModelEvaluator.class_map = load_yaml["ClassMap"]
-        ObjectDetectionModelEvaluator.pred_path = "prediction.json"
-        ObjectDetectionModelEvaluator.print_frequency = load_yaml["PrintFrequency"]
-        return cls(dg_model,config_yaml)
-
+        image_folder_path = load_yaml["ImageFolderPath"]
+        ground_truth_annotations_path = load_yaml["GroundTruthAnnotationsPath"]
+        classmap = load_yaml["ClassMap"]
+        pred_path = "prediction.json"
+        print_frequency = load_yaml["PrintFrequency"]
+        return cls(dg_model, image_folder_path, ground_truth_annotations_path, classmap, pred_path, print_frequency)
+    
+    
     def evaluate(self):
         """Evaluation for the Detection model.
         
         Returns the mAP statistics.
         """     
         jdict=[]
-        anno = COCO(ObjectDetectionModelEvaluator.ground_truth_annotations_path)
+        print (self.ground_truth_annotations_path)
+        anno = COCO(self.ground_truth_annotations_path)
         num_images=len(anno.dataset['images'])
         files_dict=anno.dataset['images'][0:num_images]
         path_list=[]
         for image_number in tqdm(range(0,num_images)):
             image_id=files_dict[image_number]['id']
-            path=ObjectDetectionModelEvaluator.image_folder_path + files_dict[image_number]['file_name']
+            path=self.image_folder_path + files_dict[image_number]['file_name']
             path_list.append(path)
-        with ObjectDetectionModelEvaluator.dg_model:
-            for image_number,predictions in enumerate(ObjectDetectionModelEvaluator.dg_model.predict_batch(path_list)):
-                if ObjectDetectionModelEvaluator.print_frequency > 0:
-                    if image_number%ObjectDetectionModelEvaluator.print_frequency==ObjectDetectionModelEvaluator.print_frequency-1:
+        with self.dg_model:
+            for image_number,predictions in enumerate(self.dg_model.predict_batch(path_list)):
+                if self.print_frequency > 0:
+                    if image_number%self.print_frequency==self.print_frequency-1:
                         print(image_number+1)
                 image_id=files_dict[image_number]['id']
-                save_results_coco_json(predictions.results,jdict,image_id,ObjectDetectionModelEvaluator.class_map)
-        with open(ObjectDetectionModelEvaluator.pred_path, 'w') as f:
+                save_results_coco_json(predictions.results,jdict,image_id,self.classmap)
+        with open(self.pred_path, 'w') as f:
             json.dump(jdict, f)
 
-        pred = anno.loadRes(ObjectDetectionModelEvaluator.pred_path)
+        pred = anno.loadRes(self.pred_path)
         eval_obj = COCOeval(anno, pred, 'bbox')
         eval_obj.params.imgIds = [file['id'] for file in files_dict]  # image IDs to evaluate
         eval_obj.evaluate()
