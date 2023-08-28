@@ -71,7 +71,7 @@ class ObjectDetectionModelEvaluator:
         self.print_frequency = print_frequency
 
         if self.dg_model.output_postprocess_type == "Detection" or "DetectionYolo" or "DetectionYoloV8":    
-            self.dg_model.OutputConfThreshold  = self.output_conf_threshold
+            self.dg_model.output_conf_threshold  = self.output_conf_threshold
             self.dg_model.output_nms_threshold=self.output_nms_threshold
             self.dg_model.output_max_detections=self.max_detections 
             self.dg_model.output_max_detections_per_class=self.max_detections_per_class
@@ -108,7 +108,6 @@ class ObjectDetectionModelEvaluator:
         Returns the mAP statistics.
         """     
         jdict=[]
-        print (self.ground_truth_annotations_path)
         anno = COCO(self.ground_truth_annotations_path)
         num_images=len(anno.dataset['images'])
         files_dict=anno.dataset['images'][0:num_images]
