@@ -31,6 +31,10 @@ class ImageClassificationModelEvaluator:
                 image_label_map_json (str) : Path to the image-label-map json file.
                 num_classes (int) : Number of classes in the test dataset (Example: ImageNet has 1000 classes).
                 k (int) : The value of `k` in top-k.
+                input_resize_method (str): Input Resize Method.
+                input_pad_method (str): Input Pad Method.
+                image_backend (str): Image Backend.
+                input_img_fmt (str): InputImgFmt.
                 print_frequency (int): Number of image batches to be evaluated at a time.
 
         """
