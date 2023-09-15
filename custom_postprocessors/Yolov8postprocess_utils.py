@@ -123,10 +123,8 @@ def xywh2xyxy(x):
         y (np.ndarray): The bounding box coordinates in (x1, y1, x2, y2) format.
     """
     y = np.copy(x)
-    y[..., 0] = x[..., 0] - x[..., 2] / 2  # top left x
-    y[..., 1] = x[..., 1] - x[..., 3] / 2  # top left y
-    y[..., 2] = x[..., 0] + x[..., 2] / 2  # bottom right x
-    y[..., 3] = x[..., 1] + x[..., 3] / 2  # bottom right y
+    y[..., 0:2] = x[..., 0:2] - x[..., 2:4] / 2  # top left (x, y)
+    y[..., 2:4] = x[..., 0:2] + x[..., 2:4] / 2  # bottom right (x, y)
     return y
 
 
