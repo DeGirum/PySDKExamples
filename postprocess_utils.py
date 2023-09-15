@@ -250,16 +250,16 @@ def non_max_suppression(
         #         # Detections matrix nx6 (xyxy, conf, cls)
         box, cls, mask = x[:, :4], x[:, 4 : nc + 4], x[:, nc + 4 :]
         if multi_label:
-            i, j = torch.where(cls > conf_thres)
-            x = torch.cat((box[i], x[i, 4 + j, None], j[:, None].float(), mask[i]), 1)
+            i, j = np.where(cls > conf_thres)
+            x = np.concatenate((box[i], x[i, 4 + j, None], j[:, None].float(), mask[i]), axis=1)
         else:  # best class only
             conf = np.max(cls, axis=1, keepdims=True)
             j = np.argmax(cls[:, :], axis=1, keepdims=True)
             x = np.concatenate((box, conf, j, mask), axis=1)
 
-        #         # Filter by class
-        #         if classes is not None:
-        #             x = x[(x[:, 5:6] == torch.tensor(classes, device=x.device)).any(1)]
+        # Filter by class
+            if classes is not None:
+                x = x[(x[:, 5:6] == np.any(classes, axis=1))]
 
         #       # Check shape
         n = x.shape[0]  # number of boxes
@@ -382,7 +382,7 @@ def scale_image(masks, im0_shape, ratio_pad=None):
         ratio_pad (tuple): the ratio of the padding to the original image.
 
     Returns:
-        masks (torch.Tensor): The masks that are being returned.
+        masks (np.ndarray): The masks that are being returned.
     """
     # Rescale coordinates (xyxy) from im1_shape to im0_shape
     im1_shape = masks.shape
