@@ -363,11 +363,9 @@ def process_mask(protos, masks_in, bboxes, shape, upsample=False):
     n_shape = (masks_in @ protos).shape
     masks = sigmoid(masks_in @ protos).reshape(n_shape[0], mw, mh)
     downsampled_bboxes = bboxes.copy()
-    downsampled_bboxes[:, 0] *= mw / iw
-    downsampled_bboxes[:, 2] *= mw / iw
-    downsampled_bboxes[:, 3] *= mh / ih
-    downsampled_bboxes[:, 1] *= mh / ih
-    masks = crop_mask(masks, downsampled_bboxes)  # CHW
+    downsampled_bboxes[:, [0, 2]] *= mw / iw
+    downsampled_bboxes[:, [1, 3]] *= mh / ih 
+    masks = crop_mask(masks, downsampled_bboxes)  # Crop masks using downsampled bounding boxes (CHW)
     mask_ = np.where(masks > 0.5, 1, 0)
     return mask_.astype(float)
 
