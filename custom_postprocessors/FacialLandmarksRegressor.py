@@ -8,15 +8,15 @@ class FacialLandmarkRegressor(dg.postprocessor.DetectionResults):
         for el in self._inference_results:
             prediction = el["data"]
             faceheight, facewidth, channels = self._input_image.shape
-            left_eye_x, left_eye_y = int(prediction[0][0][0][0] * facewidth), int(prediction[0][1][0][0] * faceheight)
-            right_eye_x, right_eye_y = int(prediction[0][2][0][0] * facewidth), int(prediction[0][3][0][0] * faceheight)
-            nose_x, nose_y = int(prediction[0][4][0][0] * facewidth), int(prediction[0][5][0][0] * faceheight)
-            lip_left_corner_x, lip_left_corner_y = int(prediction[0][6][0][0] * facewidth), int(prediction[0][7][0][0] * faceheight)
-            lip_right_corner_x, lip_right_corner_y = int(prediction[0][8][0][0] * facewidth), int(prediction[0][9][0][0] * faceheight)
-
-            keypoints = [left_eye_x,left_eye_y,right_eye_x,right_eye_y,nose_x,nose_y,lip_left_corner_x,lip_left_corner_y,lip_right_corner_x,lip_right_corner_y]
-            
-            result = {"landmarks" : [{"label" : 'LeftEye', "category_id" : 0, "landmark":keypoints[0:2]},{"label" : 'RightEye', "category_id" : 1, "landmark":keypoints[2:4]},{"label":'Nose',"category_id" : 2,"landmark":keypoints[4:6]},{"label":'LipsleftCorner',"category_id" : 3,"landmark":keypoints[6:8]},{"label":'LipsRightCorner',"category_id" : 4,"landmark":keypoints[8:10]}]}
+            # labels for facial keypoints
+            keypoint_labels = ['LeftEye', 'RightEye', 'Nose', 'LipsleftCorner', 'LipsRightCorner']
+            keypoints = []
+            # Iterate over the 5 keypoints
+            for i in range(5):
+                x = int(prediction[0][i * 2][0][0] * facewidth) # Extract the x-coordinate of the keypoint and scale it by the face width
+                y = int(prediction[0][i * 2 + 1][0][0] * faceheight) # Extract the y-coordinate of the keypoint and scale it by the face height
+                keypoints.extend([x, y])
+            result = {"landmarks": [{"label": label, "category_id": idx, "landmark": keypoints[idx * 2:idx * 2 + 2]} for idx, label in enumerate(keypoint_labels)]}
             new_inference_results.append(result)
             
         self._inference_results = new_inference_results
