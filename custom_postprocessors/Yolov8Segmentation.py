@@ -1,6 +1,6 @@
 import degirum as dg
 import numpy as np
-from postprocess_utils import *
+from Yolov8postprocess_utils import *
 class Yolov8Segmentation(dg.postprocessor.DetectionResults):
     
     def __init__(self, *args, **kwargs): 
