@@ -9,6 +9,16 @@
 import sys, os, time, string, urllib, cv2, PIL.Image
 from packaging import version as pkg_version
 from contextlib import contextmanager
+import os
+import json
+import yaml
+from pycocotools.coco import COCO
+from pycocotools.cocoeval import COCOeval
+from dg_coco_utils import *
+from tqdm import tqdm
+from tqdm import tqdm
+
+
 
 # minimum compatible PySDK version
 min_compatible_pysdk_ver = pkg_version.parse("0.6.0")
@@ -37,9 +47,7 @@ def _check_pysdk_ver():
             + f"Please install PySDK version {min_compatible_pysdk_ver} or higher."
         )
 
-
 _check_pysdk_ver()
-
 
 def _reload_env(custom_file="env.ini"):
     """Reload environment variables from file
@@ -131,6 +139,7 @@ def connect_model_zoo(inference_option=CloudInference):
             zoo = dg.connect_model_zoo(hostname)
 
     elif inference_option == LocalHWInference:
+
         token = _get_var(_var_Token)
         zoo_url = _get_var(_var_CloudZoo, "")
         cloud_url = "https://" + _get_var(_var_CloudUrl, "cs.degirum.com")
@@ -193,23 +202,19 @@ def open_video_stream(camera_id=None):
 
     Returns context manager yielding video stream object and closing it on exit
     """
-
+    
     if camera_id is None or get_test_mode():
         _reload_env()  # reload environment variables from file
         camera_id = _get_var(_var_CameraID, 0)
         if isinstance(camera_id, str) and camera_id.isnumeric():
             camera_id = int(camera_id)
 
-    if isinstance(camera_id, str) and urllib.parse.urlparse(camera_id).hostname in (
-        "www.youtube.com",
-        "youtube.com",
-        "youtu.be",
-    ):  # if source is YouTube video
+    if urllib.parse.urlparse(camera_id).hostname in ('www.youtube.com', 'youtube.com', 'youtu.be'):  # if source is YouTube video
         import pafy
-
-        camera_id = pafy.new(camera_id).getbest(preftype="mp4").url
+        camera_id = pafy.new(camera_id).getbest(preftype='mp4').url
 
     stream = cv2.VideoCapture(camera_id)
+#     amount_of_frames = stream.get(1)
     if not stream.isOpened():
         raise Exception(f"Error opening '{camera_id}' video stream")
     else:
@@ -221,21 +226,23 @@ def open_video_stream(camera_id=None):
         stream.release()
 
 
-def video_source(stream):
+def video_source(stream, report_error=True):
     """Generator function, which returns video frames captured from given video stream.
     Useful to pass to model batch_predict().
 
     stream - video stream context manager object returned by open_video_stream()
+    report_error - when True, error is raised on stream end
 
     Yields video frame captured from given video stream
     """
 
-    # do not report errors for files and in test mode;
-    # report errors only for camera streams
-    report_error = False if get_test_mode() or stream.get(cv2.CAP_PROP_FRAME_COUNT) > 0 else True
-
+    if get_test_mode():
+        report_error = False  # since we're not using a camera
+    count=0
     while True:
+#     while count < 20:
         ret, frame = stream.read()
+#         count+=1
         if not ret:
             if report_error:
                 raise Exception(
@@ -289,14 +296,15 @@ def video2jpegs(
         jpeg_path.mkdir()
 
     with open_video_stream(video_file) as stream:  # open video stream form file
+
         nframes = int(stream.get(cv2.CAP_PROP_FRAME_COUNT))
         progress = Progress(nframes)
         # decode video stream into files resized to model input size
         fi = 0
-        for img in video_source(stream):
+        for img in video_source(stream, report_error=False):
             if preprocessor is not None:
                 img = preprocessor(img)
-            fname = str(jpeg_path / f"{jpeg_prefix}{fi:05d}.jpg")
+            fname = str(jpeg_path / f"{jpeg_prefix}{fi:04d}.jpg")
             cv2.imwrite(fname, img)
             progress.step()
             fi += 1
@@ -340,6 +348,7 @@ def open_audio_stream(sampling_rate_hz, buffer_size):
     stream.result_queue = result_queue
 
     try:
+
         yield stream
     finally:
         stream.stop_stream()  # stop audio streaming
@@ -390,6 +399,7 @@ def audio_overlapped_source(stream, check_abort, non_blocking=False):
     chunk_length = stream._frames_per_buffer
     data = np.zeros(2 * chunk_length, dtype=np.int16)
     while not check_abort():
+
         if non_blocking:
             try:
                 block = stream.result_queue.get_nowait()
@@ -529,54 +539,44 @@ class Display:
         Display.put_text(img, f"{fps:5.1f} FPS", (0, 0), (0, 0, 0), (255, 255, 255))
 
     def show(self, img):
-        """Show OpenCV image or model result
+        """Show OpenCV image
 
-        img - numpy array with valid OpenCV image or model result object
+        img - numpy array with valid OpenCV image
         """
 
-        import degirum as dg  # import DeGirum PySDK
-        import numpy as np
+        if self._fps:
+            fps = self._fps.record()
+            if fps > 0:
+                Display._show_fps(img, fps)
 
-        if isinstance(img, dg.postprocessor.InferenceResults):
-            self.show(img.image_overlay)
+        if self._show_embedded or self._no_gui:
+            if in_notebook():
+                import IPython.display
 
-        elif isinstance(img, np.ndarray):
-            if self._fps:
-                fps = self._fps.record()
-                if fps > 0:
-                    Display._show_fps(img, fps)
-
-            if self._show_embedded or self._no_gui:
-                if in_notebook():
-                    import IPython.display
-
-                    IPython.display.display(
-                        PIL.Image.fromarray(img[..., ::-1]), clear=True
-                    )
-            else:
-                if not self._window_created:
-                    cv2.namedWindow(self._capt, cv2.WINDOW_NORMAL)
-                    cv2.setWindowProperty(self._capt, cv2.WND_PROP_TOPMOST, 1)
-                    if self._w is not None and self._h is not None:
-                        cv2.resizeWindow(self._capt, self._w, self._h)
-                    else:
-                        cv2.resizeWindow(self._capt, img.shape[1], img.shape[0])
-
-                cv2.imshow(self._capt, img)
-                self._window_created = True
-                key = cv2.waitKey(1) & 0xFF
-                if key == ord("x") or key == ord("q"):
-                    if self._fps:
-                        self._fps.reset()
-                    raise KeyboardInterrupt
-                elif key == 43 or key == 45:  # +/-
-                    _, _, w, h = cv2.getWindowImageRect(self._capt)
-                    factor = 1.25 if key == 43 else 0.75
-                    new_w = max(100, int(w * factor))
-                    new_h = int(new_w * img.shape[0] / img.shape[1])
-                    cv2.resizeWindow(self._capt, new_w, new_h)
+                IPython.display.display(PIL.Image.fromarray(img[..., ::-1]), clear=True)
         else:
-            raise Exception("Unsupported image type")
+
+            if not self._window_created:
+                cv2.namedWindow(self._capt, cv2.WINDOW_NORMAL)
+                cv2.setWindowProperty(self._capt, cv2.WND_PROP_TOPMOST, 1)
+                if self._w is not None and self._h is not None:
+                    cv2.resizeWindow(self._capt, self._w, self._h)
+                else:
+                    cv2.resizeWindow(self._capt, img.shape[1], img.shape[0])
+
+            cv2.imshow(self._capt, img)
+            self._window_created = True
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord("x") or key == ord("q"):
+                if self._fps:
+                    self._fps.reset()
+                raise KeyboardInterrupt
+            elif key == 43 or key == 45:  # +/-
+                _, _, w, h = cv2.getWindowImageRect(self._capt)
+                factor = 1.25 if key == 43 else 0.75
+                new_w = max(100, int(w * factor))
+                new_h = int(new_w * img.shape[0] / img.shape[1])
+                cv2.resizeWindow(self._capt, new_w, new_h)
 
 
 class Timer:
@@ -752,20 +752,289 @@ def intersection(boxA, boxB):
     # compute the area of intersection rectangle
     return dx * dy
 
+class ObjectDetectionModelEvaluator:
+    
+    def __init__(
+        self,
+        dg_model,
+        image_folder_path,
+        ground_truth_annotations_path,
+        classmap,
+        pred_path,
+        output_conf_threshold=0.001,
+        output_nms_threshold=0.6,
+        max_detections=100,
+        max_detections_per_class=20,
+        max_classes_per_detection=1,
+        use_regular_nms=True,
+        input_resize_method="bilinear",
+        input_pad_method="letterbox",
+        image_backend="opencv",
+        input_img_fmt="JPEG",
+        print_frequency=0,
+    ):
+        """
+        Constructor.
+            This class evaluates the mAP for Object Detection models.
 
-def predict_stream(model, camera_id):
-    """Run a model on a video stream
-    model - model to run
-    camera_id - 0-based index for local cameras
-       or IP camera URL in the format "rtsp://<user>:<password>@<ip or hostname>",
-       or URL to mp4 video file,
-       or YouTube video URL
-    """
+            Args:
+                dg_model (Detection model): Detection model from the Degirum model zoo.
+                image_folder_path (str): Path to the image dataset.
+                ground_truth_annotations_path (str): Path to the groundtruth json annotations.
+                class_map (json): A json file that contains classes with its class ids, each category would have a list of class ids.
+                pred_path (str): Path to save the predictions as a json file.
+                output_conf_threshold (float): Output Confidence threshold.
+                output_nms_threshold (float): Output Non-Max Suppression threshold.
+                max_detections (int): Maximum Detections.
+                max_detections_per_class (int): Maximum Detections Per Class.
+                max_classes_per_detection (int): Maximum Classes Per Detection.
+                use_regular_nms (boolean): Whether to use Regular Non-Max Suppression.
+                input_resize_method (str): Input Resize Method.
+                input_pad_method (str): Input Pad Method.
+                image_backend (str): Image Backend.
+                input_img_fmt (str): InputImgFmt.
+                print_frequency (int): Number of image batches to be evaluated at a time.
 
-    # select OpenCV backend and matching colorspace
-    model.image_backend = "opencv"
-    model.input_numpy_colorspace = "BGR"
+        """
 
-    with open_video_stream(camera_id) as stream:
-        for res in model.predict_batch(video_source(stream)):
-            yield res
+        self.dg_model = dg_model
+        self.output_conf_threshold = output_conf_threshold
+        self.output_nms_threshold = output_nms_threshold
+        self.max_detections = max_detections
+        self.max_detections_per_class = max_detections_per_class
+        self.max_classes_per_detection = max_classes_per_detection
+        self.use_regular_nms = use_regular_nms
+        self.input_resize_method = input_resize_method
+        self.input_pad_method = input_pad_method
+        self.image_backend = image_backend
+        self.input_img_fmt = input_img_fmt
+        self.print_frequency = print_frequency
+        self.image_folder_path = image_folder_path
+        self.ground_truth_annotations_path = ground_truth_annotations_path
+        self.classmap = classmap
+        self.pred_path = pred_path
+        self.print_frequency = print_frequency
+
+        if (
+            self.dg_model.output_postprocess_type == "Detection"
+            or "DetectionYolo"
+            or "DetectionYoloV8"
+        ):
+            self.dg_model.output_conf_threshold = self.output_conf_threshold
+            self.dg_model.output_nms_threshold = self.output_nms_threshold
+            self.dg_model.max_detections = self.max_detections
+            self.dg_model.max_detections_per_class = self.max_detections_per_class
+            self.dg_model.max_classes_per_detection = self.max_classes_per_detection
+            self.dg_model.use_regular_nms = self.use_regular_nms
+            self.dg_model.input_resize_method = self.input_resize_method
+            self.dg_model.input_pad_method = self.input_pad_method
+            self.dg_model.image_backend = self.image_backend
+            self.dg_model.input_image_format = self.input_img_fmt
+        else:
+            raise Exception("Model loaded for evaluation is not a Detection Model")
+
+    @classmethod
+    def init_from_yaml(cls, dg_model, config_yaml):
+        """
+        args_yaml (str) : Path of the yaml file that contains all the arguments.
+
+        """
+        with open(config_yaml) as f:
+            load_yaml = yaml.load(f, Loader=yaml.FullLoader)
+
+        image_folder_path = load_yaml["ImageFolderPath"]
+        ground_truth_annotations_path = load_yaml["GroundTruthAnnotationsPath"]
+        classmap = load_yaml["ClassMap"]
+        pred_path = load_yaml["PredictionJsonPath"]
+        print_frequency = load_yaml["PrintFrequency"]
+        output_conf_threshold = load_yaml["OutputConfThreshold"]
+        output_nms_threshold = load_yaml["OutputNMSThreshold"]
+        max_detections = load_yaml["MaxDetections"]
+        max_detections_per_class = load_yaml["MaxDetectionsPerClass"]
+        max_classes_per_detection = load_yaml["MaxClassesPerDetection"]
+        use_regular_nms = load_yaml["UseRegularNMS"]
+        input_resize_method = load_yaml["InputResizeMethod"]
+        input_pad_method = load_yaml["InputPadMethod"]
+        image_backend = load_yaml["ImageBackend"]
+        input_image_format = load_yaml["InputImgFmt"]
+
+        return cls(
+            dg_model,
+            image_folder_path,
+            ground_truth_annotations_path,
+            classmap,
+            pred_path,
+            output_conf_threshold,
+            output_nms_threshold,
+            max_detections,
+            max_detections_per_class,
+            max_classes_per_detection,
+            use_regular_nms,
+            input_resize_method,
+            input_pad_method,
+            image_backend,
+            input_image_format,
+            print_frequency,
+        )
+
+    def evaluate(self):
+        """Evaluation for the Detection model.
+
+        Returns the mAP statistics.
+        """
+        jdict = []
+        anno = COCO(self.ground_truth_annotations_path)
+        num_images = len(anno.dataset["images"])
+        files_dict = anno.dataset["images"][0:num_images]
+        path_list = []
+        for image_number in tqdm(range(0, num_images)):
+            image_id = files_dict[image_number]["id"]
+            path = self.image_folder_path + files_dict[image_number]["file_name"]
+            path_list.append(path)
+        with self.dg_model:
+            for image_number, predictions in enumerate(
+                self.dg_model.predict_batch(path_list)
+            ):
+                if self.print_frequency > 0:
+                    if image_number % self.print_frequency == self.print_frequency - 1:
+                        print(image_number + 1)
+                image_id = files_dict[image_number]["id"]
+                save_results_coco_json(
+                    predictions.results, jdict, image_id, self.classmap
+                )
+        with open(self.pred_path, "w") as f:
+            json.dump(jdict, f)
+
+        pred = anno.loadRes(self.pred_path)
+        eval_obj = COCOeval(anno, pred, "bbox")
+        eval_obj.params.imgIds = [
+            file["id"] for file in files_dict
+        ]  # image IDs to evaluate
+        eval_obj.evaluate()
+        eval_obj.accumulate()
+        eval_obj.summarize()
+        map_all, map50 = eval_obj.stats[:2]  # update results (mAP@0.5:0.95, mAP@0.5)
+        return eval_obj.stats
+
+
+
+class ImageClassificationModelEvaluator:
+    
+    def __init__(
+            self,
+            dg_model,
+            image_folder_path,
+            image_label_map_json,
+            num_classes,
+            top_k,
+            input_resize_method="bilinear",
+            input_pad_method="letterbox",
+            image_backend="opencv",
+            input_img_fmt="JPEG",
+            print_frequency=500
+      ):
+    
+        """
+        Constructor.
+            This class computes the Top-k Accuracy for Classification models.
+
+            Args:
+                dg_model (Detection model): Classification model from the Degirum model zoo.
+                image_folder_path (str): Path to the image dataset.
+                image_label_map_json (str) : Path to the image-label-map json file.
+                num_classes (int) : Number of classes in the test dataset (Example: ImageNet has 1000 classes).
+                k (int) : The value of `k` in top-k.
+                input_resize_method (str): Input Resize Method.
+                input_pad_method (str): Input Pad Method.
+                image_backend (str): Image Backend.
+                input_img_fmt (str): InputImgFmt.
+                print_frequency (int): Number of image batches to be evaluated at a time.
+
+        """
+           
+        self.dg_model = dg_model
+        self.image_folder_path = image_folder_path
+        self.image_label_map_json = image_label_map_json
+        self.num_classes = num_classes
+        self.top_k = top_k
+        self.input_resize_method = input_resize_method
+        self.input_pad_method = input_pad_method
+        self.image_backend = image_backend
+        self.input_img_fmt = input_img_fmt
+        self.print_frequency = print_frequency
+        
+        
+        if (self.dg_model.output_postprocess_type == "Classification"): 
+            self.dg_model.input_resize_method = self.input_resize_method
+            self.dg_model.input_pad_method = self.input_pad_method
+            self.dg_model.image_backend = self.image_backend
+            self.dg_model.input_image_format = self.input_img_fmt
+        else:
+            raise Exception("Model loaded for evaluation is not a Classification Model")
+    
+    def load_images_and_label_map(self):
+        
+        if os.path.exists(os.path.join(self.image_folder_path, self.image_label_map_json)):
+            json_file = open(os.path.join(self.image_folder_path, self.image_label_map_json))
+        else:
+            raise Exception('Error: {} not found!'.format(self.image_label_map_json))
+        labels_map = json.load(json_file)
+        images = []
+        for path, directory, files in os.walk(self.image_folder_path):
+            for file in files:
+                if file in labels_map.keys():
+                    images.append((file, os.path.join(path, file)))
+        return (images,labels_map)
+        
+    
+    @classmethod
+    def init_from_yaml(cls, dg_model, config_yaml):
+        
+        with open(config_yaml) as f:
+            load_yaml = yaml.load(f, Loader=yaml.FullLoader)
+         
+        image_folder_path = load_yaml["ImageFolderPath"]
+        image_label_map_json = load_yaml["ImageLabelMap"]
+        num_classes = load_yaml["NumClasses"]
+        top_k = load_yaml["TopK"]
+        input_resize_method = load_yaml["InputResizeMethod"]
+        input_pad_method = load_yaml["InputPadMethod"]
+        image_backend = load_yaml["ImageBackend"]
+        input_image_format = load_yaml["InputImgFmt"]
+        print_frequency = load_yaml["PrintFrequency"]
+        
+        return cls(dg_model, image_folder_path, image_label_map_json, num_classes, top_k, input_resize_method, input_pad_method, image_backend, input_image_format, print_frequency)
+        
+    def evaluate(self):
+        top_one_accuracy = 0
+        top_k_accuracy = 0
+        inference_count = 0
+        test_images,image_label_map = self.load_images_and_label_map()
+        num_output_classes = len(self.dg_model.label_dictionary)
+        if self.top_k > 0 and self.top_k <= num_output_classes:
+            self.dg_model.output_top_k = int(self.top_k)
+            
+        for test_img, test_img_path in test_images:  # Calculate top-1 and top-k accuracies
+            category_id = image_label_map[test_img]  # O(1) look-up 
+#             print("Inferencing image {}, {}".format(inference_count, test_img_path))
+            result = self.dg_model(test_img_path).results
+            if len(result) > 0:
+                top_category_id = None
+                max_score = -10e5
+                top_k_category_ids = [res_obj['category_id'] + self.num_classes - num_output_classes for res_obj in result]
+                top_category_id = result[0]['category_id'] + self.num_classes - num_output_classes
+                if category_id == top_category_id:
+                    top_one_accuracy += 1
+                    top_k_accuracy += 1
+                elif category_id in top_k_category_ids:
+                    top_k_accuracy += 1
+                inference_count += 1
+                if inference_count % self.print_frequency == 0:
+                    print ("Inferencing image {}".format(inference_count))
+                    print ("True class: {}, Predicted class: {}".format(category_id, top_category_id))
+                    print ("Top-1 accuracy: {}, Top-{} accuracy: {}".format(top_one_accuracy * 100 / inference_count, self.dg_model.output_top_k, top_k_accuracy * 100 / inference_count))
+                    print("\n")
+        print("Top-1 accuracy is {}".format(top_one_accuracy * 100 / inference_count))
+        print("Top-{} accuracy is {}".format(self.dg_model.output_top_k, top_k_accuracy * 100 / inference_count))
+        return (self.dg_model.output_top_k, top_one_accuracy * 100 / inference_count, top_k_accuracy * 100 / inference_count)
+        
