@@ -7,12 +7,13 @@ class FacialLandmarkRegressor(dg.postprocessor.DetectionResults):
         pred_order = []
         for el in self._inference_results:
             prediction = el["data"]
+            assert prediction.shape == (1, 10, 1, 1), "The prediction array does not have the expected shape (1, 10, 1, 1)"
             faceheight, facewidth, channels = self._input_image.shape
             # labels for facial keypoints
             keypoint_labels = ['LeftEye', 'RightEye', 'Nose', 'LipsleftCorner', 'LipsRightCorner']
             keypoints = []
             # Iterate over the 5 keypoints
-            for i in range(5):
+            for i in range(len(keypoint_labels)):
                 x = int(prediction[0][i * 2][0][0] * facewidth) # Extract the x-coordinate of the keypoint and scale it by the face width
                 y = int(prediction[0][i * 2 + 1][0][0] * faceheight) # Extract the y-coordinate of the keypoint and scale it by the face height
                 keypoints.extend([x, y])
