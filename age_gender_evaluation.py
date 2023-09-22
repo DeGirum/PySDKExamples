@@ -3,7 +3,14 @@ import os
 import yaml
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import accuracy_score
+from custom_postprocessors.AgeGenderRecognition import AgeGenderRecognition
 
+from enum import Enum
+
+class Gender(Enum):
+    Male = 0
+    Female = 1
+           
 class AgeGenderRecognitionModelEvaluator:
     
     def __init__(
@@ -49,7 +56,6 @@ class AgeGenderRecognitionModelEvaluator:
 
         Returns the Accuracy for Gender and Mean Absolute Error for Age.
         """
-        
         with open(self.ground_truth_annotations_path, 'r') as json_file:
             data = json.load(json_file)
         age_groundtruth=[]
@@ -61,14 +67,15 @@ class AgeGenderRecognitionModelEvaluator:
         gender_predictions = []
         age_predictions = []
         for image_name in os.listdir(self.image_folder_path):
-            image_path = os.path.join(self.image_folder_path, image_name)
+            image_path = os.path.join(self.image_folder_path, image_name)            
+            self.dg_model.custom_postprocessor = AgeGenderRecognition
             res=self.dg_model(image_path)
-            if res.results[0]["data"][0][0][0][0] >  res.results[0]["data"][0][1][0][0]:
-                gender_predictions.append(1)
+            if res.results[0]["gender"] == "Male":     
+                gender_predictions.append(Gender.Male.value)
             else:
-                gender_predictions.append(0)
-            age = int (res.results[1]["data"][0][0][0][0] * 100)
-            age_predictions.append(age)
+                gender_predictions.append(Gender.Female.value)
+                
+            age_predictions.append(res.results[0]["age"])
         gender_accuracy = accuracy_score(gender_predictions, gender_groundtruth)
         mae_age = mean_absolute_error(age_predictions, age_groundtruth)
         return (gender_accuracy,mae_age)
