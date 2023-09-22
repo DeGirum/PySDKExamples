@@ -9,9 +9,9 @@ class AgeGenderRecognition(dg.postprocessor.DetectionResults):
         age_prediction = self._inference_results[1]["data"]
         
         if gender_prediction[0][0][0][0] > gender_prediction[0][1][0][0]:
-            result = {"gender": "Female","age" : int(age_prediction[0][0][0][0] * 100)}
+            result = {"gender": "Female", "gender_id":1, "age" : int(age_prediction[0][0][0][0] * 100)}
         else:
-            result = {"gender": "Male","age" : int(age_prediction[0][0][0][0] * 100)}
+            result = {"gender": "Male", "gender_id":0, "age" : int(age_prediction[0][0][0][0] * 100)}
             
         new_inference_results.append(result)
         self._inference_results = new_inference_results
