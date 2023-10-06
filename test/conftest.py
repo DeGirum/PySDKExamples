@@ -23,7 +23,7 @@ def cloud_token(request):
 
 @pytest.fixture(autouse=True)
 def setup_env(cloud_token: str) -> None:
-    environ["CLOUD_ZOO_URL"] = "degirum_com/public"
+    environ["CLOUD_ZOO_URL"] = "degirum/public"
     environ["DEGIRUM_CLOUD_TOKEN"] = cloud_token
     environ["TEST_MODE"] = "1"
 
