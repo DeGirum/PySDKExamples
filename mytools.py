@@ -11,7 +11,7 @@ from packaging import version as pkg_version
 from contextlib import contextmanager
 
 # minimum compatible PySDK version
-min_compatible_pysdk_ver = pkg_version.parse("0.6.0")
+min_compatible_pysdk_ver = pkg_version.parse("0.9.2")
 
 # Inference options: parameters for connect_model_zoo
 CloudInference = 1  # use DeGirum cloud server for inference

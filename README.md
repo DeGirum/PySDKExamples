@@ -104,6 +104,7 @@ following variables:
 |[ObjectDetectionCameraStream](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionCameraStream.ipynb)|How to do AI inference of a video stream from a video camera and show annotated video in real-time.|
 |[ObjectDetectionVideoFile2Images](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionVideoFile2Images.ipynb)|How to do AI inference of a video stream from a video file and save annotated frame images into a directory.|
 |[ObjectDetectionSimple](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionSimple.ipynb)|A simple version of the ObjectDetectionImage sample, with cloud-related code removed for clarity.|
+|[UltralyticsObjectDetectionImage](https://github.com/DeGirum/PySDKExamples/blob/main/UltralyticsObjectDetectionImage.ipynb)|Example script illustrating Ultralytics YOLOv5n RELU6 object detection models on different runtimes|
 |[mystreamsDemo](https://github.com/DeGirum/PySDKExamples/blob/main/mystreamsDemo.ipynb)|Extensive demo notebook of `mystreams` toolkit: lightweight multi-threaded pipelining framework|
 
 
