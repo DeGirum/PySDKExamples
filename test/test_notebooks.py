@@ -49,7 +49,7 @@ _image_notebooks = [
     ("FaceHandDetectionParallelCameraStream.ipynb", "Masked.mp4", [5], []),
     ("FaceMaskDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [5], []),
     # dictionary with image count for notebooks with cells with > 1 image
-    ("FaceMaskDetectionPipelinedImage.ipynb", None, {3: 3}, []),
+    ("LicensePlateRecognitionPipelinedImage.ipynb", None, [2], []),
     ("ObjectDetectionCameraStream.ipynb", "Masked.mp4", [4], []),
     ("ObjectDetectionImage.ipynb", None, [6], []),
     ("PersonPoseDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [6], []),
