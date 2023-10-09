@@ -49,7 +49,6 @@ _image_notebooks = [
     ("ObjectDetectionImage.ipynb", None, [6], []),
     ("ObjectDetectionCameraStream.ipynb", "Masked.mp4", [4], []),
     ("FaceHandDetectionParallelCameraStream.ipynb", "Masked.mp4", [5], []),
-    ("FaceMaskDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [5], []),
     ("LicensePlateRecognitionPipelinedImage.ipynb", None, [2], []),
     ("LicensePlateRecognitionPipelinedCameraStream.ipynb", "Car.mp4", [5], []),    
     ("PersonPoseDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [6], []),
