@@ -45,13 +45,12 @@ output_dir.mkdir(exist_ok=True)
 # reference image names are of the format {notebook_name}_{cell_index}.{image_within_cell_index}.png
 _image_notebooks = [
     ("mystreamsDemo.ipynb", "Masked.mp4", [1, 2, 3, 4, 5, 6], []),
-    # an expected exception arises in cell 5 when using a file instead of a camera
-    ("FaceHandDetectionParallelCameraStream.ipynb", "Masked.mp4", [5], []),
-    ("FaceMaskDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [5], []),
-    # dictionary with image count for notebooks with cells with > 1 image
-    ("FaceMaskDetectionPipelinedImage.ipynb", None, {3: 3}, []),
-    ("ObjectDetectionCameraStream.ipynb", "Masked.mp4", [4], []),
+    ("ObjectDetectionSimple.ipynb", None, [6], []),    
     ("ObjectDetectionImage.ipynb", None, [6], []),
+    ("ObjectDetectionCameraStream.ipynb", "Masked.mp4", [4], []),
+    ("FaceHandDetectionParallelCameraStream.ipynb", "Masked.mp4", [5], []),
+    ("LicensePlateRecognitionPipelinedImage.ipynb", None, [2], []),
+    ("LicensePlateRecognitionPipelinedCameraStream.ipynb", "Car.mp4", [5], []),    
     ("PersonPoseDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [6], []),
     ("PersonPoseDetectionPipelinedImage.ipynb", None, {3: 3, 4: 1}, []),
     ("TiledObjectDetectionVideoFile.ipynb", "TrafficHD_short.mp4", [8], []),
