@@ -31,7 +31,7 @@ output_dir.mkdir(exist_ok=True)
 # Tuple of (notebook_filename, input_file, cells_with_image, cells_with_exception)
 # notebook_filename is filename relative to the PySDKExamples root directory
 # input_file is name of file in the PySDKExamples/images directory to use as input for the test
-#    input is patched in for notebooks that use mytools.open_video_stream
+#    input is patched in for notebooks that use dgtools.open_video_stream
 #    None means use the notebook's input (currently used for Image notebooks)
 # cells_with_image is a list or a dictionary of code cells with image outputs
 #    if it is a list: each entry is a code cell index with 1 expected image output
@@ -44,7 +44,7 @@ output_dir.mkdir(exist_ok=True)
 # cell output is verified by checking the output image against a reference image in PySDKExamples/test/reference
 # reference image names are of the format {notebook_name}_{cell_index}.{image_within_cell_index}.png
 _image_notebooks = [
-    ("mystreamsDemo.ipynb", "Masked.mp4", [1, 2, 3, 4, 5, 6], []),
+    ("dgstreamsDemo.ipynb", "Masked.mp4", [1, 2, 3, 4, 5, 6], []),
     ("ObjectDetectionSimple.ipynb", None, [6], []),    
     ("ObjectDetectionImage.ipynb", None, [6], []),
     ("ObjectDetectionCameraStream.ipynb", "Masked.mp4", [4], []),
@@ -96,10 +96,10 @@ def open_and_execute(
     client = nbclient.NotebookClient(nb, timeout=600, kernel_name="python3")
     client.allow_errors = False
 
-    # inject a monkeypatch for mytools._reload_env so the environment variables set in the
+    # inject a monkeypatch for dgtools._reload_env so the environment variables set in the
     # test don't get overwritten by env.ini when we are running inside the kernel
     code_cells[0].source = (
-        "import mytools; mytools._reload_env = lambda *a, **k: None\n"
+        "import dgtools; dgtools._reload_env = lambda *a, **k: None\n"
         + code_cells[0].source
     )
 
