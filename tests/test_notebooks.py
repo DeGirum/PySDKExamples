@@ -18,10 +18,10 @@ import pytest
 from SSIM_PIL import compare_ssim
 
 examples_dir = Path(__file__).parent.parent
-reference_dir = examples_dir / "test" / "reference"
+reference_dir = examples_dir / "tests" / "reference"
 images_dir = examples_dir / "images"
 
-output_dir = examples_dir / "test" / "output"
+output_dir = examples_dir / "tests" / "output"
 output_dir.mkdir(exist_ok=True)
 
 # In order to add a new notebook to the test, add it as a tuple to the appropriate list of test
