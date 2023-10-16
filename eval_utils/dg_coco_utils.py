@@ -9,12 +9,16 @@ def xyxy2xywh(x):
     y[:, 3] = x[:, 3] - x[:, 1]  # height
     return y
 
-def save_results_coco_json(results, jdict, image_id, class_map):
+def save_results_coco_json(results, jdict, image_id, class_map=None):
+    max_category_id = 0
     for result in results:
         box = xyxy2xywh(np.asarray(result['bbox']).reshape(1,4)*1.0)  # xywh
         box[:, :2] -= box[:, 2:] / 2  # xy ce
         box=box.reshape(-1).tolist()
+        category_id=class_map[result['category_id']] if class_map else result['category_id']
         jdict.append({'image_id': image_id,
-                      'category_id': class_map[result['category_id']],
+                      'category_id': category_id,
                       'bbox': [np.round(x, 3) for x in box],
                       'score': np.round(result['score'], 5)})
+        max_category_id = max(max_category_id, category_id)
+    return max_category_id
