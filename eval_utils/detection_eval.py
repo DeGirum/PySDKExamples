@@ -25,21 +25,18 @@ class ObjectDetectionModelEvaluator:
     def __init__(
             self,
             dg_model,
-            image_folder_path=None,
-            ground_truth_annotations_path=None,
             classmap=None,
             pred_path='predictions.json',
             output_confidence_threshold=0.001,
             output_nms_threshold=0.7,
             output_max_detections=300,
-            output_max_detections_per_class=300,
-            output_max_classes_per_detection=300,
+            output_max_detections_per_class=100,
+            output_max_classes_per_detection=1,
             output_use_regular_nms=True,
             input_resize_method="bilinear",
             input_pad_method="letterbox",
             image_backend="opencv",
-            input_img_fmt="JPEG",
-            print_frequency=0,
+            input_img_fmt="JPEG"
       ):
     
         """
@@ -77,14 +74,8 @@ class ObjectDetectionModelEvaluator:
         self.input_pad_method = input_pad_method
         self.image_backend = image_backend
         self.input_img_fmt = input_img_fmt
-        self.print_frequency = print_frequency
-        self.image_folder_path = image_folder_path
-        self.ground_truth_annotations_path = ground_truth_annotations_path
         self.classmap = classmap
         self.pred_path = pred_path
-        self.print_frequency = print_frequency
-        # self.input_numpy_colorspace = "BGR"
-        # self.input_letterbox_fill_color = (114, 114, 114)
         
 
         if self.dg_model.output_postprocess_type == "Detection" or "DetectionYolo" or "DetectionYoloV8":    
