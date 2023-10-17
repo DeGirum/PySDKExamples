@@ -752,15 +752,19 @@ def intersection(boxA, boxB):
     # compute the area of intersection rectangle
     return dx * dy
 
+import json
+import yaml
+from pycocotools.coco import COCO
+from pycocotools.cocoeval import COCOeval
+from dg_coco_utils import *
+from tqdm import tqdm
+
+
 class ObjectDetectionModelEvaluator:
     
     def __init__(
             self,
             dg_model,
-            image_folder_path,
-            ground_truth_annotations_path,
-            classmap,
-            pred_path,
             output_confidence_threshold=0.001,
             output_nms_threshold=0.6,
             output_max_detections=100,
@@ -770,8 +774,9 @@ class ObjectDetectionModelEvaluator:
             input_resize_method="bilinear",
             input_pad_method="letterbox",
             image_backend="opencv",
-            input_img_fmt="JPEG",
-            print_frequency=0,
+            input_image_format="JPEG",
+            input_numpy_colorspace = "BGR",
+            input_letterbox_fill_color = (114,114,114)
       ):
     
         """
@@ -799,34 +804,32 @@ class ObjectDetectionModelEvaluator:
         """
            
         self.dg_model = dg_model
-        self.output_confidence_threshold = output_confidence_threshold
-        self.output_nms_threshold = output_nms_threshold
-        self.output_max_detections = output_max_detections
-        self.output_max_detections_per_class = output_max_detections_per_class
-        self.output_max_classes_per_detection = output_max_classes_per_detection
-        self.output_use_regular_nms = output_use_regular_nms
-        self.input_resize_method = input_resize_method
-        self.input_pad_method = input_pad_method
-        self.image_backend = image_backend
-        self.input_img_fmt = input_img_fmt
-        self.print_frequency = print_frequency
-        self.image_folder_path = image_folder_path
-        self.ground_truth_annotations_path = ground_truth_annotations_path
-        self.classmap = classmap
-        self.pred_path = pred_path
-        self.print_frequency = print_frequency
+        self._output_confidence_threshold = output_confidence_threshold
+        self._output_nms_threshold = output_nms_threshold
+        self._output_max_detections = output_max_detections
+        self._output_max_detections_per_class = output_max_detections_per_class
+        self._output_max_classes_per_detection = output_max_classes_per_detection
+        self._output_use_regular_nms = output_use_regular_nms
+        self._input_resize_method = input_resize_method
+        self._input_pad_method = input_pad_method
+        self._image_backend = image_backend
+        self._input_image_format = input_image_format
+        self._input_numpy_colorspace = input_numpy_colorspace
+        self._input_letterbox_fill_color = input_letterbox_fill_color
 
         if self.dg_model.output_postprocess_type == "Detection" or "DetectionYolo" or "DetectionYoloV8":    
-            self.dg_model.output_conf_threshold  = self.output_confidence_threshold
-            self.dg_model.output_nms_threshold=self.output_nms_threshold
-            self.dg_model.max_detections=self.output_max_detections 
-            self.dg_model.max_detections_per_class=self.output_max_detections_per_class
-            self.dg_model.max_classes_per_detection=self.output_max_classes_per_detection
-            self.dg_model.use_regular_nms=self.output_use_regular_nms
-            self.dg_model.input_resize_method=self.input_resize_method
-            self.dg_model.input_pad_method=self.input_pad_method
-            self.dg_model.image_backend=self.image_backend 
-            self.dg_model.input_image_format=self.input_img_fmt
+            self.dg_model.output_confidence_threshold  = self._output_confidence_threshold
+            self.dg_model.output_nms_threshold=self._output_nms_threshold
+            self.dg_model.output_max_detections=self._output_max_detections 
+            self.dg_model.output_max_detections_per_class=self._output_max_detections_per_class
+            self.dg_model.output_max_classes_per_detection=self._output_max_classes_per_detection
+            self.dg_model.output_use_regular_nms=self._output_use_regular_nms
+            self.dg_model.input_resize_method=self._input_resize_method
+            self.dg_model.input_pad_method=self._input_pad_method
+            self.dg_model.image_backend=self._image_backend 
+            self.dg_model.input_image_format=self._input_image_format
+            self.dg_model.input_numpy_colorspace = self._input_numpy_colorspace
+            self.dg_model.input_letterbox_fill_color = self._input_letterbox_fill_color
         else:
             raise Exception("Model loaded for evaluation is not a Detection Model")
         
@@ -845,48 +848,57 @@ class ObjectDetectionModelEvaluator:
         classmap = load_yaml["ClassMap"]
         pred_path = load_yaml["PredictionJsonPath"]
         print_frequency = load_yaml["PrintFrequency"]
-        output_conf_threshold = load_yaml["OutputConfidenceThreshold"]
+        output_confidence_threshold = load_yaml["OutputConfidenceThreshold"]
         output_nms_threshold = load_yaml["OutputNMSThreshold"]
-        max_detections = load_yaml["OutputMaxDetections"]
-        max_detections_per_class = load_yaml["OutputMaxDetectionsPerClass"]
-        max_classes_per_detection = load_yaml["OutputMaxClassesPerDetection"]                            
-        use_regular_nms = load_yaml["OutputUseRegularNMS"]
+        output_max_detections = load_yaml["OutputMaxDetections"]
+        output_max_detections_per_class = load_yaml["OutputMaxDetectionsPerClass"]
+        output_max_classes_per_detection = load_yaml["OutputMaxClassesPerDetection"]                            
+        output_use_regular_nms = load_yaml["OutputUseRegularNMS"]
         input_resize_method = load_yaml["InputResizeMethod"]
         input_pad_method = load_yaml["InputPadMethod"]
         image_backend = load_yaml["ImageBackend"]
-        input_image_format = load_yaml["InputImgFmt"]
+        input_image_format = load_yaml["InputImageFormat"]
+        input_numpy_colorspace = load_yaml["input_numpy_colorspace"]
+        input_letterbox_fill_color = load_yaml["input_letterbox_fill_color"]
         
-        return cls(dg_model,image_folder_path, ground_truth_annotations_path, classmap, pred_path,
-                   output_conf_threshold, output_nms_threshold, max_detections, max_detections_per_class,
-                   max_classes_per_detection,use_regular_nms,input_resize_method,input_pad_method,
-                   image_backend,input_image_format,print_frequency)
+        return cls(dg_model,image_folder_path,ground_truth_annotations_path,classmap,pred_path,print_frequency,
+                   output_confidence_threshold, output_nms_threshold, output_max_detections, output_max_detections_per_class,
+                   output_max_classes_per_detection,output_use_regular_nms,input_resize_method,input_pad_method,
+                   image_backend,input_image_format,input_numpy_colorspace,input_letterbox_fill_color)
     
     
-    def evaluate(self):
+    def evaluate(self,
+            image_folder_path,
+            ground_truth_annotations_path,
+            classmap,
+            pred_path,
+            print_frequency=0):
+        
         """Evaluation for the Detection model.
         
         Returns the mAP statistics.
-        """     
+        """
+        
         jdict=[]
-        anno = COCO(self.ground_truth_annotations_path)
+        anno = COCO(ground_truth_annotations_path)
         num_images=len(anno.dataset['images'])
         files_dict=anno.dataset['images'][0:num_images]
         path_list=[]
         for image_number in tqdm(range(0,num_images)):
             image_id=files_dict[image_number]['id']
-            path=self.image_folder_path + files_dict[image_number]['file_name']
+            path=image_folder_path + files_dict[image_number]['file_name']
             path_list.append(path)
         with self.dg_model:
             for image_number,predictions in enumerate(self.dg_model.predict_batch(path_list)):
-                if self.print_frequency > 0:
-                    if image_number%self.print_frequency==self.print_frequency-1:
+                if print_frequency > 0:
+                    if image_number%print_frequency==print_frequency-1:
                         print(image_number+1)
                 image_id=files_dict[image_number]['id']
-                save_results_coco_json(predictions.results,jdict,image_id,self.classmap)
-        with open(self.pred_path, 'w') as f:
+                save_results_coco_json(predictions.results,jdict,image_id,classmap)
+        with open(pred_path, 'w') as f:
             json.dump(jdict, f)
 
-        pred = anno.loadRes(self.pred_path)
+        pred = anno.loadRes(pred_path)
         eval_obj = COCOeval(anno, pred, 'bbox')
         eval_obj.params.imgIds = [file['id'] for file in files_dict]  # image IDs to evaluate
         eval_obj.evaluate()
@@ -894,9 +906,6 @@ class ObjectDetectionModelEvaluator:
         eval_obj.summarize()
         map_all, map50 = eval_obj.stats[:2]  # update results (mAP@0.5:0.95, mAP@0.5)
         return eval_obj.stats
-  
-
-
 
 class ImageClassificationModelEvaluator:
     
