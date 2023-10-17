@@ -16,8 +16,6 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from dg_coco_utils import *
 from tqdm import tqdm
-from tqdm import tqdm
-
 
 
 # minimum compatible PySDK version
