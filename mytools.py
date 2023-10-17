@@ -752,14 +752,6 @@ def intersection(boxA, boxB):
     # compute the area of intersection rectangle
     return dx * dy
 
-import json
-import yaml
-from pycocotools.coco import COCO
-from pycocotools.cocoeval import COCOeval
-from dg_coco_utils import *
-from tqdm import tqdm
-
-
 class ObjectDetectionModelEvaluator:
     
     def __init__(
