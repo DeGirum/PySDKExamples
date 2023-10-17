@@ -161,7 +161,7 @@ def yolo2coco(image_folder_path, anno_folder_path=None, out_json_path='annotatio
     gt_jdict = create_annotations(img_list=img_list, ann_list=ann_list, cat_list=cat_list)
     
     with open(out_json_path, 'w') as f:
-        json.dump(gt_jdict, f, indent=1)
+        json.dump(gt_jdict, f)
 
 
 import argparse
@@ -170,10 +170,11 @@ def parser_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, help='image folder path (required)')
     parser.add_argument('--anno', type=str, default=None, help='annotation folder path')
+    parser.add_argument('--out', type=str, default='annotations.json', help='output json path')
     return parser.parse_args()
 
 if __name__ == '__main__':
 
     args = parser_arguments()
    
-    yolo2coco(args.path, anno_folder_path=args.anno, out_json_path='annotations.json', num_classes=None)
+    yolo2coco(image_folder_path=args.path, anno_folder_path=args.anno, out_json_path=args.out, num_classes=None)
