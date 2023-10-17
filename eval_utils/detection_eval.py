@@ -126,7 +126,7 @@ class ObjectDetectionModelEvaluator:
                    image_backend,input_image_format,print_frequency)
     
     
-    def evaluate(self, image_folder_path, ground_truth_annotations_path, print_frequency = 0):
+    def evaluate(self, image_folder_path, ground_truth_annotations_path, num_val_images=0, print_frequency = 0):
         """Evaluation for the Detection model.
         
         Returns the mAP statistics.
@@ -140,6 +140,10 @@ class ObjectDetectionModelEvaluator:
             image_id=files_dict[image_number]['id']
             path=os.path.join(image_folder_path, files_dict[image_number]['file_name'])
             path_list.append(path)
+
+        if num_val_images>0:
+            path_list = path_list[0:num_val_images]
+
         with self.dg_model:
             for image_number,predictions in enumerate(self.dg_model.predict_batch(path_list)):
                 if print_frequency > 0:
