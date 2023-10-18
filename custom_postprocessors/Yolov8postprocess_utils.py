@@ -1,7 +1,6 @@
 import numpy as np
 import math
 import time
-
 import cv2
 from PIL import Image
 
@@ -14,19 +13,19 @@ class DFL:
 
     def forward(self, x):
         """Applies a transformer layer on numpy array 'x' and returns a numpy array."""
+        start = time.time()
         b, c, a = x.shape  # batch, channels, anchors
         x = x.reshape((b, 4, self.c1, a))
         x = x.transpose(0, 2, 1, 3)
         x = softmax(x)
+        x = x.reshape((16,-1))
         weights = np.arange(self.c1)
         weights = np.reshape(weights, (1, self.c1, 1, 1))
+        weights = weights.reshape((16,-1))
         output = np.zeros((1, 1, 4, a))
-        for i in range(4):
-            for j in range(a):
-                output[0, 0, i, j] = np.sum(x[0, :, i, j] * weights[0, :, 0, 0])
-
-        output = output.reshape(b, 4, a)
-        return output
+        output_1 = weights.T @ x
+        output_1 = output_1.reshape(b, 4, a)
+        return output_1
 
 
 def softmax(x):
@@ -46,11 +45,14 @@ def make_anchors(feats, strides, grid_cell_offset=0.5):
         sy, sx = np.meshgrid(sy, sx)
         anchor_points.append(np.stack((sy, sx), axis=-1).reshape((-1, 2)))
         stride_arr.append(np.full((h * w, 1), stride, dtype=float))
+        
     return np.concatenate(anchor_points), np.concatenate(stride_arr)
 
 
 def dist2bbox(distance, anchor_points, xywh=True, dim=-1):
+    
     """Transform distance(ltrb) to box(xywh or xyxy)."""
+    start = time.time()
     lt, rb = np.split(distance, 2, axis=1)
     x1y1 = anchor_points - lt
     x2y2 = anchor_points + rb
@@ -58,7 +60,7 @@ def dist2bbox(distance, anchor_points, xywh=True, dim=-1):
         c_xy = (x1y1 + x2y2) / 2
         wh = x2y2 - x1y1
         return np.concatenate((c_xy, wh), dim)
-    return np.concatenate((c_xy, wh), dim)  # xyxy bbox
+    return np.concatenate((x1y1, x2y2), dim)  # xyxy bbox
 
 
 def sigmoid(x):
@@ -66,7 +68,9 @@ def sigmoid(x):
 
 
 def decode_bbox(preds, img_shape):
+    
     """A list of predictions are decoded to shape [1, 84, 8400]"""
+    start = time.time()
     num_classes = next((o.shape[2] for o in preds if o.shape[2] != 64), -1)
     assert (
         num_classes != -1
@@ -201,6 +205,7 @@ def non_max_suppression(
             shape (num_boxes, 6 + num_masks) containing the kept boxes, with columns
             (x1, y1, x2, y2, confidence, class, mask1, mask2, ...).
     """
+    start = time.time()
     # Checks
     assert (
         0 <= conf_thres <= 1
@@ -226,7 +231,6 @@ def non_max_suppression(
 
     prediction = np.transpose(prediction, (0, 2, 1))
     prediction[..., :4] = xywh2xyxy(prediction[..., :4])  # xywh to xyxy
-
     t = time.time()
     for xi, x in enumerate(prediction):  # image index, image inference
         # Apply constraints
@@ -245,7 +249,7 @@ def non_max_suppression(
         if not x.shape[0]:
             continue
 
-        #         # Detections matrix nx6 (xyxy, conf, cls)
+        # Detections matrix nx6 (xyxy, conf, cls)
         box, cls, mask = x[:, :4], x[:, 4 : nc + 4], x[:, nc + 4 :]
         if multi_label:
             i, j = np.where(cls > conf_thres)
@@ -271,18 +275,16 @@ def non_max_suppression(
         # Batched NMS
         c = x[:, 5:6] * (0 if agnostic else max_wh)  # classes
         boxes, scores = x[:, :4] + c, x[:, 4]  # boxes (offset by class), scores
-
         scores = scores.reshape(scores.shape[0], 1)
         con = np.concatenate((boxes, scores), axis=1)
         keep_boxes = nms(con, iou_thres)  # NMS
         keep_boxes = keep_boxes[:max_det]  # limit detections
 
         for k in keep_boxes:
-            output.append(x[k])
+            output.append(np.array([x[k]]))
         if (time.time() - t) > time_limit:
             LOGGER.warning(f"WARNING ⚠️ NMS time limit {time_limit:.3f}s exceeded")
             break  # time limit exceeded
-
     return output
 
 
@@ -355,7 +357,6 @@ def process_mask(protos, masks_in, bboxes, shape, upsample=False):
     """
     c, mh, mw = protos.shape
     ih, iw = shape
-
     protos = protos.astype(float)
     protos = protos.reshape(c, (protos.shape[1] * protos.shape[2]))
     n_shape = (masks_in @ protos).shape
@@ -366,6 +367,30 @@ def process_mask(protos, masks_in, bboxes, shape, upsample=False):
     masks = crop_mask(masks, downsampled_bboxes)  # Crop masks using downsampled bounding boxes (CHW)
     mask_ = np.where(masks > 0.5, 1, 0)
     return mask_.astype(float)
+
+def masks2segments(masks, strategy='largest'):
+    """
+    It takes a list of masks(n,h,w) and returns a list of segments(n,xy)
+
+    Args:
+        masks (torch.Tensor): the output of the model, which is a tensor of shape (batch_size, 160, 160)
+        strategy (str): 'concat' or 'largest'. Defaults to largest
+
+    Returns:
+        segments (List): list of segment masks
+    """
+    segments = []
+    for x in masks:
+        c = cv2.findContours(x, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
+        if c:
+            if strategy == 'concat':  # concatenate all segments
+                c = np.concatenate([x.reshape(-1, 2) for x in c])
+            elif strategy == 'largest':  # select largest segment
+                c = np.array(c[np.array([len(x) for x in c]).argmax()]).reshape(-1, 2)
+        else:
+            c = np.zeros((0, 2))  # no segments found
+        segments.append(c.astype('float32'))
+    return segments
 
 
 def scale_image(masks, im0_shape, ratio_pad=None):
@@ -394,7 +419,6 @@ def scale_image(masks, im0_shape, ratio_pad=None):
     else:
         gain = ratio_pad[0][0]
         pad = ratio_pad[1]
-
     top, left = int(pad[1]), int(pad[0])  # y, x
     bottom, right = int(im1_shape[0] - pad[1]), int(im1_shape[1] - pad[0])
     if len(masks.shape) < 2:
@@ -405,7 +429,6 @@ def scale_image(masks, im0_shape, ratio_pad=None):
     masks = cv2.resize(masks, (im0_shape[1], im0_shape[0]))
     if len(masks.shape) == 2:
         masks = masks[:, :, None]
-
     return masks
 
 
@@ -425,13 +448,15 @@ def overlay(image, mask, color, alpha, resize=None):
 
     """
     colored_mask = np.expand_dims(mask, 0).repeat(3, axis=0)
+#     print (colored_mask.shape)
     colored_mask = np.moveaxis(colored_mask, 0, -1)
     masked = np.ma.MaskedArray(image, mask=colored_mask, fill_value=color)
     image_overlay = masked.filled()
     image_combined = cv2.addWeighted(image, 1 - alpha, image_overlay, alpha, 0)
 
     return image_combined
-    
+
+
 def clip_coords(coords, shape):
     """
     Clip line coordinates to the image boundaries.
@@ -491,7 +516,7 @@ def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None, normalize=False
     else:
         gain = ratio_pad[0][0]
         pad = ratio_pad[1]
-
+    
     if padding:
         coords[..., 0]-= pad[0]  # x padding
         coords[..., 1] -= pad[1]  # y padding
