@@ -431,3 +431,75 @@ def overlay(image, mask, color, alpha, resize=None):
     image_combined = cv2.addWeighted(image, 1 - alpha, image_overlay, alpha, 0)
 
     return image_combined
+    
+def clip_coords(coords, shape):
+    """
+    Clip line coordinates to the image boundaries.
+
+    Args:
+        coords (torch.Tensor | numpy.ndarray): A list of line coordinates.
+        shape (tuple): A tuple of integers representing the size of the image in the format (height, width).
+
+    Returns:
+        (None): The function modifies the input `coordinates` in place, by clipping each coordinate to the image boundaries.
+    """
+    coords[..., 0] = coords[..., 0].clip(0, shape[1])  # x
+    coords[..., 1] = coords[..., 1].clip(0, shape[0])  # y
+    
+        
+def decode_kpts(preds, img_shape, kpts, kpt_shape, bs=1):
+        """Decodes keypoints."""
+        num_classes = next((o.shape[2] for o in preds if o.shape[2] != 64), -1)
+        assert (
+            num_classes != -1
+        ), "cannot infer postprocessor inputs via output shape if there are 64 classes"
+        pos =  [i for i,_ in sorted(enumerate(preds), key = lambda x: (x[1].shape[2] if num_classes > 64 else -x[1].shape[2], -x[1].shape[1]))]
+        img_h, img_w = img_shape[-2], img_shape[-1]
+        strides = [int(math.sqrt(img_shape[-2] * img_shape[-1] / preds[p].shape[1])) for p in pos if preds[p].shape[2] != 64]
+        dims = [(img_h // s, img_w // s) for s in strides]
+        fake_feats = [np.zeros((1, 1, h, w)) for h, w in dims]
+        anchors, strides = (
+            x.transpose(1, 0) for x in make_anchors(fake_feats, strides, 0.5))
+        ndim = kpt_shape[1]
+        y = kpts.copy()
+        if ndim == 3:
+            y[:, 2::3] = 1 / (1 + np.exp(-y[:, 2::3]))  # inplace sigmoid
+            
+        y[:, 0::ndim] = (y[:, 0::ndim] * 2.0 + (anchors[0] - 0.5)) * strides
+        y[:, 1::ndim] = (y[:, 1::ndim] * 2.0 + (anchors[1] - 0.5)) * strides
+        return y
+    
+def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None, normalize=False, padding=True):
+    """
+    Rescale segment coordinates (xy) from img1_shape to img0_shape
+
+    Args:
+        img1_shape (tuple): The shape of the image that the coords are from.
+        coords (torch.Tensor): the coords to be scaled of shape n,2.
+        img0_shape (tuple): the shape of the image that the segmentation is being applied to.
+        ratio_pad (tuple): the ratio of the image size to the padded image size.
+        normalize (bool): If True, the coordinates will be normalized to the range [0, 1]. Defaults to False.
+        padding (bool): If True, assuming the boxes is based on image augmented by yolo style. If False then do regular
+            rescaling.
+
+    Returns:
+        coords (torch.Tensor): The scaled coordinates.
+    """
+    if ratio_pad is None:  # calculate from img0_shape
+        gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])  # gain  = old / new
+        pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (img1_shape[0] - img0_shape[0] * gain) / 2  # wh padding
+    else:
+        gain = ratio_pad[0][0]
+        pad = ratio_pad[1]
+
+    if padding:
+        coords[..., 0]-= pad[0]  # x padding
+        coords[..., 1] -= pad[1]  # y padding
+    coords[..., 0] /= gain
+    coords[..., 1] /= gain
+    clip_coords(coords, img0_shape)
+    if normalize:
+        coords[..., 0] /= img0_shape[1]  # width
+        coords[..., 1] /= img0_shape[0]  # height
+        
+    return coords
