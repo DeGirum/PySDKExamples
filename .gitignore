@@ -1,6 +1,7 @@
 .env
 env.ini
-.ipynb_checkpoints/
-__pycache__/
-test/output/
+**/.ipynb_checkpoints/
+**/__pycache__/
+tests/output/
 .vscode/
+workarea/

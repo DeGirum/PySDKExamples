@@ -13,15 +13,15 @@ import nbclient
 from PIL import Image
 from io import BytesIO
 import base64
-from os import environ
+from os import environ, chdir
 import pytest
 from SSIM_PIL import compare_ssim
 
-examples_dir = Path(__file__).parent.parent
-reference_dir = examples_dir / "test" / "reference"
-images_dir = examples_dir / "images"
-
-output_dir = examples_dir / "test" / "output"
+root_dir = Path(__file__).parent.parent
+examples_dir = root_dir / "examples"
+reference_dir = root_dir / "tests" / "reference"
+images_dir = root_dir / "images"
+output_dir = root_dir / "tests" / "output"
 output_dir.mkdir(exist_ok=True)
 
 # In order to add a new notebook to the test, add it as a tuple to the appropriate list of test
@@ -44,18 +44,16 @@ output_dir.mkdir(exist_ok=True)
 # cell output is verified by checking the output image against a reference image in PySDKExamples/test/reference
 # reference image names are of the format {notebook_name}_{cell_index}.{image_within_cell_index}.png
 _image_notebooks = [
-    ("dgstreamsDemo.ipynb", "Masked.mp4", [1, 2, 3, 4, 5, 6], []),
-    ("ObjectDetectionSimple.ipynb", None, [6], []),    
-    ("ObjectDetectionImage.ipynb", None, [6], []),
-    ("ObjectDetectionCameraStream.ipynb", "Masked.mp4", [4], []),
-    ("FaceHandDetectionParallelCameraStream.ipynb", "Masked.mp4", [5], []),
-    ("LicensePlateRecognitionPipelinedImage.ipynb", None, [2], []),
-    ("LicensePlateRecognitionPipelinedCameraStream.ipynb", "Car.mp4", [5], []),    
-    ("PersonPoseDetectionPipelinedCameraStream.ipynb", "Masked.mp4", [6], []),
-    ("PersonPoseDetectionPipelinedImage.ipynb", None, {3: 3, 4: 1}, []),
-    ("TiledObjectDetectionVideoFile.ipynb", "TrafficHD_short.mp4", [8], []),
-    ("MultiCameraMultiModelDetection.ipynb", "Masked.mp4", [3], []),
-    ("MultiObjectTrackingVideoFile.ipynb", "Masked.mp4", [7], []),
+    ("basic/object_detection_camera_stream.ipynb", "Masked.mp4", [4], []),    
+    ("basic/object_detection_image.ipynb", None, [6], []),
+    ("dgstreams/dgstreams_demo.ipynb", "Masked.mp4", [1, 2, 3, 4, 5, 6], []),    
+    ("dgstreams/multi_camera_multi_model_detection.ipynb", "Masked.mp4", [3], []),    
+    ("dgstreams/person_pose_detection_pipelined_camera_stream.ipynb", "Masked.mp4", [6], []),    
+    ("multimodel/face_hand_detection_parallel_camera_stream.ipynb", "Masked.mp4", [5], []),
+    ("multimodel/license_plate_recognition_pipelined_camera_stream.ipynb", "Car.mp4", [5], []),        
+    ("multimodel/license_plate_recognition_pipelined_image.ipynb", None, [2], []),
+    ("specialized/sliced_object_detection.ipynb", "TrafficHD_short.mp4", [8], []),
+    ("specialized/multi_object_tracking_video_file.ipynb", "Masked.mp4", [7], []),
 ]
 
 # _imageless_notebooks is a list of notebooks without an image cell output
@@ -63,19 +61,17 @@ _image_notebooks = [
 # Tuple of (notebook_filename, input_file) see _image_notebooks doc for more info
 # used to parametrize the 'test_notebook' test
 _imageless_notebooks = [
-    ("ObjectDetectionMultiplexingMultipleStreams.ipynb", "Masked.mp4"),
-    ("ObjectDetectionVideoFile.ipynb", "Masked.mp4"),
-    ("ObjectDetectionVideoFile2Images.ipynb", "Masked.mp4"),
-    ("SingleModelPerformaceTest.ipynb", ""),
-    ("MultiModelPerformaceTest.ipynb", ""),
+    ("basic/object_detection_video_file.ipynb", "Masked.mp4"),    
+    ("benchmarks/multi_model_performace_test.ipynb", ""),    
+    ("benchmarks/object_detection_multiplexing_multiple_streams.ipynb", "Masked.mp4"),
+    ("benchmarks/single_model_performace_test.ipynb", ""),    
 ]
 
 # list of notebooks that are excluded from tests for a variety of reasons
 _skipped_notebooks = [
-    "ObjectDetectionDataset.ipynb",
-    "ObjectDetectionDatasetMultithreaded.ipynb",
-    "SoundClassificationAndObjectDetectionAsynchronous.ipynb",
-    "SoundClassificationAudioStream.ipynb",
+    "basic/sound_classification_audio_stream.ipynb",    
+    "benchmarks/object_detection_dataset_evaluation.ipynb",
+    "multimodel/sound_classification_and_object_detection_asynchronous.ipynb",
 ]
 
 
@@ -83,7 +79,7 @@ def open_and_execute(
     notebook_file: Path, code_cells_with_exception=[]
 ) -> nbformat.NotebookNode:
     """Helper function for executing a notebook using nbclient"""
-    with open(examples_dir / notebook_file, "r") as file:
+    with open(notebook_file, "r") as file:
         nb: nbformat.NotebookNode = nbformat.read(file, as_version=4)
 
     code_cells = [cell for cell in nb.cells if cell["cell_type"] == "code"]
@@ -92,6 +88,8 @@ def open_and_execute(
         if "tags" not in (metadata := code_cells[index - 1]["metadata"]):
             metadata["tags"] = []
         metadata["tags"].append("raises-exception")
+
+    chdir(notebook_file.parent)
 
     client = nbclient.NotebookClient(nb, timeout=600, kernel_name="python3")
     client.allow_errors = False
