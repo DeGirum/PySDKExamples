@@ -4,10 +4,7 @@
 
 ## Quick Start
 
-1. Create an account on [DeGirum Cloud Portal](https://cs.degirum.com). Use *Request Access* button on a main 
-page to request access.
-
-1. You should receive registration e-mail within one day. Follow instructions in e-mail to register your account.
+1. Sign up for an account on [DeGirum Cloud Portal](https://cs.degirum.com). 
 
 1. Log in to [DeGirum Cloud Portal](https://cs.degirum.com).
 
@@ -28,9 +25,10 @@ The inference result will be displayed in both text and graphical form.
     # load mobilenet_ssd model for CPU; model_name should be one returned by zoo.list_models()
     model_name = "mobilenet_v2_ssd_coco--300x300_quant_n2x_cpu_1"     
     model = zoo.load_model(model_name)
+    model.image_backend='pil'
 
     # perform AI inference of an image specified by URL
-    image_url = "https://degirum.github.io/images/samples/TwoCats.jpg"
+    image_url = "https://raw.githubusercontent.com/DeGirum/PySDKExamples/main/images/TwoCats.jpg"
     result = model(image_url)
 
     print(result)                # print numeric results
