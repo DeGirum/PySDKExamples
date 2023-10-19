@@ -1,10 +1,7 @@
----
-
-# [ORCA1 Performance Benchmarks](ORCABenchmarks.md) Now Available
-
----
-
 # DeGirum PySDK Examples
+
+> [!NOTE]
+> **[ORCA1 Performance Benchmarks](ORCABenchmarks.md)** Now Available
 
 ## Quick Start
 
