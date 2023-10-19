@@ -91,9 +91,8 @@ following variables:
 * [Basic Examples](#basic-examples)
 * [Combining Multiple Models](#combining-multiple-models)
 * [Advanced Algorithms](#advanced-algorithms)
-* [Operating with Datasets](#operating-with-datasets)
-* [Sound Processing](#sound-processing)
 * [Benchmarks](#benchmarks)
+* [Examples of `dgtools.streams` Toolkit Usage](#examples-of-dgtoolsstreams-toolkit-usage)
 
 ### Basic Examples
 
