@@ -79,7 +79,7 @@ following variables:
     |`DEGIRUM_CLOUD_TOKEN`|DeGirum cloud platform API access token. To obtain a token, visit *Management > My Tokens* page on [DeGirum Cloud Portal](https://cs.degirum.com).|
     |`AISERVER_HOSTNAME_OR_IP`|The hostname or IP address of a computer in your LAN/VPN which hosts AI Server. For localhost server, specify "localhost". Refer to *Documentation > General Information* page on [DeGirum Cloud Portal](https://cs.degirum.com) for AI server installation details.|
     |`CLOUD_ZOO_URL`|The cloud zoo URL to get models from. Format: `<organization>/<zoo>`. To confirm zoo URL visit *Management > Models* page on [DeGirum Cloud Portal](https://cs.degirum.com).|
-    |`CAMERA_ID`|Local camera index, or web camera URL in the format `rtsp://<user>:<password>@<ip or hostname>`, or path to a video file.|
+    |`CAMERA_ID`|Local camera index, or web camera URL in the format `rtsp://<user>:<password>@<ip or hostname>`, or path to a video file, or YouTube URL.|
 
     This will allow loading the required information from the `env.ini` file instead of hard-coding the values in the script. 
 
@@ -99,53 +99,41 @@ following variables:
 
 | Example | Description |
 |---------|-------------|
-|[ObjectDetectionImage](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionImage.ipynb)|One of the most simplest examples how to do AI inference of a graphical file using object detection model.|
-|[ObjectDetectionVideoFile](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionVideoFile.ipynb)|How to do AI inference of a video stream from a video file, show annotated video, and save it to another video file. |
-|[ObjectDetectionCameraStream](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionCameraStream.ipynb)|How to do AI inference of a video stream from a video camera and show annotated video in real-time.|
-|[ObjectDetectionVideoFile2Images](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionVideoFile2Images.ipynb)|How to do AI inference of a video stream from a video file and save annotated frame images into a directory.|
-|[ObjectDetectionSimple](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionSimple.ipynb)|A simple version of the ObjectDetectionImage sample, with cloud-related code removed for clarity.|
-|[UltralyticsObjectDetectionImage](https://github.com/DeGirum/PySDKExamples/blob/main/UltralyticsObjectDetectionImage.ipynb)|Example script illustrating Ultralytics YOLOv5n RELU6 object detection models on different runtimes|
-|[dgstreamsDemo](https://github.com/DeGirum/PySDKExamples/blob/main/dgstreamsDemo.ipynb)|Extensive demo notebook of `dgtools.streams` toolkit: lightweight multi-threaded pipelining framework|
+|[object detection image](https://github.com/DeGirum/PySDKExamples/blob/main/examples/basic/object_detection_image.ipynb)|One of the most simplest examples how to do AI inference of a graphical file using object detection model.|
+|[object detection video file](https://github.com/DeGirum/PySDKExamples/blob/main/examples/basic/object_detection_video_file.ipynb)|How to do AI inference of a video stream from a video file, show annotated video, and save it to another video file. |
+|[object detection camera stream](https://github.com/DeGirum/PySDKExamples/blob/main/examples/basic/object_detection_camera_stream.ipynb)|How to do AI inference of a video stream from a video camera and show annotated video in real-time.|
+|[sound classification audio stream](https://github.com/DeGirum/PySDKExamples/blob/main/examples/basic/sound_classification_audio_stream.ipynb.ipynb)|How to do sound classification AI inference of an audio stream from a local microphone in real time. The result label with highest probability is displayed for each inference while keeping history few steps back.|
 
 
 ### Combining Multiple Models
 
 | Example | Description |
 |---------|-------------|
-|[PersonPoseDetection PipelinedImage](https://github.com/DeGirum/PySDKExamples/blob/main/PersonPoseDetectionPipelinedImage.ipynb)|How to do AI inference of a graphical file using two AI models: person detection and pose detection. The person detection model is run on the image and the results are then processed by the pose detection model, one person bounding box at a time. Combined result is then displayed.|
-|[PersonPoseDetection PipelinedCameraStream](https://github.com/DeGirum/PySDKExamples/blob/main/PersonPoseDetectionPipelinedCameraStream.ipynb)|A video stream from a video camera is processed by the person detection model. The person detection results are then processed by the pose detection model, one person bounding box at a time. Combined results are then displayed as an annotated video in real-time.|
-|[FaceMaskDetection PipelinedImage](https://github.com/DeGirum/PySDKExamples/blob/main/FaceMaskDetectionPipelinedImage.ipynb)|How to do AI inference of a graphical file using two AI models: face detection and mask detection. The face detection model is run on the image and the results are then processed by the mask detection model, one face bounding box at a time. Combined result is then displayed.|
-|[FaceMaskDetection PipelinedCameraStream](https://github.com/DeGirum/PySDKExamples/blob/main/FaceMaskDetectionPipelinedCameraStream.ipynb)|A video stream from a video camera is processed by the face detection model. The face detection results are then processed by the mask detection model, one face bounding box at a time. Combined results are then displayed as an annotated video in real-time.|
-|[FaceHandDetection ParallelCameraStream](https://github.com/DeGirum/PySDKExamples/blob/main/FaceHandDetectionParallelCameraStream.ipynb)|How to run two models side-by-side and combine results of both models. A video stream from a video camera is processed simultaneously by the hand and face detection models. Combined result is then displayed.|
-|[MultiCamera MultiModelDetection](https://github.com/DeGirum/PySDKExamples/blob/main/MultiCameraMultiModelDetection.ipynb)|How to perform AI inferences of multiple models processing multiple video streams. Each video stream is fed to every model. Each model processes frames from every video stream in multiplexing manner.|
-
+|[face hand detection parallel camera stream](https://github.com/DeGirum/PySDKExamples/blob/main/examples/multimodel/face_hand_detection_parallel_camera_stream.ipynb)|How to run two models side-by-side and combine results of both models. A video stream from a video camera is processed simultaneously by the hand and face detection models. Combined result is then displayed.|
+|[license plate recognition pipelined image](https://github.com/DeGirum/PySDKExamples/blob/main/examples/multimodel/license_plate_recognition_pipelined_image.ipynb)|How to do AI inference of a graphical file using two AI models: license plate detection and license plate text recognition. The license plate detection model is run on the image and the results are then processed by the license plate text recognition model, one bounding box at a time. Combined result is then displayed.|
+|[license plate recognition pipelined camera stream](https://github.com/DeGirum/PySDKExamples/blob/main/examples/multimodel/license_plate_recognition_pipelined_camera_stream.ipynb)|A video stream from a video camera is processed by the license plate detection model. The face detection results are then processed by the license plate text recognition model, one bounding box at a time. Combined results are then displayed as an annotated video in real-time.|
+|[sound classification and object detection asynchronous](https://github.com/DeGirum/PySDKExamples/blob/main/examples/multimodel/sound_classification_and_object_detection_asynchronous.ipynb)|How to perform parallel inferences on two **asynchronous** data streams with different frame rates. To achieve maximum performance this example uses **non-blocking** batch prediction mode.|
 
 ### Advanced Algorithms
 
 | Example | Description |
 |---------|-------------|
-|[TiledObjectDetectionVideoFile](https://github.com/DeGirum/PySDKExamples/blob/main/TiledObjectDetectionVideoFile.ipynb)|How to do tiled object detection of a video stream from a video file. Each video frame is divided by tiles with some overlap, each tile of the AI model input size (to avoid resizing). Object detection is performed for each tile, then results from different tiles are combined. When motion detection mode is enabled, object detection is performed only for tiles where motion is detected.|
-|[MultiObjectTrackingVideoFile](https://github.com/DeGirum/PySDKExamples/blob/main/MultiObjectTrackingVideoFile.ipynb)|How to perform object detection with multi-object tracking (MOT) from a video file to count vehicle traffic.|
-
-
-### Operating with Datasets
-
-| Example | Description |
-|---------|-------------|
-|[ObjectDetectionDataset](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionDataset.ipynb)|How to do AI inference on an image dataset and calculate performance metrics. An image dataset is retrieved from the cloud using `fiftyone` API.|
-|[ObjectDetection DatasetMultithreaded](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionDatasetMultithreaded.ipynb)|How to do **multi-threaded** AI inference on an image dataset. An image dataset is retrieved from the cloud using `fiftyone` API.|
-
-### Sound Processing
-
-| Example | Description |
-|---------|-------------|
-|[SoundClassificationAudioStream](https://github.com/DeGirum/PySDKExamples/blob/main/SoundClassificationAudioStream.ipynb)|How to do sound classification AI inference of an audio stream from a local microphone in real time. The result label with highest probability is displayed for each inference while keeping history few steps back.|
-|[SoundClassificationAnd ObjectDetectionAsynchronous](https://github.com/DeGirum/PySDKExamples/blob/main/SoundClassificationAndObjectDetectionAsynchronous.ipynb)|How to perform parallel inferences on two **asynchronous** data streams with different frame rates. To achieve maximum performance this example uses **non-blocking** batch prediction mode.|
+|[multi object tracking video file](https://github.com/DeGirum/PySDKExamples/blob/main/examples/specialized/multi_object_tracking_video_file.ipynb)|How to perform object detection with multi-object tracking (MOT) from a video file to count vehicle traffic.|
+|[sliced object detection](https://github.com/DeGirum/PySDKExamples/blob/main/examples/specialized/sliced_object_detection.ipynb)|How to do sliced object detection of a video stream from a video file. Each video frame is divided by slices/tiles with some overlap, each tile of the AI model input size (to avoid resizing). Object detection is performed for each tile, then results from different tiles are combined. When motion detection mode is enabled, object detection is performed only for tiles where motion is detected.|
 
 ### Benchmarks
 
 | Example | Description |
 |---------|-------------|
-|[SingleModelPerformaceTest](https://github.com/DeGirum/PySDKExamples/blob/main/SingleModelPerformaceTest.ipynb)|Performance measurements for all Orca-based image detection AI models from DeGirum public model zoo.|
-|[MultiModelPerformaceTest](https://github.com/DeGirum/PySDKExamples/blob/main/MultiModelPerformaceTest.ipynb)|Performance measurements for simultaneous inference of multiple AI models.|
-|[ObjectDetection MultiplexingMultipleStreams](https://github.com/DeGirum/PySDKExamples/blob/main/ObjectDetectionMultiplexingMultipleStreams.ipynb)|How to perform object detection from multiple video files, multiplexing frames. This example demonstrates lowest possible and stable AI inference latency while maintaining decent throughput. This is achieved by using synchronous prediction mode and video decoding offloaded into separate thread.|
+|[single model performace test](https://github.com/DeGirum/PySDKExamples/blob/main/examples/benchmarks/single_model_performace_test.ipynb)|Performance measurements for all Orca-based image detection AI models from DeGirum public model zoo.|
+|[multi model performace test](https://github.com/DeGirum/PySDKExamples/blob/main/examples/benchmarks/multi_model_performace_test.ipynb)|Performance measurements for simultaneous inference of multiple AI models.|
+|[object detection multiplexing multiple streams](https://github.com/DeGirum/PySDKExamples/blob/main/examples/benchmarks/object_detection_multiplexing_multiple_streams.ipynb)|How to perform object detection from multiple video files, multiplexing frames. This example demonstrates lowest possible and stable AI inference latency while maintaining decent throughput. This is achieved by using synchronous prediction mode and video decoding offloaded into separate thread.|
+|[object detection dataset evaluation](https://github.com/DeGirum/PySDKExamples/blob/main/examples/benchmarks/object_detection_dataset_evaluation.ipynb)|How to do AI inference on an image dataset and calculate performance metrics. An image dataset is retrieved from the cloud using `fiftyone` API.|
+
+### Examples of `dgtools.streams` Toolkit Usage
+
+| Example | Description |
+|---------|-------------|
+|[dgstreams demo](https://github.com/DeGirum/PySDKExamples/blob/main/examples/dgstreams/dgstreams_demo.ipynb)|Extensive demo notebook of `dgtools.streams` toolkit: lightweight multi-threaded pipelining framework|
+|[multi camera multi model detection](https://github.com/DeGirum/PySDKExamples/blob/main/examples/dgstreams/multi_camera_multi_model_detection.ipynb)|How to perform AI inferences of multiple models processing multiple video streams. Each video stream is fed to every model. Each model processes frames from every video stream in multiplexing manner.|
+|[person pose detection pipelined camera stream](https://github.com/DeGirum/PySDKExamples/blob/main/examples/dgstreams/person_pose_detection_pipelined_camera_stream.ipynb)|A video stream from a video camera is processed by the person detection model. The person detection results are then processed by the pose detection model, one person bounding box at a time. Combined results are then displayed as an annotated video in real-time.|
