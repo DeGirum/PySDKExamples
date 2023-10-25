@@ -5,3 +5,4 @@ __pycache__/
 test/output/
 .vscode/
 datasets/*
+*.json
