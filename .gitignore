@@ -4,3 +4,4 @@ env.ini
 __pycache__/
 test/output/
 .vscode/
+datasets/*
