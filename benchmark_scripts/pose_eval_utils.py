@@ -69,7 +69,7 @@ class PoseModelEvaluator:
         self,
         dg_model,
         classmap=None,
-        pred_path="predictions.json",
+        pred_path="predictions-pose.json",
         output_confidence_threshold=0.001,
         output_nms_threshold=0.7,
         output_max_detections=300,
@@ -207,11 +207,21 @@ class PoseModelEvaluator:
             json.dump(jdict, f, indent=4)
 
         pred = anno.loadRes(self.pred_path)
-        eval_obj = COCOeval(anno, pred, "bbox")
-        eval_obj.params.imgIds = [
+        # bbox
+        eval_obj_bb = COCOeval(anno, pred, "bbox")
+        eval_obj_bb.params.imgIds = [
             file["id"] for file in files_dict
         ]  # image IDs to evaluate
-        eval_obj.evaluate()
-        eval_obj.accumulate()
-        eval_obj.summarize()
-        return eval_obj.stats
+        eval_obj_bb.evaluate()
+        eval_obj_bb.accumulate()
+        eval_obj_bb.summarize()
+        # keypoints
+        eval_obj_kp = COCOeval(anno, pred, "keypoints")
+        eval_obj_kp.params.imgIds = [
+            file["id"] for file in files_dict
+        ]  # image IDs to evaluate
+        eval_obj_kp.evaluate()
+        eval_obj_kp.accumulate()
+        eval_obj_kp.summarize()
+        
+        return eval_obj_bb.stats, eval_obj_kp.stats
