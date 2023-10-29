@@ -12,7 +12,7 @@ from typing import List
 import numpy as np
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
-
+from custom_pp import Yolov8PoseDetection
 
 def xyxy2xywh(x):
     """
@@ -132,6 +132,9 @@ class PoseModelEvaluator:
             self.dg_model.input_letterbox_fill_color = input_letterbox_fill_color
         else:
             raise Exception("Model loaded for evaluation is not a Detection Model")
+        
+        self.dg_model.output_postprocess_type = 'None'
+        self.dg_model.custom_postprocessor = Yolov8PoseDetection
 
     @classmethod
     def init_from_yaml(cls, dg_model, config_yaml):
@@ -191,6 +194,7 @@ class PoseModelEvaluator:
 
         if num_val_images > 0:
             path_list = path_list[0:num_val_images]
+        path_list = ['/data/coco-pose/images/val2017/000000000139.jpg']
 
         with self.dg_model:
             for image_number, predictions in enumerate(

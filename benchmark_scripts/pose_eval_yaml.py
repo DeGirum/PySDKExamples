@@ -7,7 +7,10 @@ from pose_eval_utils import PoseModelEvaluator
 cloud_token = dgtools.get_token()  # get cloud API access token from env.ini file
 cloud_zoo_url = dgtools.get_cloud_zoo_url()  # get cloud zoo URL from env.ini file
 
-zoo = dg.connect(dg.CLOUD, cloud_zoo_url, cloud_token)
+# zoo = dg.connect(dg.CLOUD, cloud_zoo_url, cloud_token)
+
+zoo = dg.connect(dg.LOCAL, '/home/mehrdad/wa/DG/PySDKExamples/yolov8n-pose/yolov8n-pose.json', cloud_token)
+
 
 def validate(model_name:str, 
             img_folder_path:str, 

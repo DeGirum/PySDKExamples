@@ -1,14 +1,18 @@
 ## @package Trivial Post Processor for unit tests
-
+import torch
+import torchvision
 import numpy as np
 import json
 import math
 import time
 ## Post-processor class
 # It must have fixed name 'PostProcessor'
+
 class PostProcessor:
-    def __init__( self ,json_config):
-        self._json_config = json.loads(json_config)
+    def __init__(self, json_config):
+        with open(json_config, 'r') as j:
+            self._json_config = json.loads(j.read())
+        # self._json_config = json.loads(json_config)
         self._output_conf_threshold = float(self._json_config["POST_PROCESS"][0]["OutputConfThreshold"])
         self._output_nms_threshold = float(self._json_config["POST_PROCESS"][0]["OutputNMSThreshold"])
         self._maximum_detections_per_class = int(self._json_config["POST_PROCESS"][0]["MaxDetectionsPerClass"])
@@ -17,7 +21,7 @@ class PostProcessor:
         self._input_c = int(self._json_config["PRE_PROCESS"][0]["InputC"])
         self._landmark_labels = self._json_config["POST_PROCESS"][0]["LandmarkLabels"]
         self._connections = self._json_config["POST_PROCESS"][0]["Connections"]
-        self._label_json_config = self._json_config["POST_PROCESS"][0]["LabelsPath"]
+        self._label_json_config = 'yolov8n-pose/labels_coco_pose.json' # self._json_config["POST_PROCESS"][0]["LabelsPath"]
         with open(self._label_json_config, 'r') as json_file:
             labels = json.load(json_file)
             self._label = labels["0"]
@@ -234,8 +238,8 @@ class PostProcessor:
                 x = np.concatenate((box, conf, j, mask), axis=1)
 
             # Filter by class
-                if classes is not None:
-                    x = x[(x[:, 5:6] == np.any(classes, axis=1))]
+            if classes is not None:
+                x = x[(x[:, 5:6] == np.any(classes, axis=1))]
 
             #       # Check shape
             n = x.shape[0]  # number of boxes
@@ -250,14 +254,52 @@ class PostProcessor:
             c = x[:, 5:6] * (0 if agnostic else max_wh)  # classes
             boxes, scores = x[:, :4] + c, x[:, 4]  # boxes (offset by class), scores
 
-            scores = scores.reshape(scores.shape[0], 1)
-            con = np.concatenate((boxes, scores), axis=1)
-            keep_boxes = self.nms(con, iou_thres)  # NMS
+            boxes_t = torch.from_numpy(boxes)
+            scores_t = torch.from_numpy(scores)
+            keep_boxes_t = torchvision.ops.nms(boxes_t, scores_t, iou_thres)
+            keep_boxes = keep_boxes_t.numpy().tolist()
+
+            # scores = scores.reshape(scores.shape[0], 1)
+            # con = np.concatenate((boxes, scores), axis=1)
+            # keep_boxes = self.nms(con, iou_thres)  # NMS
+            
             keep_boxes = keep_boxes[:max_det]  # limit detections
 
             for k in keep_boxes:
                 output.append(np.array([x[k]]))
         return output
+
+def scale_boxes(self, img1_shape, boxes, img0_shape, ratio_pad=None, padding=True):
+    """
+    Rescales bounding boxes (in the format of xyxy) from the shape of the image they were originally specified in
+    (img1_shape) to the shape of a different image (img0_shape).
+
+    Args:
+        img1_shape (tuple): The shape of the image that the bounding boxes are for, in the format of (height, width).
+        boxes (torch.Tensor): the bounding boxes of the objects in the image, in the format of (x1, y1, x2, y2)
+        img0_shape (tuple): the shape of the target image, in the format of (height, width).
+        ratio_pad (tuple): a tuple of (ratio, pad) for scaling the boxes. If not provided, the ratio and pad will be
+            calculated based on the size difference between the two images.
+        padding (bool): If True, assuming the boxes is based on image augmented by yolo style. If False then do regular
+            rescaling.
+
+    Returns:
+        boxes (torch.Tensor): The scaled bounding boxes, in the format of (x1, y1, x2, y2)
+    """
+    if ratio_pad is None:  # calculate from img0_shape
+        gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])  # gain  = old / new
+        pad = round((img1_shape[1] - img0_shape[1] * gain) / 2 - 0.1), round(
+            (img1_shape[0] - img0_shape[0] * gain) / 2 - 0.1)  # wh padding
+    else:
+        gain = ratio_pad[0][0]
+        pad = ratio_pad[1]
+
+    if padding:
+        boxes[..., [0, 2]] -= pad[0]  # x padding
+        boxes[..., [1, 3]] -= pad[1]  # y padding
+    boxes[..., :4] /= gain
+    clip_boxes(boxes, img0_shape)
+    return boxes
 
             
     def decode_kpts(self, preds, img_shape, kpts, kpt_shape, bs=1):
@@ -321,4 +363,4 @@ class PostProcessor:
                 'landmarks': landmarks
             }
             new_inference_results.append(result)
-        return json.dumps(new_inference_results)
+        return new_inference_results
