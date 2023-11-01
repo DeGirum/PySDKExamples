@@ -22,7 +22,7 @@ def validate(model_name:str,
         img_folder_path,
         ground_truth_annotations_path=anno_json,
         num_val_images=0,
-        print_frequency=100,
+        print_frequency=1000,
     )
 
     return map_results
