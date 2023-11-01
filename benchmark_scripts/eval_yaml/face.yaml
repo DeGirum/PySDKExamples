@@ -4,12 +4,12 @@ pred_path : 'predictions.json'
 output_confidence_threshold : 0.001
 output_nms_threshold : 0.7
 output_max_detections : 300
-output_max_detections_per_class : 100
+output_max_detections_per_class : 300
 output_max_classes_per_detection : 1
 output_use_regular_nms : True
 input_resize_method : "bilinear"
 input_pad_method : "letterbox"
 image_backend : "opencv"
-input_img_fmt : "JPEG"
+input_img_fmt : "RAW"
 input_letterbox_fill_color : [114, 114, 114]
 input_numpy_colorspace : "auto"

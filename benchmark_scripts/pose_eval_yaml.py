@@ -8,8 +8,9 @@ cloud_token = dgtools.get_token()  # get cloud API access token from env.ini fil
 cloud_zoo_url = dgtools.get_cloud_zoo_url()  # get cloud zoo URL from env.ini file
 
 # zoo = dg.connect(dg.CLOUD, cloud_zoo_url, cloud_token)
+# # zoo = dg.connect('100.111.131.89', cloud_zoo_url, cloud_token)
 
-zoo = dg.connect(dg.LOCAL, '/home/mehrdad/wa/DG/PySDKExamples/yolov8n-pose/yolov8n-pose.json', cloud_token)
+zoo = dg.connect(dg.LOCAL, 'benchmark_scripts/yolov8n-pose/yolov8n-pose.json', cloud_token)
 
 
 def validate(model_name:str, 
@@ -26,8 +27,9 @@ def validate(model_name:str,
     map_results = map_evaluator.evaluate(
         img_folder_path,
         ground_truth_annotations_path=anno_json,
-        num_val_images=0,
+        num_val_images=10,
         print_frequency=100,
+        label_check=False
     )
 
     return map_results
