@@ -1,0 +1,132 @@
+{
+    "ConfigVersion": 6,
+    "Checksum": "b51d770ac31838ec41b19a667ea6d9ca4843c47b9d379fbe6eed9a0391dad15c",
+    "DEVICE": [
+      {
+        "DeviceType": "CPU",
+        "RuntimeAgent": "OPENVINO"
+      }
+    ],
+    "PRE_PROCESS": [
+      {
+        "InputType": "Image",
+        "InputN": 1,
+        "InputResizeMethod": "bilinear",
+        "InputPadMethod": "letterbox",
+        "ImageBackend": "auto",
+        "InputH": 640,
+        "InputW": 640,
+        "InputC": 3,
+        "InputQuantEn": false,
+        "InputQuantOffset": 0,
+        "InputQuantScale": 1,
+        "InputTensorLayout": "NCHW",
+        "InputImgNormEn": true,
+        "InputImgNormCoeff": 0.00392156862745098,
+        "InputImgSliceType": "None",
+        "InputColorSpace": "RGB"
+      }
+    ],
+    "MODEL_PARAMETERS": [
+      {
+        "ModelPath": "yolov8n-pose.xml"
+      }
+    ],
+    "POST_PROCESS": [
+      {
+        "OutputPostprocessType": "Detection",
+        "PostProcessorInputs": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "PythonFile": "landmarks_detection.py",
+        "LandmarkLabels": [
+          "Nose",
+          "LeftEye",
+          "RightEye",
+          "leftEar",
+          "RightEar",
+          "leftShoulder",
+          "RightShoulder",
+          "LeftElbow",
+          "RightElbow",
+          "LeftWrist",
+          "RightWrist",
+          "LeftHip",
+          "RightHip",
+          "LeftKnee",
+          "RightKnee",
+          "LeftAnkle",
+          "RightAnkle"
+        ],
+        "Connections": {
+          "5": [
+            7,
+            11,
+            6
+          ],
+          "6": [
+            8,
+            12,
+            5
+          ],
+          "7": [
+            9,
+            5
+          ],
+          "8": [
+            10,
+            6
+          ],
+          "9": [
+            7
+          ],
+          "10": [
+            8
+          ],
+          "11": [
+            13,
+            5,
+            12
+          ],
+          "12": [
+            14,
+            6,
+            11
+          ],
+          "13": [
+            15,
+            11
+          ],
+          "14": [
+            16,
+            12
+          ],
+          "15": [
+            13
+          ],
+          "16": [
+            14
+          ]
+        },
+        "XScale": 1,
+        "YScale": 1,
+        "HScale": 1,
+        "WScale": 1,
+        "OutputNumClasses": 1,
+        "OutputNMSThreshold": 0.6,
+        "MaxDetectionsPerClass": 100,
+        "MaxClassesPerDetection": 1,
+        "UseRegularNMS": true,
+        "OutputClassIDAdjustment": 0,
+        "OutputConfThreshold": 0.3,
+        "MaxDetections": 20,
+        "LabelsPath": "labels_coco_pose.json"
+      }
+    ]
+  }
