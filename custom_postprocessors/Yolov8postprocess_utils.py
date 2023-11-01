@@ -138,7 +138,7 @@ def nms(boxes, overlap_threshold=0.2, min_mode=False):
     x2 = boxes[:, 2]
     y2 = boxes[:, 3]
     scores = boxes[:, 4]
-    areas = (x2 - x1 + 1) * (y2 - y1 + 1)
+    areas = (x2 - x1) * (y2 - y1)
     index_array = scores.argsort()[::-1]
     keep = []
     while index_array.size > 0:
@@ -148,8 +148,8 @@ def nms(boxes, overlap_threshold=0.2, min_mode=False):
         x2_ = np.minimum(x2[index_array[0]], x2[index_array[1:]])
         y2_ = np.minimum(y2[index_array[0]], y2[index_array[1:]])
 
-        w = np.maximum(0.0, x2_ - x1_ + 1)
-        h = np.maximum(0.0, y2_ - y1_ + 1)
+        w = np.maximum(0.0, x2_ - x1_)
+        h = np.maximum(0.0, y2_ - y1_)
         inter = w * h
 
         if min_mode:
