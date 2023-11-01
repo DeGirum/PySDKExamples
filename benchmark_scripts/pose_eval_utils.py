@@ -186,14 +186,15 @@ class PoseModelEvaluator:
         num_images = len(anno.dataset["images"])
         files_dict = anno.dataset["images"][0:num_images]
         path_list : List[str]  = []
+        img_id_list : List[str]  = []
         for image_number in range(0, num_images):
             image_id = files_dict[image_number]["id"]
             path = os.path.join(
                 image_folder_path, files_dict[image_number]["file_name"]
             )
-            label_path = path.replace("images", "labels").replace(".jpg", ".txt")
-            if os.path.exists(path) and (not label_check or os.path.exists(label_path)):
+            if os.path.exists(path):
                 path_list.append(path)
+                img_id_list.append(image_id)
 
         if num_val_images > 0:
             path_list = path_list[0:num_val_images]
@@ -207,7 +208,7 @@ class PoseModelEvaluator:
                 if print_frequency > 0:
                     if image_number % print_frequency == print_frequency - 1:
                         print(image_number + 1)
-                image_id = files_dict[image_number]["id"]
+                image_id = img_id_list[image_number]
                 save_results_coco_json(
                     predictions.results, jdict, image_id, self.classmap
                 )
