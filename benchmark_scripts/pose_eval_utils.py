@@ -12,7 +12,7 @@ from typing import List
 import numpy as np
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
-from custom_pp import Yolov8PoseDetection
+# from custom_pp import Yolov8PoseDetection
 
 def xyxy2xywh(x):
     """
@@ -133,8 +133,8 @@ class PoseModelEvaluator:
         else:
             raise Exception("Model loaded for evaluation is not a Detection Model")
         
-        self.dg_model.output_postprocess_type = 'None'
-        self.dg_model.custom_postprocessor = Yolov8PoseDetection
+        # self.dg_model.output_postprocess_type = 'None'
+        # self.dg_model.custom_postprocessor = Yolov8PoseDetection
 
     @classmethod
     def init_from_yaml(cls, dg_model, config_yaml):
@@ -169,6 +169,7 @@ class PoseModelEvaluator:
         ground_truth_annotations_path: str,
         num_val_images: int = 0,
         print_frequency: int = 0,
+        label_check: bool = False
     ):
         """Evaluation for the Detection model.
 
@@ -190,11 +191,14 @@ class PoseModelEvaluator:
             path = os.path.join(
                 image_folder_path, files_dict[image_number]["file_name"]
             )
-            path_list.append(path)
+            label_path = path.replace("images", "labels").replace(".jpg", ".txt")
+            if os.path.exists(path) and (not label_check or os.path.exists(label_path)):
+                path_list.append(path)
 
         if num_val_images > 0:
             path_list = path_list[0:num_val_images]
-        path_list = ['/data/coco-pose/images/val2017/000000000139.jpg']
+
+        # path_list = ['/data/coco-pose/images/val2017/000000000139.jpg']
 
         with self.dg_model:
             for image_number, predictions in enumerate(
@@ -207,6 +211,7 @@ class PoseModelEvaluator:
                 save_results_coco_json(
                     predictions.results, jdict, image_id, self.classmap
                 )
+
         with open(self.pred_path, "w") as f:
             json.dump(jdict, f, indent=4)
 

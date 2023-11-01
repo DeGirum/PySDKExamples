@@ -1,5 +1,5 @@
 
-from landmarks_detection import PostProcessor
+from benchmark_scripts.landmarks_detection_renamed import PostProcessor
 import degirum as dg
 
 PP = PostProcessor("/home/mehrdad/wa/DG/PySDKExamples/yolov8n-pose/yolov8n-pose.json")
