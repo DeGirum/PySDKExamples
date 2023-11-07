@@ -196,19 +196,24 @@ class PoseModelEvaluator:
                 path_list.append(path)
                 img_id_list.append(image_id)
 
-        if num_val_images > 0:
-            path_list = path_list[0:num_val_images]
+        # sort the image ids to match ultralytic repo
+        sorted_indices = sorted(range(len(img_id_list)), key=lambda i: img_id_list[i])
+        sorted_img_id_list = [img_id_list[i] for i in sorted_indices]
+        sorted_path_list = [path_list[i] for i in sorted_indices]
 
-        # path_list = ['/data/coco-pose/images/val2017/000000000139.jpg']
+        if num_val_images > 0:
+            sorted_path_list = sorted_path_list[0:num_val_images]
+
+        # sorted_path_list = ['/data/coco-pose/images/val2017/000000000139.jpg']
 
         with self.dg_model:
             for image_number, predictions in enumerate(
-                self.dg_model.predict_batch(path_list)
+                self.dg_model.predict_batch(sorted_path_list)
             ):
                 if print_frequency > 0:
                     if image_number % print_frequency == print_frequency - 1:
                         print(image_number + 1)
-                image_id = img_id_list[image_number]
+                image_id = sorted_img_id_list[image_number]
                 save_results_coco_json(
                     predictions.results, jdict, image_id, self.classmap
                 )
