@@ -10,9 +10,12 @@ import json
 import os
 from typing import List
 import numpy as np
+import cv2
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
+
 # from custom_pp import Yolov8PoseDetection
+
 
 def xyxy2xywh(x):
     """
@@ -32,14 +35,16 @@ def xyxy2xywh(x):
     y[:, 3] = x[:, 3] - x[:, 1]  # height
     return y
 
+
 def get_keypoints(keypoints_res):
-    keypoints=[]
+    keypoints = []
     for ldmks in keypoints_res:
         kypts = ldmks["landmark"]
         kypts_score = ldmks["score"]
-        keypoints.extend(float(x) for x in kypts)   
+        keypoints.extend(float(x) for x in kypts)
         keypoints.append(kypts_score)
     return keypoints
+
 
 def save_results_coco_json(results, jdict, image_id, class_map=None):
     """Serialize YOLO predictions to COCO json format."""
@@ -56,13 +61,59 @@ def save_results_coco_json(results, jdict, image_id, class_map=None):
                 "image_id": image_id,
                 "category_id": category_id,
                 "bbox": [np.round(x, 3) for x in box],
-                'keypoints': get_keypoints(result["landmarks"]),
+                "keypoints": get_keypoints(result["landmarks"]),
                 "score": np.round(result["score"], 5),
             }
         )
         max_category_id = max(max_category_id, category_id)
 
     return max_category_id
+
+
+def letterbox(image):
+    """Return updated labels and image with added border."""
+    auto = False
+    scaleFill = False
+    stride = 32
+    scaleup = False
+    center = True
+    img = image
+    shape = img.shape[:2]  # current shape [height, width]
+    # new_shape = labels.pop("rect_shape", new_shape)
+    new_shape = (640, 640)
+    if isinstance(new_shape, int):
+        new_shape = (new_shape, new_shape)
+
+    # Scale ratio (new / old)
+    r = min(new_shape[0] / shape[0], new_shape[1] / shape[1])
+    if not scaleup:  # only scale down, do not scale up (for better val mAP)
+        r = min(r, 1.0)
+
+    # Compute padding
+    ratio = r, r  # width, height ratios
+    new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
+    dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]  # wh padding
+    if auto:  # minimum rectangle
+        dw, dh = np.mod(dw, stride), np.mod(dh, stride)  # wh padding
+    elif scaleFill:  # stretch
+        dw, dh = 0.0, 0.0
+        new_unpad = (new_shape[1], new_shape[0])
+        ratio = new_shape[1] / shape[1], new_shape[0] / shape[0]  # width, height ratios
+
+    if center:
+        dw /= 2  # divide padding into 2 sides
+        dh /= 2
+
+    if shape[::-1] != new_unpad:  # resize
+        img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_LINEAR)
+    top, bottom = int(round(dh - 0.1)) if center else 0, int(round(dh + 0.1))
+    left, right = int(round(dw - 0.1)) if center else 0, int(round(dw + 0.1))
+    img = cv2.copyMakeBorder(
+        img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=(114, 114, 114)
+    )  # add border
+
+    return img
+
 
 class PoseModelEvaluator:
     def __init__(
@@ -132,7 +183,7 @@ class PoseModelEvaluator:
             self.dg_model.input_letterbox_fill_color = input_letterbox_fill_color
         else:
             raise Exception("Model loaded for evaluation is not a Detection Model")
-        
+
         # self.dg_model.output_postprocess_type = 'None'
         # self.dg_model.custom_postprocessor = Yolov8PoseDetection
 
@@ -169,7 +220,7 @@ class PoseModelEvaluator:
         ground_truth_annotations_path: str,
         num_val_images: int = 0,
         print_frequency: int = 0,
-        label_check: bool = False
+        label_check: bool = False,
     ):
         """Evaluation for the Detection model.
 
@@ -181,12 +232,17 @@ class PoseModelEvaluator:
 
         Returns the mAP statistics.
         """
-        jdict : List[dict]  = []
+        jdict: List[dict] = []
+        print(
+            self.dg_model.output_confidence_threshold,
+            self.dg_model.output_nms_threshold,
+            self.dg_model.output_max_detections,
+        )
         anno = COCO(ground_truth_annotations_path)
         num_images = len(anno.dataset["images"])
         files_dict = anno.dataset["images"][0:num_images]
-        path_list : List[str]  = []
-        img_id_list : List[str]  = []
+        path_list: List[str] = []
+        img_id_list: List[str] = []
         for image_number in range(0, num_images):
             image_id = files_dict[image_number]["id"]
             path = os.path.join(
@@ -198,8 +254,16 @@ class PoseModelEvaluator:
 
         # sort the image ids to match ultralytic repo
         sorted_indices = sorted(range(len(img_id_list)), key=lambda i: img_id_list[i])
+        # print(path_list, sorted_indices)
         sorted_img_id_list = [img_id_list[i] for i in sorted_indices]
-        sorted_path_list = [path_list[i] for i in sorted_indices]
+        sorted_path_list = []
+        for i in sorted_indices:
+            img = cv2.imread(path_list[i])
+            sorted_path_list.append(letterbox(img))
+
+        # sorted_path_list = [path_list[i] for i in sorted_indices]
+
+        print(len(sorted_path_list))
 
         if num_val_images > 0:
             sorted_path_list = sorted_path_list[0:num_val_images]
@@ -238,5 +302,5 @@ class PoseModelEvaluator:
         eval_obj_kp.evaluate()
         eval_obj_kp.accumulate()
         eval_obj_kp.summarize()
-        
+
         return eval_obj_bb.stats, eval_obj_kp.stats
