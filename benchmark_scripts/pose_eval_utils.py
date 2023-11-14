@@ -204,7 +204,7 @@ class PoseModelEvaluator:
         if num_val_images > 0:
             sorted_path_list = sorted_path_list[0:num_val_images]
 
-        # sorted_path_list = ['/data/coco-pose/images/val2017/000000000139.jpg']
+        sorted_path_list = ['/data/ml-data/val2017_2346/000000006471.jpg']
 
         with self.dg_model:
             for image_number, predictions in enumerate(
