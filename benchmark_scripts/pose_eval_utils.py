@@ -32,14 +32,16 @@ def xyxy2xywh(x):
     y[:, 3] = x[:, 3] - x[:, 1]  # height
     return y
 
+
 def get_keypoints(keypoints_res):
-    keypoints=[]
+    keypoints = []
     for ldmks in keypoints_res:
         kypts = ldmks["landmark"]
         kypts_score = ldmks["score"]
-        keypoints.extend(float(x) for x in kypts)   
+        keypoints.extend(float(x) for x in kypts)
         keypoints.append(kypts_score)
     return keypoints
+
 
 def save_results_coco_json(results, jdict, image_id, class_map=None):
     """Serialize YOLO predictions to COCO json format."""
@@ -56,13 +58,14 @@ def save_results_coco_json(results, jdict, image_id, class_map=None):
                 "image_id": image_id,
                 "category_id": category_id,
                 "bbox": [np.round(x, 3) for x in box],
-                'keypoints': get_keypoints(result["landmarks"]),
+                "keypoints": get_keypoints(result["landmarks"]),
                 "score": np.round(result["score"], 5),
             }
         )
         max_category_id = max(max_category_id, category_id)
 
     return max_category_id
+
 
 class PoseModelEvaluator:
     def __init__(
@@ -132,7 +135,7 @@ class PoseModelEvaluator:
             self.dg_model.input_letterbox_fill_color = input_letterbox_fill_color
         else:
             raise Exception("Model loaded for evaluation is not a Detection Model")
-        
+
         # self.dg_model.output_postprocess_type = 'None'
         # self.dg_model.custom_postprocessor = Yolov8PoseDetection
 
@@ -169,7 +172,6 @@ class PoseModelEvaluator:
         ground_truth_annotations_path: str,
         num_val_images: int = 0,
         print_frequency: int = 0,
-        label_check: bool = False
     ):
         """Evaluation for the Detection model.
 
@@ -181,12 +183,12 @@ class PoseModelEvaluator:
 
         Returns the mAP statistics.
         """
-        jdict : List[dict]  = []
+        jdict: List[dict] = []
         anno = COCO(ground_truth_annotations_path)
         num_images = len(anno.dataset["images"])
         files_dict = anno.dataset["images"][0:num_images]
-        path_list : List[str]  = []
-        img_id_list : List[str]  = []
+        path_list: List[str] = []
+        img_id_list: List[str] = []
         for image_number in range(0, num_images):
             image_id = files_dict[image_number]["id"]
             path = os.path.join(
@@ -203,8 +205,6 @@ class PoseModelEvaluator:
 
         if num_val_images > 0:
             sorted_path_list = sorted_path_list[0:num_val_images]
-
-        sorted_path_list = ['/data/ml-data/val2017_2346/000000006471.jpg']
 
         with self.dg_model:
             for image_number, predictions in enumerate(
@@ -225,15 +225,15 @@ class PoseModelEvaluator:
         # bbox
         eval_obj_bb = COCOeval(anno, pred, "bbox")
         eval_obj_bb.params.imgIds = [
-            file["id"] for file in files_dict
-        ]  # image IDs to evaluate
+            id for id in sorted_img_id_list
+        ]  # image IDs to evaluate 
         eval_obj_bb.evaluate()
         eval_obj_bb.accumulate()
         eval_obj_bb.summarize()
         # keypoints
         eval_obj_kp = COCOeval(anno, pred, "keypoints")
         eval_obj_kp.params.imgIds = [
-            file["id"] for file in files_dict
+            id for id in sorted_img_id_list
         ]  # image IDs to evaluate
         eval_obj_kp.evaluate()
         eval_obj_kp.accumulate()

@@ -29,7 +29,6 @@ def validate(model_name:str,
         ground_truth_annotations_path=anno_json,
         num_val_images=0,
         print_frequency=100,
-        label_check=False
     )
 
     return map_results
