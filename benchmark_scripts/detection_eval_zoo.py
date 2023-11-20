@@ -64,12 +64,13 @@ if __name__ == '__main__':
             count += 1
             print(f'{count} = ', model_name)
             try:
-                map = validate(model_name=model_name, img_folder_path=args.data, anno_json=args.annotations, cfg_yaml=args.cfg)
+                map_list = validate(model_name=model_name, img_folder_path=args.data, anno_json=args.annotations, cfg_yaml=args.cfg)
                 
-                data = [ model_name, *map, img_count, args.data, args.annotations, args.cfg ]
-                with open(csv_file, mode='a', newline='') as file:
-                    writer = csv.writer(file)
-                    writer.writerow(data)
+                for i, map in enumerate(map_list):
+                    data = [model_name, i, *map, img_count, args.data, args.annotations, args.cfg]
+                    with open(csv_file, mode='a', newline='') as file:
+                        writer = csv.writer(file)
+                        writer.writerow(data)
             except Exception as e:
                 print(f"Error in {model_name}\n", e)
             
