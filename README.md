@@ -86,7 +86,7 @@ following variables:
 * [Combining Multiple Models](#combining-multiple-models)
 * [Advanced Algorithms](#advanced-algorithms)
 * [Benchmarks](#benchmarks)
-* [Examples of `dgtools.streams` Toolkit Usage](#examples-of-dgtoolsstreams-toolkit-usage)
+* [Examples of `degirum_tools.streams` Toolkit Usage](#examples-of-degirum_toolsstreams-toolkit-usage)
 
 ### Basic Examples
 
@@ -123,10 +123,10 @@ following variables:
 |[object detection multiplexing multiple streams](https://github.com/DeGirum/PySDKExamples/blob/main/examples/benchmarks/object_detection_multiplexing_multiple_streams.ipynb)|How to perform object detection from multiple video files, multiplexing frames. This example demonstrates lowest possible and stable AI inference latency while maintaining decent throughput. This is achieved by using synchronous prediction mode and video decoding offloaded into separate thread.|
 |[object detection dataset evaluation](https://github.com/DeGirum/PySDKExamples/blob/main/examples/benchmarks/object_detection_dataset_evaluation.ipynb)|How to do AI inference on an image dataset and calculate performance metrics. An image dataset is retrieved from the cloud using `fiftyone` API.|
 
-### Examples of `dgtools.streams` Toolkit Usage
+### Examples of `degirum_tools.streams` Toolkit Usage
 
 | Example | Description |
 |---------|-------------|
-|[dgstreams demo](https://github.com/DeGirum/PySDKExamples/blob/main/examples/dgstreams/dgstreams_demo.ipynb)|Extensive demo notebook of `dgtools.streams` toolkit: lightweight multi-threaded pipelining framework|
+|[dgstreams demo](https://github.com/DeGirum/PySDKExamples/blob/main/examples/dgstreams/dgstreams_demo.ipynb)|Extensive demo notebook of `degirum_tools.streams` toolkit: lightweight multi-threaded pipelining framework|
 |[multi camera multi model detection](https://github.com/DeGirum/PySDKExamples/blob/main/examples/dgstreams/multi_camera_multi_model_detection.ipynb)|How to perform AI inferences of multiple models processing multiple video streams. Each video stream is fed to every model. Each model processes frames from every video stream in multiplexing manner.|
 |[person pose detection pipelined camera stream](https://github.com/DeGirum/PySDKExamples/blob/main/examples/dgstreams/person_pose_detection_pipelined_camera_stream.ipynb)|A video stream from a video camera is processed by the person detection model. The person detection results are then processed by the pose detection model, one person bounding box at a time. Combined results are then displayed as an annotated video in real-time.|
