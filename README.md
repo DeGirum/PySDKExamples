@@ -94,7 +94,7 @@ following variables:
 |[object detection image](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/basic/object_detection_image.ipynb)|One of the most simplest examples how to do AI inference of a graphical file using object detection model.|
 |[object detection video file](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/basic/object_detection_video_file.ipynb)|How to do AI inference of a video stream from a video file, show annotated video, and save it to another video file. |
 |[object detection camera stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/basic/object_detection_camera_stream.ipynb)|How to do AI inference of a video stream from a video camera and show annotated video in real-time.|
-|[sound classification audio stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/basic/sound_classification_audio_stream.ipynb.ipynb)|How to do sound classification AI inference of an audio stream from a local microphone in real time. The result label with highest probability is displayed for each inference while keeping history few steps back.|
+|[sound classification audio stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/basic/sound_classification_audio_stream.ipynb)|How to do sound classification AI inference of an audio stream from a local microphone in real time. The result label with highest probability is displayed for each inference while keeping history few steps back.|
 
 
 ### Combining Multiple Models
