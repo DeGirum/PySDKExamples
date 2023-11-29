@@ -1,5 +1,2 @@
-scipy
 degirum_tools
 ipykernel
-cython_bbox
-git+https://github.com/DeGirum/lap.git
