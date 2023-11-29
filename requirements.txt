@@ -1,4 +1,4 @@
 scipy
 degirum_tools
-lap
 cython_bbox
+git+https://github.com/DeGirum/lap.git
