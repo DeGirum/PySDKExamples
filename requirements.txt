@@ -1,11 +1,2 @@
-packaging
-numpy
-scipy
+degirum_tools
 jupyterlab
-pafy
-youtube-dl==2020.12.2
-git+https://github.com/DeGirum/lap.git
-git+https://github.com/DeGirum/cython_bbox.git
---extra-index-url https://degirum.github.io/simple
-degirum 
-git+https://github.com/DeGirum/degirum_tools.git
