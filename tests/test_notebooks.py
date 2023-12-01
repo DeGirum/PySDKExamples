@@ -45,7 +45,7 @@ output_dir.mkdir(exist_ok=True)
 # reference image names are of the format {notebook_name}_{cell_index}.{image_within_cell_index}.png
 _image_notebooks = [
     ("basic/object_detection_camera_stream.ipynb", "Masked.mp4", [3], []),
-    ("basic/object_detection_image.ipynb", None, [7], []),
+    ("basic/object_detection_image.ipynb", None, [3], []),
     ("dgstreams/dgstreams_demo.ipynb", "Masked.mp4", [2, 3, 4, 5, 6,7], []),
     ("dgstreams/multi_camera_multi_model_detection.ipynb", "Masked.mp4", [4], []),
     ("dgstreams/person_pose_detection_pipelined_camera_stream.ipynb", "Masked.mp4", [7], []),
