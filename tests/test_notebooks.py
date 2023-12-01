@@ -44,7 +44,7 @@ output_dir.mkdir(exist_ok=True)
 # cell output is verified by checking the output image against a reference image in PySDKExamples/test/reference
 # reference image names are of the format {notebook_name}_{cell_index}.{image_within_cell_index}.png
 _image_notebooks = [
-    ("basic/object_detection_camera_stream.ipynb", "Masked.mp4", [5], []),
+    ("basic/object_detection_camera_stream.ipynb", "Masked.mp4", [3], []),
     ("basic/object_detection_image.ipynb", None, [7], []),
     ("dgstreams/dgstreams_demo.ipynb", "Masked.mp4", [2, 3, 4, 5, 6,7], []),
     ("dgstreams/multi_camera_multi_model_detection.ipynb", "Masked.mp4", [4], []),
