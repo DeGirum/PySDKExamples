@@ -54,6 +54,8 @@ _image_notebooks = [
     ("multimodel/license_plate_recognition_pipelined_image.ipynb", None, [3], []),
     ("specialized/sliced_object_detection.ipynb", "TrafficHD_short.mp4", [9], []),
     ("specialized/multi_object_tracking_video_file.ipynb", "Masked.mp4", [8], []),
+    ("specialized/object_in_zone_counting_camera_stream.ipynb", "Masked.mp4", [4], []),
+    ("specialized/object_in_zone_counting_video_file.ipynb", "TrafficHD_short.mp4", [4], []),
 ]
 
 # _imageless_notebooks is a list of notebooks without an image cell output
