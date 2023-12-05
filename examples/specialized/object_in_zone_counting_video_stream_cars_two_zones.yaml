@@ -1,0 +1,28 @@
+hw_location: "@cloud"
+model_zoo_url: https://cs.degirum.com/degirum/ultralytics_v6
+model_name: yolov5nu_relu6_car--640x640_quant_openvino_cpu_1
+video_source: ../../images/output.mp4
+class_list: ["car","bus","truck"]
+polygon_zones: 
+  - - - 436
+      - 341
+    - - 584
+      - 341
+    - - 496
+      - 719
+    - - 0
+      - 719
+    - - 0
+      - 446
+  - - - 685
+      - 341
+    - - 819
+      - 341
+    - - 1279
+      - 446
+    - - 1279
+      - 719
+    - - 792
+      - 719
+
+

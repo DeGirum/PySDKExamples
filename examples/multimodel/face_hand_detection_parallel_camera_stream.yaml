@@ -1,4 +1,4 @@
-target: "@cloud"
+hw_location: "@cloud"
 model_zoo_url: https://cs.degirum.com/degirum/public
 hand_det_model_name: yolo_v5s_hand_det--512x512_quant_n2x_orca_1
 face_det_model_name: yolo_v5s_face_det--512x512_quant_n2x_orca_1

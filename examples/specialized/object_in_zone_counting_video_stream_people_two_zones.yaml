@@ -1,0 +1,23 @@
+hw_location: "@cloud"
+model_zoo_url: https://cs.degirum.com/degirum/ultralytics_v6
+model_name: yolov8s_relu6_coco--640x640_quant_openvino_cpu_1
+video_source: ../../images/store.mp4
+class_list: ["person"]
+polygon_zones: 
+  - - - 0
+      - 91
+    - - 395
+      - 9
+    - - 436
+      - 518
+    - - 0
+      - 645
+  - - - 1269
+      - 648
+    - - 549
+      - 647
+    - - 876
+      - 353
+    - - 1268
+      - 383
+

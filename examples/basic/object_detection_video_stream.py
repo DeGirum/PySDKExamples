@@ -10,12 +10,12 @@ if __name__ == '__main__':
     with open(args.config, 'r') as file:
         config_data = yaml.safe_load(file)
     # Set all config options
-    target=config_data['target']
+    hw_location=config_data['hw_location']
     model_zoo_url = config_data['model_zoo_url']
     model_name= config_data['model_name']
     video_source=config_data['video_source']
     # connect to AI inference engine getting token from env.ini file
-    zoo = dg.connect(target, 
+    zoo = dg.connect(hw_location, 
                      model_zoo_url, 
                      degirum_tools.get_token())
     # load object detection AI model for DeGirum Orca AI accelerator
@@ -25,5 +25,5 @@ if __name__ == '__main__':
     # AI prediction loop
     # Press 'x' or 'q' to stop
     with degirum_tools.Display("AI Camera") as display:    
-        for res in degirum_tools.predict_stream(model, video_source):
-            display.show(res)
+        for inference_result in degirum_tools.predict_stream(model, video_source):
+            display.show(inference_result)
