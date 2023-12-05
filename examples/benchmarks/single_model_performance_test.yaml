@@ -1,0 +1,4 @@
+target: "@cloud"
+model_zoo_url: https://cs.degirum.com/degirum/public
+iterations: 10
+device_family: ORCA1

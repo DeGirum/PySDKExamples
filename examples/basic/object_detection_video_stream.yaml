@@ -1,0 +1,4 @@
+target: "@cloud"
+model_zoo_url: https://cs.degirum.com/degirum/ultralytics_v6
+model_name: yolov5nu_relu6_coco--640x640_quant_openvino_cpu_1
+video_source: 1

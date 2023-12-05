@@ -1,0 +1,4 @@
+target: "@cloud"
+model_zoo_url: https://cs.degirum.com/degirum/public
+model_name: mobilenet_v2_ssd_coco--300x300_quant_n2x_orca1_1
+image_source: ../../images/TwoCats.jpg
