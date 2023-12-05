@@ -115,6 +115,8 @@ following variables:
 |---------|-------------|
 |[multi object tracking video file](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/specialized/multi_object_tracking_video_file.ipynb)|How to perform object detection with multi-object tracking (MOT) from a video file to count vehicle traffic.|
 |[sliced object detection](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/specialized/sliced_object_detection.ipynb)|How to do sliced object detection of a video stream from a video file. Each video frame is divided by slices/tiles with some overlap, each tile of the AI model input size (to avoid resizing). Object detection is performed for each tile, then results from different tiles are combined. When motion detection mode is enabled, object detection is performed only for tiles where motion is detected.|
+|[object in zone counting video stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/specialized/object_in_zone_counting_video_stream.ipynb)|Object detection and object counting in polygon zone: streaming video processing|
+|[object in zone counting video file](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/specialized/object_in_zone_counting_video_file.ipynb)|Object detection and object counting in polygon zone: video file annotation|
 
 ### Benchmarks
 
