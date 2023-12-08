@@ -119,7 +119,7 @@ def test_notebook_image_output(
     """Test notebook by executing it and comparing image outputs with reference data"""
     filename = examples_dir / notebook_file
     if input_file:
-        environ["CAMERA_ID"] = str(images_dir / input_file)
+        environ["VIDEO_SOURCE"] = str(images_dir / input_file)
 
     nb = open_and_execute(filename, code_cells_with_exception)
 
@@ -161,6 +161,6 @@ def test_notebook(notebook_file, input_file):
     """Test notebook by executing it"""
     filename = examples_dir / notebook_file
     if input_file:
-        environ["CAMERA_ID"] = str(images_dir / input_file)
+        environ["VIDEO_SOURCE"] = str(images_dir / input_file)
 
     open_and_execute(filename)
