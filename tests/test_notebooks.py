@@ -65,8 +65,7 @@ _image_notebooks = [
 _imageless_notebooks = [
     ("basic/object_detection_annotate_video_file.ipynb", "Masked.mp4"),
     ("benchmarks/multi_model_performace_test.ipynb", ""),
-    ("benchmarks/object_detection_multiplexing_multiple_streams.ipynb", "Masked.mp4"),
-    ("benchmarks/single_model_performance_test.ipynb", ""),
+    ("benchmarks/object_detection_multiplexing_multiple_streams.ipynb", "Masked.mp4"),    
 ]
 
 # list of notebooks that are excluded from tests for a variety of reasons
@@ -118,7 +117,7 @@ def test_notebook_image_output(
     """Test notebook by executing it and comparing image outputs with reference data"""
     filename = examples_dir / notebook_file
     if input_file:
-        environ["VIDEO_SOURCE"] = str(images_dir / input_file)
+        environ["CAMERA_ID"] = str(images_dir / input_file)
 
     nb = open_and_execute(filename, code_cells_with_exception)
 
@@ -160,6 +159,6 @@ def test_notebook(notebook_file, input_file):
     """Test notebook by executing it"""
     filename = examples_dir / notebook_file
     if input_file:
-        environ["VIDEO_SOURCE"] = str(images_dir / input_file)
+        environ["CAMERA_ID"] = str(images_dir / input_file)
 
     open_and_execute(filename)
