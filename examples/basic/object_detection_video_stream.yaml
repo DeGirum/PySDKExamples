@@ -1,4 +1,4 @@
 hw_location: "@cloud"
-model_zoo_url: https://cs.degirum.com/degirum/ultralytics_v6
-model_name: yolov5nu_relu6_coco--640x640_quant_openvino_cpu_1
-video_source: 1
+model_zoo_url: https://cs.degirum.com/degirum/public
+model_name: yolo_v5s_coco--512x512_quant_n2x_orca1_1
+video_source: ../../images/example_video.mp4
