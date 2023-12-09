@@ -65,7 +65,8 @@ _image_notebooks = [
 _imageless_notebooks = [
     ("basic/object_detection_annotate_video_file.ipynb", "Masked.mp4"),
     ("benchmarks/multi_model_performace_test.ipynb", ""),
-    ("benchmarks/object_detection_multiplexing_multiple_streams.ipynb", "Masked.mp4"),    
+    ("benchmarks/object_detection_multiplexing_multiple_streams.ipynb", "Masked.mp4"), 
+    ("benchmarks/single_model_performace_test.ipynb", ""),   
 ]
 
 # list of notebooks that are excluded from tests for a variety of reasons
