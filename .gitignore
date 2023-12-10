@@ -1,4 +1,5 @@
 .env
+env.ini
 **/.ipynb_checkpoints/
 **/__pycache__/
 tests/output/

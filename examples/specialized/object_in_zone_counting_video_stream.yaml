@@ -1,10 +1,8 @@
 hw_location: "@cloud"
 model_zoo_url: https://cs.degirum.com/degirum/public
 model_name: yolo_v5s_coco--512x512_quant_n2x_orca1_1
-video_source: ../../images/output.mp4
+video_source: ../../images/Traffic.mp4
 class_list: ["car","bus","truck"]
 polygon_zones:
-  - [[436, 341], [584, 341], [496, 719], [0, 719], [0, 446]]
-  - [[685, 341], [819, 341], [1279, 446], [1279, 719], [792, 719]]
-
-
+  - [[10, 30], [280, 30], [330, 300], [10, 270]]
+  - [[300, 30], [900, 30], [900, 270], [350, 300]]
