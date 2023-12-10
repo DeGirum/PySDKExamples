@@ -2,18 +2,20 @@ import yaml
 import argparse
 import degirum as dg, degirum_tools
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Get configuration data from configuration yaml file
-    parser = argparse.ArgumentParser(description='Parse YAML file.')
-    parser.add_argument('--config', help='Path to the YAML configuration file', required=True)
+    parser = argparse.ArgumentParser(description="Parse YAML file.")
+    parser.add_argument(
+        "--config", help="Path to the YAML configuration file", required=True
+    )
     args = parser.parse_args()
-    with open(args.config, 'r') as file:
+    with open(args.config, "r") as file:
         config_data = yaml.safe_load(file)
     # Set all config options
-    hw_location=config_data['hw_location']
-    model_zoo_url = config_data['model_zoo_url']
-    iterations= config_data['iterations']
-    device_family=config_data['device_family']
+    hw_location = config_data["hw_location"]
+    model_zoo_url = config_data["model_zoo_url"]
+    iterations = config_data["iterations"]
+    device_family = config_data["device_family"]
     # connect to AI inference engine getting token from env.ini file
     zoo = dg.connect(hw_location, model_zoo_url, degirum_tools.get_token())
     # list of models to test
@@ -30,7 +32,7 @@ if __name__ == '__main__':
             pass  # skip models for which time profiling is not supported
         prog.step()
     # print results
-    CW = (62, 19, 16, 16) # column widths
+    CW = (62, 19, 16, 16)  # column widths
     header = f"{'Model name':{CW[0]}}| {'Postprocess Type':{CW[1]}} | {'Observed FPS':{CW[2]}} | {'Max Possible FPS':{CW[3]}} |"
 
     print(f"Models    : {len(model_names)}")
