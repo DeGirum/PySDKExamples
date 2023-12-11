@@ -7,8 +7,8 @@
 # This script runs AI inference on a video source and displays the video stream with annotated results.
 # The script take a config.yaml file as an input. Tha config file specifies the following parameters.
 # hw_location: where you want to run inference
-#     @cloud to use DeGirum cloud
-#     @local to run on local machine
+#     "@cloud" to use DeGirum cloud
+#     "@local: to run on local machine
 #     IP address for AI server inference
 # model_zoo_url: url/path for model zoo
 #     cloud_zoo_url: valid for @cloud, @local, and ai server inference options
