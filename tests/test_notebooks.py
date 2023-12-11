@@ -20,9 +20,11 @@ from SSIM_PIL import compare_ssim
 root_dir = Path(__file__).parent.parent
 examples_dir = root_dir / "examples"
 reference_dir = root_dir / "tests" / "reference"
-images_dir = root_dir / "images"
+images_dir = root_dir / "tests" / "images"
 output_dir = root_dir / "tests" / "output"
 output_dir.mkdir(exist_ok=True)
+
+# fmt: off
 
 # In order to add a new notebook to the test, add it as a tuple to the appropriate list of test
 # parametrizations
@@ -74,6 +76,8 @@ _skipped_notebooks = [
     "basic/sound_classification_audio_stream.ipynb",
     "multimodel/sound_classification_and_object_detection_asynchronous.ipynb",
 ]
+
+# fmt: on
 
 
 def open_and_execute(
