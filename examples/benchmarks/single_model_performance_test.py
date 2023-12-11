@@ -1,3 +1,4 @@
+#
 # single_model_performance_test.py: AI Model Performance Profiling
 #
 # Copyright DeGirum Corporation 2023
@@ -41,15 +42,19 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with open(args.config, "r") as file:
         config_data = yaml.safe_load(file)
+
     # Set all config options
     hw_location = config_data["hw_location"]
     model_zoo_url = config_data["model_zoo_url"]
     iterations = config_data["iterations"]
     device_family = config_data["device_family"]
+
     # connect to AI inference engine getting token from env.ini file
     zoo = dg.connect(hw_location, model_zoo_url, degirum_tools.get_token())
+
     # list of models to test
     model_names = zoo.list_models(device=device_family)
+
     # run batch predict for each model and record time measurements
     results = {}
     prog = degirum_tools.Progress(len(model_names), speed_units="models/s")
@@ -61,6 +66,7 @@ if __name__ == "__main__":
         except NotImplementedError:
             pass  # skip models for which time profiling is not supported
         prog.step()
+
     # print results
     CW = (62, 19, 16, 16)  # column widths
     header = f"{'Model name':{CW[0]}}| {'Postprocess Type':{CW[1]}} | {'Observed FPS':{CW[2]}} | {'Max Possible FPS':{CW[3]}} |"
