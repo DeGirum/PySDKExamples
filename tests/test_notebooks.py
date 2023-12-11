@@ -20,9 +20,11 @@ from SSIM_PIL import compare_ssim
 root_dir = Path(__file__).parent.parent
 examples_dir = root_dir / "examples"
 reference_dir = root_dir / "tests" / "reference"
-images_dir = root_dir / "images"
+images_dir = root_dir / "tests" / "images"
 output_dir = root_dir / "tests" / "output"
 output_dir.mkdir(exist_ok=True)
+
+# fmt: off
 
 # In order to add a new notebook to the test, add it as a tuple to the appropriate list of test
 # parametrizations
@@ -44,13 +46,13 @@ output_dir.mkdir(exist_ok=True)
 # cell output is verified by checking the output image against a reference image in PySDKExamples/test/reference
 # reference image names are of the format {notebook_name}_{cell_index}.{image_within_cell_index}.png
 _image_notebooks = [
-    ("basic/object_detection_camera_stream.ipynb", "Masked.mp4", [5], []),
-    ("basic/object_detection_image.ipynb", None, [7], []),
-    ("dgstreams/dgstreams_demo.ipynb", "Masked.mp4", [2, 3, 4, 5, 6,7], []),
+    ("basic/object_detection_video_stream.ipynb", "Masked.mp4", [3], []),
+    ("basic/object_detection_image.ipynb", None, [3], []),
+    ("dgstreams/dgstreams_demo.ipynb", "Masked.mp4", [3, 4, 5, 6, 8, 10], []),
     ("dgstreams/multi_camera_multi_model_detection.ipynb", "Masked.mp4", [4], []),
-    ("dgstreams/person_pose_detection_pipelined_camera_stream.ipynb", "Masked.mp4", [7], []),
-    ("multimodel/face_hand_detection_parallel_camera_stream.ipynb", "Masked.mp4", [4], []),
-    ("multimodel/license_plate_recognition_pipelined_camera_stream.ipynb", "Car.mp4", [4], []),
+    ("dgstreams/person_pose_detection_pipelined_video_stream.ipynb", "Masked.mp4", [5], []),
+    ("multimodel/hand_face_person_detection_parallel_video_stream.ipynb", "Masked.mp4", [3], []),
+    ("multimodel/license_plate_recognition_pipelined_video_stream.ipynb", "Car.mp4", [3], []),
     ("multimodel/license_plate_recognition_pipelined_image.ipynb", None, [3], []),
     ("specialized/sliced_object_detection.ipynb", "TrafficHD_short.mp4", [9], []),
     ("specialized/multi_object_tracking_video_file.ipynb", "Masked.mp4", [8], []),
@@ -63,18 +65,19 @@ _image_notebooks = [
 # Tuple of (notebook_filename, input_file) see _image_notebooks doc for more info
 # used to parametrize the 'test_notebook' test
 _imageless_notebooks = [
-    ("basic/object_detection_video_file.ipynb", "Masked.mp4"),
-    ("benchmarks/multi_model_performace_test.ipynb", ""),
-    ("benchmarks/object_detection_multiplexing_multiple_streams.ipynb", "Masked.mp4"),
-    ("benchmarks/single_model_performace_test.ipynb", ""),
+    ("basic/object_detection_annotate_video_file.ipynb", "Masked.mp4"),
+    ("benchmarks/multi_model_performance_test.ipynb", ""),
+    ("benchmarks/object_detection_multiplexing_multiple_streams.ipynb", "Masked.mp4"), 
+    ("benchmarks/single_model_performance_test.ipynb", ""),   
 ]
 
 # list of notebooks that are excluded from tests for a variety of reasons
 _skipped_notebooks = [
     "basic/sound_classification_audio_stream.ipynb",
-    "benchmarks/object_detection_dataset_evaluation.ipynb",
     "multimodel/sound_classification_and_object_detection_asynchronous.ipynb",
 ]
+
+# fmt: on
 
 
 def open_and_execute(
