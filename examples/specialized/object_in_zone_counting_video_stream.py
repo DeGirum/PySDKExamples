@@ -1,3 +1,25 @@
+# object_in_zone_counting_video_stream.py: AI Inference with Object Counting in Zones on Video Streams
+#
+# Copyright DeGirum Corporation 2023
+# All rights reserved
+#
+# This script performs AI inference on a video stream using a specified model and counts objects within defined polygon zones. It displays the video with annotated results and object counts. The script requires a YAML configuration file as input, which specifies the hardware location for running inference, the model zoo URL, the name of the model for AI inference, the source of the video, the polygon zones for counting, the list of classes to be counted, and whether to display per class counts.
+#
+# Parameters:
+# - hw_location (str): Specifies where to run inference with options '@cloud' for DeGirum cloud, '@local' for local machine, or an IP address for AI server inference.
+# - model_zoo_url (str): Provides the URL or path for the model zoo with options 'cloud_zoo_url' for various inference options, '' for AI server serving models from a local folder, or a path to a JSON file for a single model zoo in case of @local inference.
+# - model_name (str): Specifies the name of the model for running AI inference.
+# - video_source: Defines the source of the video for inference with options being a camera index for local web camera, a URL of an RTSP stream, a URL of a YouTube video, or a path to a video file (e.g., mp4).
+# - polygon_zones (list): Specifies the zones in which objects need to be counted, defined as a list of polygon points.
+# - class_list (list): Specifies the list of classes to be counted.
+# - per_class_display (bool): Specifies if per class counts are to be displayed.
+#
+# The script uses the 'degirum' and 'degirum_tools' modules to connect to the AI inference engine, load the specified model, and perform inference on the provided video source with interactive zone adjustment for object counting.
+#
+# Usage:
+# python object_in_zone_counting_video_stream.py --config path/to/config.yaml
+#
+
 import yaml
 import argparse
 import degirum as dg, degirum_tools

@@ -1,3 +1,33 @@
+# single_model_performance_test.py: AI Model Performance Profiling
+#
+# Copyright DeGirum Corporation 2023
+# All rights reserved
+#
+# This script is designed to connect to an AI inference engine, list available AI models,
+# and run a batch prediction for each model to record time measurements. It generates a
+# performance report that includes the observed frames per second (FPS) and the maximum
+# possible FPS for each model.
+#
+# Parameters:
+# - --config: Path to the YAML configuration file containing the following keys:
+#     * hw_location (str): Specifies where to run inference. Options are:
+#         - '@cloud': Use DeGirum cloud for inference.
+#         - '@local': Run inference on the local machine.
+#         - 'IP address': Specify the IP address of the AI server for inference.
+#     * model_zoo_url (str): URL or path for the model zoo. Options are:
+#         - 'cloud_zoo_url': Valid for @cloud, @local, and AI server inference options.
+#         - '': Indicates the AI server is serving models from a local folder.
+#         - 'path to json file': Path to a single model zoo JSON file in case of @local inference.
+#     * iterations (int): Number of iterations to run for each model during profiling.
+#     * device_family (str): Device family of models to profile.
+#
+# The script requires the 'degirum' and 'degirum_tools' modules to interact with the
+# AI inference engine and perform the profiling tasks.
+#
+# Usage:
+# python script_name.py --config path/to/config.yaml
+#
+
 import yaml
 import argparse
 import degirum as dg, degirum_tools

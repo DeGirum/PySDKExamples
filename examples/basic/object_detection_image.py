@@ -1,3 +1,21 @@
+# object_detection_image.py: AI Inference on Images
+#
+# Copyright DeGirum Corporation 2023
+# All rights reserved
+#
+# This script performs AI inference on an image and displays the results both in text format and as an annotated image overlay. It takes a YAML configuration file as input, which specifies the hardware location for running inference, the model zoo URL, the name of the model to use for inference, and the source of the image.
+#
+# Parameters:
+# - hw_location (str): Determines where to run inference with options '@cloud' for DeGirum cloud, '@local' for local machine, or an IP address for AI server inference.
+# - model_zoo_url (str): Provides the URL or path for the model zoo with options 'cloud_zoo_url' for various inference options, '' for AI server serving models from a local folder, or a path to a JSON file for a single model zoo in case of @local inference.
+# - model_name (str): Specifies the name of the model for running AI inference.
+# - image_source: Defines the source of the image for inference with options being a path to an image file, a URL of an image, a PIL image object, or a numpy array.
+#
+# The script utilizes the 'degirum' and 'degirum_tools' modules to connect to the AI inference engine, load the specified model, and perform inference on the provided image source.
+#
+# Usage:
+# python object_detection_image.py --config path/to/config.yaml
+#
 import yaml
 import argparse
 import degirum as dg, degirum_tools
