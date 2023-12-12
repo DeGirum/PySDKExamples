@@ -1,6 +1,6 @@
 
 import degirum as dg
-import dgtools
+import degirum_tools as dgtools
 import argparse
 
 #

@@ -1,7 +1,7 @@
 
 import argparse
 import degirum as dg
-import dgtools
+import degirum_tools as dgtools
 from dgtools.detection_eval import ObjectDetectionModelEvaluator
 import csv
 import glob

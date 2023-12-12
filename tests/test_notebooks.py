@@ -97,7 +97,7 @@ def open_and_execute(
     # inject a monkeypatch for dgtools._reload_env so the environment variables set in the
     # test don't get overwritten by env.ini when we are running inside the kernel
     code_cells[0].source = (
-        "import dgtools; dgtools._reload_env = lambda *a, **k: None\n"
+        "import degirum_tools as dgtools; dgtools._reload_env = lambda *a, **k: None\n"
         + code_cells[0].source
     )
 

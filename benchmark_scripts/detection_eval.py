@@ -1,5 +1,5 @@
 import degirum as dg
-import dgtools
+import degirum_tools as dgtools
 from dgtools.detection_eval import ObjectDetectionModelEvaluator
 
 cloud_token = dgtools.get_token()  # get cloud API access token from env.ini file
