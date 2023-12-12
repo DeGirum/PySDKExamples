@@ -32,7 +32,7 @@ class SlicedModel:
         end_col = int(start_col + slice_width)
         if col == (self._num_cols-1):
             end_col = self._frame_shape[1]
-        return (frame[start_row:end_row, start_col:end_col, :],(start_row,start_col))
+        return (frame[start_row:end_row, start_col:end_col, :],(start_row, start_col, end_row, end_col))
    
     def slice_video_source(self, frame_generator):
         for frame in frame_generator:
@@ -80,7 +80,7 @@ class SlicedModel:
                 # print (detection_list)
                 detection_list[-1].xyxy += (offset[1], offset[0], offset[1], offset[0])  # Offset slice detections to frame coords
                 # print (detection,offset)
-                if offset[1] == video_info.width:
+                if offset[3] == video_info.width:
                     detections = sv.Detections.merge(detections_list=detection_list).with_nms(threshold=0.5)
                     # print (detections)
                     detections = tracker.update_with_detections(detections)
