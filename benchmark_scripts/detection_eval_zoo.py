@@ -1,13 +1,13 @@
 
 import argparse
 import degirum as dg
-import degirum_tools as dgtools
-from dgtools.detection_eval import ObjectDetectionModelEvaluator
+import degirum_tools
+from degirum_tools.detection_eval import ObjectDetectionModelEvaluator
 import csv
 import glob
 
-cloud_token = dgtools.get_token()  # get cloud API access token from env.ini file
-cloud_zoo_url = dgtools.get_cloud_zoo_url()  # get cloud zoo URL from env.ini file
+cloud_token = degirum_tools.get_token()  # get cloud API access token from env.ini file
+cloud_zoo_url = degirum_tools.get_cloud_zoo_url()  # get cloud zoo URL from env.ini file
 
 zoo = dg.connect(dg.CLOUD, cloud_zoo_url, cloud_token)
 model_list = zoo.list_models()
