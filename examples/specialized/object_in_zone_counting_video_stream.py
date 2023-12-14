@@ -54,7 +54,7 @@ if __name__ == "__main__":
         zone_counter = degirum_tools.ZoneCounter(
             polygon_zones,
             class_list=class_list,
-            triggering_position=degirum_tools.ZoneCounter.CENTER,
+            triggering_position=degirum_tools.AnchorPoint.CENTER,
             window_name=display.window_name,  # attach display window for interactive zone adjustment
         )
 
