@@ -81,19 +81,15 @@ class SlicedModel:
         imagebuf = np.zeros((image_height, image_width, 3), dtype=np.uint8)
         for detection in self._model.predict_batch(self.slice_image(single_input_image)):
             offset = detection.info
-            self.slice_recombine_single_image(imagebuf, detection.image, offset)
             detection_list.append(self.sv_detections_from_degirum(detection))  # Add slice detections to list
-            # print (detection_list)
-            detection_list[-1].xyxy += (offset[1], offset[0], offset[1], offset[0])  # Offset slice detections to frame coords
-            detections = sv.Detections.merge(detections_list=detection_list).with_nms(threshold=0.5)
-            # print (detections)    
-            # labels = [f"#{model.label_dictionary[class_id]}" for _, _, _, class_id,_ in detections]
-            # print (labels)
-            annotated_image = box_annotator.annotate(scene=imagebuf, detections=detections)
-            if detection_list:
-                print ("detction list not empty")
-                cv2.imwrite("output_image_traffic_3x2_1.jpg",annotated_image)
-                detection_list.clear()
+            detection_list[-1].xyxy += (offset[1], offset[0], offset[1], offset[0])  # Offset slice detections to frame coords 
+            
+        detections = sv.Detections.merge(detections_list=detection_list).with_nms(threshold=0.5)
+        single_input_image = box_annotator.annotate(scene=single_input_image, detections=detections)
+        if detection_list:
+            print ("detction list not empty")
+            cv2.imwrite("output_image_traffic.jpg",single_input_image)
+            detection_list.clear()
 
     
 if __name__ == "__main__":
