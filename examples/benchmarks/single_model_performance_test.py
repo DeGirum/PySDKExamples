@@ -31,7 +31,8 @@
 
 import yaml
 import argparse
-import degirum as dg, degirum_tools
+import degirum as dg
+import degirum_tools
 
 if __name__ == "__main__":
     # Get configuration data from configuration yaml file

@@ -22,7 +22,8 @@
 
 import yaml
 import argparse
-import degirum as dg, degirum_tools
+import degirum as dg
+import degirum_tools
 
 if __name__ == "__main__":
     # Get configuration data from configuration yaml file
@@ -40,7 +41,7 @@ if __name__ == "__main__":
     video_source = config_data["video_source"]
     polygon_zones = config_data["polygon_zones"]
     class_list = config_data["class_list"]
-    # connect to AI inference engine getting token from env.ini file
+    # connect to AI inference engine
     zoo = dg.connect(hw_location, model_zoo_url, degirum_tools.get_token())
     # load object detection AI model for DeGirum Orca AI accelerator
     # load model
