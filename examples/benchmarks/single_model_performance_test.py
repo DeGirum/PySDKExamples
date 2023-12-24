@@ -49,7 +49,7 @@ if __name__ == "__main__":
     iterations = config_data["iterations"]
     device_family = config_data["device_family"]
 
-    # connect to AI inference engine getting token from env.ini file
+    # connect to AI inference engine
     zoo = dg.connect(hw_location, model_zoo_url, degirum_tools.get_token())
 
     # list of models to test

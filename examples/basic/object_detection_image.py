@@ -38,10 +38,10 @@ if __name__ == "__main__":
     model_name = config_data["model_name"]
     image_source = config_data["image_source"]
 
-    # connect to AI inference engine getting token from env.ini file
+    # connect to AI inference engine
     zoo = dg.connect(hw_location, model_zoo_url, degirum_tools.get_token())
 
-    # load object detection AI model for DeGirum Orca AI accelerator
+    # load object detection AI model
     model = zoo.load_model(
         model_name,
         overlay_font_scale=1.5,
