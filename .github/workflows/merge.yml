@@ -39,6 +39,7 @@ jobs:
       - name: run bash install script
         if: ${{ contains(matrix.os, 'ubuntu') }}
         run: |
+          sudo apt update
           sudo apt install -y ffmpeg
           ./install.sh          
 
