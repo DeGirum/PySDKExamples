@@ -12,9 +12,8 @@
 
 1. Install DeGirum PySDK. Read the instructions [here](https://docs.degirum.com/content/pysdk/installation/).
 
-1. The following script will download *MobileNetv2+SSD* CPU model from 
-DeGirum public mode zoo and perform ML inference of a test image with two cats. 
-The inference result will be displayed in both text and graphical form.
+1. The following script will perform ML inference of a test image with two cats using a model from
+DeGirum public mode zoo. The inference result will be displayed in both text and graphical form.
 
     ```python
     import degirum as dg         # import DeGirum PySDK package
@@ -42,8 +41,7 @@ This repository provides PySDK example scripts that can perform ML inferences on
 1. On DeGirum AI Server deployed on a localhost or on some computer in your LAN or VPN,
 1. On DeGirum ORCA accelerator directly installed on your local computer.
 
-To try different options, you just need to uncomment **one** of the lines in the code cell just below the
-*"Specify where do you want to run your inferences"* header.
+To try different options, you need to specify the appropriate `hw_location` option.
 
 To run examples, please perform the following steps:
 
@@ -71,25 +69,31 @@ following variables:
     |-------------|-----------|
     |`DEGIRUM_CLOUD_TOKEN`|DeGirum cloud platform API access token. To obtain a token, visit *Management > My Tokens* page on [DeGirum Cloud Portal](https://cs.degirum.com).|
 
-    This will allow loading the token from the `env.ini` file instead of hard-coding the value in the script. The `env.ini` file is added to `.gitignore` and will not be checked in. This will ensure that your token information 
-    is not leaked. 
+    This will allow loading the token from the `env.ini` file instead of hard-coding the value in the script. Please make sure not to commit the `env.ini` file with the token value.
 
 ## Examples Directory
 
 * [Basic Examples](#basic-examples)
+* [Single Model Examples](#single-model-examples)
 * [Combining Multiple Models](#combining-multiple-models)
 * [Advanced Algorithms](#advanced-algorithms)
 * [Benchmarks](#benchmarks)
 * [Examples of `degirum_tools.streams` Toolkit Usage](#examples-of-degirum_toolsstreams-toolkit-usage)
 
 ### Basic Examples
+| Example | Description |
+|---------|-------------|
+|[object detection image](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/basic/basic_pysdk_demo_image.ipynb)|One of the simplest examples how to do AI inference on a graphical file using object detection model. This example does not depend on any other packages such as `degirum_tools`|
+|[object detection video stream file](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/basic/basic_pysdk_demo_video_stream.ipynb)|How to do AI inference on a video stream, and show annotated video in real-time. |
+
+### Single Model Examples
 
 | Example | Description |
 |---------|-------------|
-|[object detection image](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/basic/object_detection_image.ipynb)|One of the most simplest examples how to do AI inference on a graphical file using object detection model.|
-|[object detection annotate video file](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/basic/object_detection_annotate_video_file.ipynb)|How to do AI inference on a video file, show annotated video, and save it to another video file. |
-|[object detection video stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/basic/object_detection_video_stream.ipynb)|How to do AI inference on a video stream, and show annotated video in real-time.|
-|[sound classification audio stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/basic/sound_classification_audio_stream.ipynb)|How to do sound classification AI inference on an audio stream from a local microphone in real time. The result label with highest probability is displayed for each inference while keeping history few steps back.|
+|[object detection image](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/singlemodel/object_detection_image.ipynb)|One of the simplest examples how to do AI inference on a graphical file using object detection model.|
+|[object detection annotate video file](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/singlemodel/object_detection_annotate_video_file.ipynb)|How to do AI inference on a video file, show annotated video, and save it to another video file. |
+|[object detection video stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/singlemodel/object_detection_video_stream.ipynb)|How to do AI inference on a video stream, and show annotated video in real-time.|
+|[sound classification audio stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/singlemodel/sound_classification_audio_stream.ipynb)|How to do sound classification AI inference on an audio stream from a local microphone in real time. The result label with highest probability is displayed for each inference while keeping history few steps back.|
 
 
 ### Combining Multiple Models
