@@ -51,13 +51,14 @@ _image_notebooks = [
     ("dgstreams/dgstreams_demo.ipynb", "Masked.mp4", [3, 4, 5, 6, 8, 10], []),
     ("dgstreams/multi_camera_multi_model_detection.ipynb", "Masked.mp4", [4], []),
     ("dgstreams/person_pose_detection_pipelined_video_stream.ipynb", "Masked.mp4", [5], []),
+    ("multimodel/face_gender_recognition_pipelined_image.ipynb", "Masked.mp4", [3], []),
     ("multimodel/hand_face_person_detection_parallel_video_stream.ipynb", "Masked.mp4", [3], []),
     ("multimodel/license_plate_recognition_pipelined_video_stream.ipynb", "Car.mp4", [3], []),
     ("multimodel/license_plate_recognition_pipelined_image.ipynb", None, [3], []),
-    ("specialized/sliced_object_detection.ipynb", "TrafficHD_short.mp4", [9], []),
     ("specialized/multi_object_tracking_video_file.ipynb", "Masked.mp4", [3], []),
     ("specialized/object_in_zone_counting_video_stream.ipynb", "Masked.mp4", [3], []),
     ("specialized/object_in_zone_counting_video_file.ipynb", "TrafficHD_short.mp4", [3], []),
+    ("specialized/sliced_object_detection.ipynb", "TrafficHD_short.mp4", [7], []),
 ]
 
 # _imageless_notebooks is a list of notebooks without an image cell output
