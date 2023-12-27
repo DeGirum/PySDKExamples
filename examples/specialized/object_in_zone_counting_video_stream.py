@@ -46,10 +46,7 @@ if __name__ == "__main__":
     # load object detection AI model for DeGirum Orca AI accelerator
     # load model
     model = zoo.load_model(model_name, overlay_line_width=2, overlay_font_scale=1.0)
-    # AI prediction loop
-    # Press 'x' or 'q' to stop
-    # Drag zone by left mouse button to move zone
-    # Drag zone corners by right mouse button to adjust zone shape
+
     with degirum_tools.Display("AI Camera") as display:
         # create zone counter
         zone_counter = degirum_tools.ZoneCounter(
@@ -59,7 +56,10 @@ if __name__ == "__main__":
             window_name=display.window_name,  # attach display window for interactive zone adjustment
         )
 
-        # do AI predictions on video stream
+        # AI prediction loop
+        # Press 'x' or 'q' to stop
+        # Drag zone by left mouse button to move zone
+        # Drag zone corners by right mouse button to adjust zone shape
         for inference_result in degirum_tools.predict_stream(
             model, video_source, zone_counter=zone_counter
         ):
