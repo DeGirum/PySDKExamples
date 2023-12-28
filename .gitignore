@@ -5,3 +5,4 @@ env.ini
 tests/output/
 .vscode/
 workarea/
+**/temp/

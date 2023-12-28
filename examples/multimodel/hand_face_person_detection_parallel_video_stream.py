@@ -22,7 +22,8 @@
 
 import yaml
 import argparse
-import degirum as dg, degirum_tools
+import degirum as dg
+import degirum_tools
 
 if __name__ == "__main__":
     # Get configuration data from configuration yaml file
@@ -42,7 +43,7 @@ if __name__ == "__main__":
     person_det_model_name = config_data["person_det_model_name"]
     video_source = config_data["video_source"]
 
-    # connect to AI inference engine getting token from env.ini file
+    # connect to AI inference engine
     zoo = dg.connect(hw_location, model_zoo_url, degirum_tools.get_token())
 
     # load models for hand, face, and person detection

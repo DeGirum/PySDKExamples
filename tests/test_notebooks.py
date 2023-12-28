@@ -46,18 +46,19 @@ output_dir.mkdir(exist_ok=True)
 # cell output is verified by checking the output image against a reference image in PySDKExamples/test/reference
 # reference image names are of the format {notebook_name}_{cell_index}.{image_within_cell_index}.png
 _image_notebooks = [
-    ("basic/object_detection_video_stream.ipynb", "Masked.mp4", [3], []),
-    ("basic/object_detection_image.ipynb", None, [3], []),
+    ("singlemodel/object_detection_video_stream.ipynb", "Masked.mp4", [3], []),
+    ("singlemodel/object_detection_image.ipynb", None, [3], []),
     ("dgstreams/dgstreams_demo.ipynb", "Masked.mp4", [3, 4, 5, 6, 8, 10], []),
     ("dgstreams/multi_camera_multi_model_detection.ipynb", "Masked.mp4", [4], []),
     ("dgstreams/person_pose_detection_pipelined_video_stream.ipynb", "Masked.mp4", [5], []),
+    ("multimodel/face_gender_recognition_pipelined_image.ipynb", "Masked.mp4", [3], []),
     ("multimodel/hand_face_person_detection_parallel_video_stream.ipynb", "Masked.mp4", [3], []),
     ("multimodel/license_plate_recognition_pipelined_video_stream.ipynb", "Car.mp4", [3], []),
     ("multimodel/license_plate_recognition_pipelined_image.ipynb", None, [3], []),
-    ("specialized/sliced_object_detection.ipynb", "TrafficHD_short.mp4", [9], []),
     ("specialized/multi_object_tracking_video_file.ipynb", "Masked.mp4", [3], []),
-    ("specialized/object_in_zone_counting_video_stream.ipynb", "Masked.mp4", [4], []),
-    ("specialized/object_in_zone_counting_video_file.ipynb", "TrafficHD_short.mp4", [4], []),
+    ("specialized/object_in_zone_counting_video_stream.ipynb", "Masked.mp4", [3], []),
+    ("specialized/object_in_zone_counting_video_file.ipynb", "TrafficHD_short.mp4", [3], []),
+    ("specialized/sliced_object_detection.ipynb", "TrafficHD_short.mp4", [7], []),
 ]
 
 # _imageless_notebooks is a list of notebooks without an image cell output
@@ -65,7 +66,7 @@ _image_notebooks = [
 # Tuple of (notebook_filename, input_file) see _image_notebooks doc for more info
 # used to parametrize the 'test_notebook' test
 _imageless_notebooks = [
-    ("basic/object_detection_annotate_video_file.ipynb", "Masked.mp4"),
+    ("singlemodel/object_detection_annotate_video_file.ipynb", "Masked.mp4"),
     ("benchmarks/multi_model_performance_test.ipynb", ""),
     ("benchmarks/object_detection_multiplexing_multiple_streams.ipynb", "Masked.mp4"), 
     ("benchmarks/single_model_performance_test.ipynb", ""),   
@@ -73,7 +74,7 @@ _imageless_notebooks = [
 
 # list of notebooks that are excluded from tests for a variety of reasons
 _skipped_notebooks = [
-    "basic/sound_classification_audio_stream.ipynb",
+    "singlemodel/sound_classification_audio_stream.ipynb",
     "multimodel/sound_classification_and_object_detection_asynchronous.ipynb",
 ]
 
