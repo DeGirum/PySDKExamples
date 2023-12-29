@@ -16,7 +16,7 @@
 #     path to json file: single model zoo in case of @local inference
 # model_name: name of the model for running AI inference
 # video_source: video source for inference
-#     camera index for local web camera
+#     camera index for local camera
 #     URL of RTSP stream
 #     URL of YouTube Video
 #     path to video file (mp4 etc)

@@ -12,7 +12,7 @@
 # - hand_det_model_name (str): Specifies the name of the model for hand detection.
 # - face_det_model_name (str): Specifies the name of the model for face detection.
 # - person_det_model_name (str): Specifies the name of the model for person detection.
-# - video_source: Defines the source of the video for inference with options being a camera index for local web camera, a URL of an RTSP stream, a URL of a YouTube video, or a path to a video file (e.g., mp4).
+# - video_source: Defines the source of the video for inference with options being a camera index for local camera, a URL of an RTSP stream, a URL of a YouTube video, or a path to a video file (e.g., mp4).
 #
 # The script uses the 'degirum' and 'degirum_tools' modules to connect to the AI inference engine, load the specified models, and perform inference on the provided video source.
 #

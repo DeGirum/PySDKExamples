@@ -93,6 +93,7 @@ following variables:
 |[object detection image](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/singlemodel/object_detection_image.ipynb)|One of the simplest examples how to do AI inference on a graphical file using object detection model.|
 |[object detection annotate video file](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/singlemodel/object_detection_annotate_video_file.ipynb)|How to do AI inference on a video file, show annotated video, and save it to another video file. |
 |[object detection video stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/singlemodel/object_detection_video_stream.ipynb)|How to do AI inference on a video stream, and show annotated video in real-time.|
+|[object detection class filtering](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/singlemodel/object_detection_class_filtering.ipynb)|How to do object detection AI inference on a video stream filtering only desired set of classes.|
 |[sound classification audio stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/singlemodel/sound_classification_audio_stream.ipynb)|How to do sound classification AI inference on an audio stream from a local microphone in real time. The result label with highest probability is displayed for each inference while keeping history few steps back.|
 
 
@@ -102,6 +103,7 @@ following variables:
 |---------|-------------|
 |[hand face person detection parallel video stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/multimodel/hand_face_person_detection_parallel_video_stream.ipynb)|How to run three models side-by-side and combine results of the three models. A video stream is processed simultaneously by the hand, face, and person detection models. Combined result is then displayed.|
 |[license plate recognition pipelined image](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/multimodel/license_plate_recognition_pipelined_image.ipynb)|How to do AI inference of a graphical file using two AI models: license plate detection and license plate text recognition. The license plate detection model is run on the image and the results are then processed by the license plate text recognition model, one bounding box at a time. Combined result is then displayed.|
+|[face gender recognition pipelined image](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/multimodel/face_gender_recognition_pipelined_image.ipynb)|How to do AI inference of a graphical file using two AI models: face detection and gender classification. The face detection model is run on the image and the results are then processed by the gender classification model, one face at a time. Combined result is then displayed.|
 |[license plate recognition pipelined video stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/multimodel/license_plate_recognition_pipelined_video_stream.ipynb)|A video stream from a video camera is processed by the license plate detection model. The face detection results are then processed by the license plate text recognition model, one bounding box at a time. Combined results are then displayed as an annotated video in real-time.|
 |[sound classification and object detection asynchronous](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/multimodel/sound_classification_and_object_detection_asynchronous.ipynb)|How to perform parallel inferences on two **asynchronous** data streams with different frame rates. To achieve maximum performance this example uses **non-blocking** batch prediction mode.|
 
@@ -129,3 +131,15 @@ following variables:
 |[dgstreams demo](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/dgstreams/dgstreams_demo.ipynb)|Extensive demo notebook of `degirum_tools.streams` toolkit: lightweight multi-threaded pipelining framework|
 |[multi camera multi model detection](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/dgstreams/multi_camera_multi_model_detection.ipynb)|How to perform AI inferences of multiple models processing multiple video streams. Each video stream is fed to every model. Each model processes frames from every video stream in multiplexing manner.|
 |[person pose detection pipelined camera stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/dgstreams/person_pose_detection_pipelined_video_stream.ipynb)|A video stream from a video camera is processed by the person detection model. The person detection results are then processed by the pose detection model, one person bounding box at a time. Combined results are then displayed as an annotated video in real-time.|
+
+## Full List of Variables in `env.ini` Configuration File
+
+|Variable Name|Description|Default Value|
+|-------------|-----------|-------------|
+|`DEGIRUM_CLOUD_TOKEN`| DeGirum cloud platform API access token. To obtain a token, visit *Management > My Tokens* page on [DeGirum Cloud Portal](https://cs.degirum.com). | `None` |
+|`DEGIRUM_CLOUD_PLATFORM_URL`|URL of DeGirum cloud platform server used by `degirum_tools.connect_model_zoo()` | `"https://cs.degirum.com"` |
+|`CLOUD_ZOO_URL`| Cloud zoo URL used by `degirum_tools.connect_model_zoo()` | `""` |
+|`AISERVER_HOSTNAME_OR_IP`| AI server host name/IP address used by `degirum_tools.connect_model_zoo()` | `None` |
+|`CAMERA_ID`| Video source for inference: 0-based index of local camera, URL of RTSP stream, URL of YouTube Video, local video file path | `0` |
+|`AUDIO_ID`| Audio source for inference: 0-based index for local microphones or local WAV file path | `0` |
+|`TEST_MODE`| Test node flag (for unit testing) | `None` |

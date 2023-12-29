@@ -9,7 +9,7 @@
 # - hw_location (str): Specifies where to run inference with options '@cloud' for DeGirum cloud, '@local' for local machine, or an IP address for AI server inference.
 # - model_zoo_url (str): Provides the URL or path for the model zoo with options 'cloud_zoo_url' for various inference options, '' for AI server serving models from a local folder, or a path to a JSON file for a single model zoo in case of @local inference.
 # - model_name (str): Specifies the name of the model for running AI inference.
-# - video_source: Defines the source of the video for inference with options being a camera index for local web camera, a URL of an RTSP stream, a URL of a YouTube video, or a path to a video file (e.g., mp4).
+# - video_source: Defines the source of the video for inference with options being a camera index for local camera, a URL of an RTSP stream, a URL of a YouTube video, or a path to a video file (e.g., mp4).
 # - polygon_zones (list): Specifies the zones in which objects need to be counted, defined as a list of polygon points.
 # - class_list (list): Specifies the list of classes to be counted.
 # - per_class_display (bool): Specifies if per class counts are to be displayed.

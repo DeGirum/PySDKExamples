@@ -48,6 +48,7 @@ output_dir.mkdir(exist_ok=True)
 _image_notebooks = [
     ("singlemodel/object_detection_video_stream.ipynb", "Masked.mp4", [3], []),
     ("singlemodel/object_detection_image.ipynb", None, [3], []),
+    ("singlemodel/object_detection_class_filtering.ipynb", "Masked.mp4", [3], []),
     ("dgstreams/dgstreams_demo.ipynb", "Masked.mp4", [3, 4, 5, 6, 8, 10], []),
     ("dgstreams/multi_camera_multi_model_detection.ipynb", "Masked.mp4", [4], []),
     ("dgstreams/person_pose_detection_pipelined_video_stream.ipynb", "Masked.mp4", [5], []),
