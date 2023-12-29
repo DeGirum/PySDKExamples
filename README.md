@@ -118,7 +118,7 @@ following variables:
 
 | Example | Description |
 |---------|-------------|
-|[single model performance test](https://githubcolab.com/DeGirum/PySDKExamples/blob/main/examples/benchmarks/single_model_performance_test.ipynb)|Performance measurements for all Orca-based image detection AI models from DeGirum public model zoo.|
+|[single model performance test](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/benchmarks/single_model_performance_test.ipynb)|Performance measurements for all Orca-based image detection AI models from DeGirum public model zoo.|
 |[multi model performance test](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/benchmarks/multi_model_performance_test.ipynb)|Performance measurements for simultaneous inference of multiple AI models.|
 |[object detection multiplexing multiple streams](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/benchmarks/object_detection_multiplexing_multiple_streams.ipynb)|How to perform object detection from multiple video files, multiplexing frames. This example demonstrates lowest possible and stable AI inference latency while maintaining decent throughput. This is achieved by using synchronous prediction mode and video decoding offloaded into separate thread.|
 
