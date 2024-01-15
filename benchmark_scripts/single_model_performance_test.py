@@ -1,6 +1,6 @@
 
 import degirum as dg
-import dgtools
+import degirum_tools
 import argparse
 
 #
@@ -8,11 +8,11 @@ import argparse
 #
 
 target = dg.CLOUD # <-- on the Cloud Platform
-# target = dgtools.get_ai_server_hostname() # <-- on AI Server deployed in your LAN
+# target = degirum_tools.get_ai_server_hostname() # <-- on AI Server deployed in your LAN
 # target = dg.LOCAL # <-- on ORCA accelerator installed on this computer
 
 # connect to AI inference engine getting zoo URL and token from env.ini file
-zoo = dg.connect(target, dgtools.get_cloud_zoo_url(), dgtools.get_token())
+zoo = dg.connect(target, degirum_tools.get_cloud_zoo_url(), degirum_tools.get_token())
 
 # define function to run a single model batch prediction
 def do_test(model_name, 
@@ -50,7 +50,7 @@ def do_test(model_name,
         model(frame)  # run model once to warm up the system
 
         # run batch prediction
-        t = dgtools.Timer()
+        t = degirum_tools.Timer()
         for res in model.predict_batch(source()):
             pass
 
