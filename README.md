@@ -4,11 +4,11 @@
 
 ## Quick Start
 
-1. Sign up for an account on [DeGirum Cloud Portal](https://cs.degirum.com). 
+1. Sign up for an account on [DeGirum Cloud Portal](https://cs.degirum.com/login?screen_hint=signup).
 
 1. Log in to [DeGirum Cloud Portal](https://cs.degirum.com).
 
-1. Create cloud API access token on **My Tokens** page accessible via *Management > My Tokens* menu.
+1. Create cloud API access token on [**Tokens** page of DeGirum Cloud Portal](https://cs.degirum.com/profile#profile-tab-tokens).
 
 1. Install DeGirum PySDK. Read the instructions [here](https://docs.degirum.com/content/pysdk/installation/).
 
@@ -43,7 +43,12 @@ This repository provides PySDK example scripts that can perform ML inferences on
 
 To try different options, you need to specify the appropriate `hw_location` option.
 
-To run examples, please perform the following steps:
+You have two ways to run examples: running them locally on your computer, or running them in the cloud in Google Colab.
+
+To run examples in Google Colab, first register your Google Colab account, then scroll down to the 
+[Examples Directory](#examples-directory) section, select the example you want to run, and click the link: it will be opened in Google Colab. 
+
+To run examples locally, please perform the following steps:
 
 1. Make sure you have installed Python version 3.9, 3.10, or 3.11. For convenience of future maintenance we recommend 
 you to work in the virtual environment, such as [Miniconda](https://docs.conda.io/en/latest/miniconda.html). 
@@ -67,9 +72,23 @@ following variables:
 
     |Variable Name|Description|
     |-------------|-----------|
-    |`DEGIRUM_CLOUD_TOKEN`|DeGirum cloud platform API access token. To obtain a token, visit *Management > My Tokens* page on [DeGirum Cloud Portal](https://cs.degirum.com).|
+    |`DEGIRUM_CLOUD_TOKEN`|DeGirum cloud platform API access token. To obtain a token, visit [**Tokens** page on DeGirum Cloud Portal](https://cs.degirum.com/profile#profile-tab-tokens).|
+
 
     This will allow loading the token from the `env.ini` file instead of hard-coding the value in the script. Please make sure not to commit the `env.ini` file with the token value.
+
+1. Start Jupyter server by executing the following command in the terminal / command prompt,
+making sure your current directory is still PySDKExample repo root directory:
+
+    ```
+    jupyter lab
+    ```
+
+    Jupyter Lab GUI will open in your default browser.  In Jupyter Lab GUI navigate to `examples` subdirectory, then select desired example and run it.
+
+1. Alternatively, if you have [Visual Studio Code](https://code.visualstudio.com/) IDE installed, just open Visual Studio Code in PySDKExample repo root directory.
+Make sure Jupyter plugin is installed in your Visual Studio Code. Then you can open any Jupyter notebook example directly in Visual Studio Code
+and execute it from there.
 
 ## Examples Directory
 
