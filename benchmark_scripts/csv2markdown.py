@@ -60,7 +60,7 @@ def process_csv_file(csv_file_path):
     df["FPS"] = "--"  # Placeholder for FPS column
 
     # Selecting and reordering the DataFrame for the desired output
-    df_final = df[["Model Architecture", "Input Size", "Precision", "Device Type", "Runtime", "mAP 50-95", "mAP 50", "FPS"]]
+    df_final = df[["Model Architecture", "Input Size", "Precision", "Runtime", "Device Type", "mAP 50-95", "mAP 50", "FPS"]]
     markdown_table = df_final.to_markdown(index=False)
     print(markdown_table)
 
