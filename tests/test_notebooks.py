@@ -57,6 +57,7 @@ _image_notebooks = [
     ("multimodel/hand_face_person_detection_parallel_video_stream.ipynb", "Masked.mp4", [3], []),
     ("multimodel/license_plate_recognition_pipelined_video_stream.ipynb", "Car.mp4", [3], []),
     ("multimodel/license_plate_recognition_pipelined_image.ipynb", None, [3], []),
+    ("specialized/hand_tracking_and_control.ipynb", "HandPalm_short.mp4", [3], []),
     ("specialized/multi_object_tracking_video_file.ipynb", "Masked.mp4", [3], []),
     ("specialized/object_in_zone_counting_video_stream.ipynb", "Masked.mp4", [3], []),
     ("specialized/object_in_zone_counting_video_file.ipynb", "TrafficHD_short.mp4", [3], []),
