@@ -138,6 +138,7 @@ and execute it from there.
 
 | Example | Description |
 |---------|-------------|
+|[hand tracking and control](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/specialized/hand_tracking_and_control.ipynb)|How to perform hand detection with tracking and following detection of palm keypoints. The combined result of hand detection and palm keypoints detection is used to imitate mouse operation.|
 |[multi object tracking video file](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/specialized/multi_object_tracking_video_file.ipynb)|How to perform object detection with multi-object tracking (MOT) from a video file to count vehicle traffic.|
 |[object detection dataset](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/specialized/object_detection_dataset.ipynb)|How to do AI inference on an image dataset and calculate performance metrics. An image dataset is retrieved from the cloud using `fiftyone` API.|
 |[object in zone counting video file](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/specialized/object_in_zone_counting_video_file.ipynb)|Object detection and object counting in polygon zone: video file annotation|
