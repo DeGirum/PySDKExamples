@@ -105,6 +105,7 @@ and execute it from there.
 * [Advanced Algorithms](#advanced-algorithms)
 * [Benchmarks](#benchmarks)
 * [Examples of `degirum_tools.streams` Toolkit Usage](#examples-of-degirum_toolsstreams-toolkit-usage)
+* [Applications](#applications)
 
 ### Basic Examples
 | Example | Description |
@@ -157,6 +158,11 @@ and execute it from there.
 |[dgstreams demo](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/dgstreams/dgstreams_demo.ipynb)|Extensive demo notebook of `degirum_tools.streams` toolkit: lightweight multi-threaded pipelining framework|
 |[multi camera multi model detection](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/dgstreams/multi_camera_multi_model_detection.ipynb)|How to perform AI inferences of multiple models processing multiple video streams. Each video stream is fed to every model. Each model processes frames from every video stream in multiplexing manner.|
 |[person pose detection pipelined camera stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/dgstreams/person_pose_detection_pipelined_video_stream.ipynb)|A video stream from a video camera is processed by the person detection model. The person detection results are then processed by the pose detection model, one person bounding box at a time. Combined results are then displayed as an annotated video in real-time.|
+
+### Applications
+| Example | Description |
+|---------|-------------|
+|[person count video](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/applications/person_count_video.ipynb)|Counting people in a video frame-by-frame using multiple detection models in parallel and annotating the video with the results.|
 
 ## Full List of Variables in `env.ini` Configuration File
 
