@@ -49,6 +49,7 @@ _image_notebooks = [
     ("singlemodel/object_detection_video_stream.ipynb", "Masked.mp4", [3], []),
     ("singlemodel/object_detection_image.ipynb", None, [3], []),
     ("singlemodel/object_detection_class_filtering.ipynb", "Masked.mp4", [3], []),
+    ("singlemodel/object_detection_annotate_video_file.ipynb", "Masked.mp4", [3], []),
     ("dgstreams/dgstreams_demo.ipynb", "Masked.mp4", [3, 4, 5, 6, 8, 10], []),
     ("dgstreams/multi_camera_multi_model_detection.ipynb", "Masked.mp4", [4], []),
     ("dgstreams/person_pose_detection_pipelined_video_stream.ipynb", "Masked.mp4", [5], []),
@@ -56,10 +57,11 @@ _image_notebooks = [
     ("multimodel/hand_face_person_detection_parallel_video_stream.ipynb", "Masked.mp4", [3], []),
     ("multimodel/license_plate_recognition_pipelined_video_stream.ipynb", "Car.mp4", [3], []),
     ("multimodel/license_plate_recognition_pipelined_image.ipynb", None, [3], []),
+    ("specialized/hand_tracking_and_control.ipynb", "HandPalm_short.mp4", [3], []),
     ("specialized/multi_object_tracking_video_file.ipynb", "Masked.mp4", [3], []),
     ("specialized/object_in_zone_counting_video_stream.ipynb", "Masked.mp4", [3], []),
     ("specialized/object_in_zone_counting_video_file.ipynb", "TrafficHD_short.mp4", [3], []),
-    ("specialized/sliced_object_detection.ipynb", "TrafficHD_short.mp4", [7], []),
+    ("specialized/tiled_object_detection.ipynb", "TrafficHD_short.mp4", [3,4], []),
     ("applications/person_count_video.ipynb", "Masked.mp4", [7], []),
 ]
 
@@ -68,7 +70,6 @@ _image_notebooks = [
 # Tuple of (notebook_filename, input_file) see _image_notebooks doc for more info
 # used to parametrize the 'test_notebook' test
 _imageless_notebooks = [
-    ("singlemodel/object_detection_annotate_video_file.ipynb", "Masked.mp4"),
     ("benchmarks/multi_model_performance_test.ipynb", ""),
     ("benchmarks/object_detection_multiplexing_multiple_streams.ipynb", "Masked.mp4"), 
     ("benchmarks/single_model_performance_test.ipynb", ""),   
