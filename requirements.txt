@@ -1,3 +1,2 @@
 degirum_tools
 jupyterlab
-ssim-pil
