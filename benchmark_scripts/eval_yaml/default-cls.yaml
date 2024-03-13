@@ -1,0 +1,8 @@
+output_confidence_threshold : 0.001
+top_k : [1,5]
+input_resize_method : "bilinear"
+input_pad_method : "crop-last"
+image_backend : "opencv"
+input_img_fmt : "JPEG"
+input_letterbox_fill_color : [114, 114, 114]
+input_numpy_colorspace : "auto"
