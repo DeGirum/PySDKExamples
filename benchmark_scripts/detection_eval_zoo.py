@@ -1,25 +1,21 @@
 
 import argparse
 import degirum as dg
+from degirum.model import Model
 import degirum_tools
 from degirum_tools.detection_eval import ObjectDetectionModelEvaluator
 import csv
 import glob
 
-cloud_token = degirum_tools.get_token()  # get cloud API access token from env.ini file
-cloud_zoo_url = degirum_tools.get_cloud_zoo_url()  # get cloud zoo URL from env.ini file
 
-zoo = dg.connect(dg.CLOUD, cloud_zoo_url, cloud_token)
-model_list = zoo.list_models()
-
-def validate(model_name:str, 
-            img_folder_path:str, 
-            anno_json:str, 
-            cfg_yaml:str="benchmark_scripts/eval_yaml/default.yaml"
+def validate(dg_model: Model, 
+            img_folder_path: str, 
+            anno_json: str, 
+            cfg_yaml: str="benchmark_scripts/eval_yaml/default.yaml"
             ):
-    model = zoo.load_model(model_name)
+    
     map_evaluator = ObjectDetectionModelEvaluator.init_from_yaml(
-        model, cfg_yaml
+        dg_model, cfg_yaml
     )
 
     map_evaluator.pred_path = model_name + '.json'
@@ -42,6 +38,7 @@ def parser_arguments():
     parser.add_argument('--annotations', type=str, help='ground truth annotation json file path')
     parser.add_argument('--cfg', type=str, default='benchmark_scripts/eval_yaml/default.yaml', help='path to eval config')
     parser.add_argument('--csv', type=str, default=None, help='second model name')
+    parser.add_argument('--cloud-url', type=str, help='cloud zoo url')
 
     return parser.parse_args()
 
@@ -56,6 +53,11 @@ if __name__ == '__main__':
 
     img_count = len(glob.glob(f"{args.data}/*.jpg"))
 
+    machine = dg.CLOUD
+    cloud_url = f"https://cs.degirum.com/{args.cloud_url}" 
+    zoo = dg.connect(machine, cloud_url, degirum_tools.get_token())
+    model_list = zoo.list_models()
+
     for model_name in model_list:
         if (args.model in model_name) and (args.key in model_name) and (args.exclude not in model_name):
             # and ('tflite_edgetpu' not in model_name):
@@ -63,14 +65,15 @@ if __name__ == '__main__':
             print('***********************************************')
             count += 1
             print(f'{count} = ', model_name)
-            try:
-                map_list = validate(model_name=model_name, img_folder_path=args.data, anno_json=args.annotations, cfg_yaml=args.cfg)
-                
-                for i, map in enumerate(map_list):
-                    data = [model_name, i, *map, img_count, args.data, args.annotations, args.cfg]
-                    with open(csv_file, mode='a', newline='') as file:
-                        writer = csv.writer(file)
-                        writer.writerow(data)
-            except Exception as e:
-                print(f"Error in {model_name}\n", e)
+            # try:
+            dg_model = zoo.load_model(model_name)
+            map_list = validate(dg_model=dg_model, img_folder_path=args.data, anno_json=args.annotations, cfg_yaml=args.cfg)
+            
+            for i, map in enumerate(map_list):
+                data = [model_name, i, *map, img_count, args.data, args.annotations, args.cfg]
+                with open(csv_file, mode='a', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow(data)
+            # except Exception as e:
+            #     print(f"Error in {model_name}\n", e)
             
