@@ -1,33 +1,11 @@
 
+import csv
+import glob
 import argparse
 import degirum as dg
 from degirum.model import Model
 import degirum_tools
-from degirum_tools.detection_eval import ObjectDetectionModelEvaluator
-import csv
-import glob
-
-
-def validate(dg_model: Model, 
-            img_folder_path: str, 
-            anno_json: str, 
-            cfg_yaml: str="benchmark_scripts/eval_yaml/default.yaml"
-            ):
-    
-    map_evaluator = ObjectDetectionModelEvaluator.init_from_yaml(
-        dg_model, cfg_yaml
-    )
-
-    map_evaluator.pred_path = model_name + '.json'
-    
-    map_results = map_evaluator.evaluate(
-        img_folder_path,
-        ground_truth_annotations_path=anno_json,
-        num_val_images=0,
-        print_frequency=1000,
-    )
-
-    return map_results
+from .benchmark_yaml import validate
 
 def parser_arguments():
     parser = argparse.ArgumentParser()
