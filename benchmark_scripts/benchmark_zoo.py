@@ -3,7 +3,6 @@ import csv
 import glob
 import argparse
 import degirum as dg
-from degirum.model import Model
 import degirum_tools
 from .benchmark_yaml import validate
 
