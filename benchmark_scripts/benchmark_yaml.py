@@ -1,8 +1,8 @@
 
 import argparse
 import degirum as dg
-from degirum.model import Model
 import degirum_tools
+from degirum.model import Model
 from degirum_tools.detection_eval import ObjectDetectionModelEvaluator
 from degirum_tools.classification_eval import ImageClassificationModelEvaluator
 from degirum_tools.regression_eval import ImageRegressionModelEvaluator
