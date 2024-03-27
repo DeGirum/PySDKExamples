@@ -5,3 +5,6 @@ env.ini
 tests/output/
 .vscode/
 workarea/
+*.json
+*.csv
+datasets/*

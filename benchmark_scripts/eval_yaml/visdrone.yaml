@@ -11,6 +11,6 @@ output_use_regular_nms : True
 input_resize_method : "bilinear"
 input_pad_method : "letterbox"
 image_backend : "opencv"
-input_img_fmt : "JPEG"
-input_letterbox_fill_color : [114, 114, 114]
+input_image_format : "JPEG"
+input_letterbox_fill_color : !!python/tuple [114, 114, 114]
 input_numpy_colorspace : "auto"

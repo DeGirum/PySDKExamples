@@ -1,6 +1,7 @@
 output_confidence_threshold : 0.001
+top_k : [1,5]
 input_resize_method : "bilinear"
-input_pad_method : "crop-first"
+input_pad_method : "crop-last"
 image_backend : "opencv"
 input_image_format : "JPEG"
 input_letterbox_fill_color : !!python/tuple [114, 114, 114]
