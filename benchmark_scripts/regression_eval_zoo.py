@@ -25,8 +25,7 @@ def validate(model_name:str,
     regress_results = regress_evaluator.evaluate(
         img_folder_path,
         ground_truth_annotations_path=anno_json,
-        num_val_images=img_count,
-        print_frequency=1000,
+        max_images=img_count
     )
 
     return regress_results
@@ -39,7 +38,7 @@ def parser_arguments():
     parser.add_argument('--data', type=str, help='path to validation images folder')
     parser.add_argument('--annotations', type=str, help='ground truth annotation json file path')
     parser.add_argument('--cfg', type=str, default='benchmark_scripts/eval_yaml/regress.yaml', help='path to eval config')
-    parser.add_argument('--csv', type=str, default=None, help='second model name')
+    parser.add_argument('--csv', type=str, default=None, help='results CSV file name')
 
     return parser.parse_args()
 

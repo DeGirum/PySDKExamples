@@ -20,8 +20,7 @@ def validate(model_name:str,
     regress_results = regress_evaluator.evaluate(
         img_folder_path,
         ground_truth_annotations_path=anno_json,
-        num_val_images=0,
-        print_frequency=1000,
+        max_images=0
     )
 
     return regress_results
