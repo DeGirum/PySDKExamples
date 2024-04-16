@@ -9,7 +9,13 @@ from matplotlib import colormaps
 import cv2
 from PIL.Image import Image as PILImage
 
+# Constants
+CV2 = 'cv2'
+PIL = 'PIL'
+
 def preprocess(image, model):
+    """Preprocess the image before running inference."""
+    # Convert the image to RGB and get its dimensions
     if isinstance(image, np.ndarray):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         h, w, _ = image.shape
@@ -25,6 +31,7 @@ def preprocess(image, model):
     else:
         model_h, model_w = model.model_info.InputH[0], model.model_info.InputW[0]
 
+    # Resize the image if it's larger than the model size
     if h > model_h or w > model_w:
         warnings.warn("Image larger than model size. Inference will still run but expect some loss in detail.")
         # Do semi-letterbox.
@@ -39,17 +46,21 @@ def preprocess(image, model):
     else:
         nw, nh = w, h
         
+    # Pad the image to the model size
     padded_image = np.zeros((model_h, model_w, 3), dtype=np.uint8)
     padded_image[:nh, :nw] = image
 
+    # Check that a custom postprocessor has been set
     if model.custom_postprocessor == None:
         raise Exception("Set custom super resolution postprocessor before preprocessing images.")
     
+    # Set the dynamic input flag and parameters
     model.custom_postprocessor.dynamic_input = True
     model.custom_postprocessor.params = (nw, nh, w, h)
     return padded_image
 
 class SuperResolutionResults(dg.postprocessor.InferenceResults):
+    """Class for handling the results of super resolution inference."""
     resize_factor = 4
     dynamic_input = False
     params = None
@@ -60,25 +71,28 @@ class SuperResolutionResults(dg.postprocessor.InferenceResults):
         # Retrieve backend
         if self.image is None:
             # Tensor input type default to cv2.
-            self._backend = importlib.import_module("cv2")
-            self._backend_name = 'cv2'
+            self._backend = importlib.import_module(CV2)
+            self._backend_name = CV2
         else:
             if (
                 isinstance(self.image, np.ndarray)
                 and len(self.image.shape) == 3
-                and importlib.util.find_spec("cv2")
+                and importlib.util.find_spec(CV2)
             ):
-                self._backend = importlib.import_module("cv2")
-                self._backend_name = 'cv2'
+                self._backend = importlib.import_module(CV2)
+                self._backend_name = CV2
 
-            elif importlib.util.find_spec("PIL"):
-                self._backend = importlib.import_module("PIL")
+            elif importlib.util.find_spec(PIL):
+                self._backend = importlib.import_module(PIL)
                 if self._backend and isinstance(self.image, self._backend.Image.Image):
-                    self._backend_name  = 'pil'
-
-        r_factor = SuperResolutionResults.resize_factor
+                    self._backend_name  = PIL
 
         # Normalize and remove padding
+        self._normalize_and_remove_padding()
+
+    def _normalize_and_remove_padding(self):
+        """Normalize the inference results and remove any padding."""
+        r_factor = SuperResolutionResults.resize_factor
         data = self._inference_results[0]['data']
         if len(data.shape) != 4:
             if self._model_params.InputType[0] == "Image":
@@ -89,7 +103,7 @@ class SuperResolutionResults(dg.postprocessor.InferenceResults):
         nh, nw, _ = data.shape
 
         try:
-            if self._backend_name == 'cv2':
+            if self._backend_name == CV2:
                 h, w, _ = self.image.shape
             else:
                 w, h = self.image.size
@@ -110,18 +124,20 @@ class SuperResolutionResults(dg.postprocessor.InferenceResults):
 
             data = cv2.resize(data, (w * r_factor, h * r_factor), resize_method)
 
-    
         self._inference_results[0]['data'] = data  
     
     @property
     def image_overlay(self):
-        if self._backend_name == 'cv2':
+        """Overlay the inference results on the original image."""
+        if self._backend_name == CV2:
             return self._backend.cvtColor(self._inference_results[0]['data'], self._backend.COLOR_RGB2BGR)
         
         return self._backend.Image.fromarray(self._inference_results[0]['data'])
     
     def __repr__(self):
+        """Return a string representation of the object."""
         return self._inference_results.__repr__()
     
     def __str__(self):
+        """Return a string description of the object."""
         return self._inference_results.__str__()
