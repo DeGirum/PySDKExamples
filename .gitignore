@@ -6,3 +6,4 @@ tests/output/
 .vscode/
 workarea/
 **/temp/
+openvino_demos/action-recognition-webcam/action_rec_output.mp4
