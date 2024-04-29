@@ -120,7 +120,7 @@ and execute it from there.
 |[object detection image](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/singlemodel/object_detection_image.ipynb)|One of the simplest examples how to do AI inference on a graphical file using object detection model.|
 |[object detection annotate video file](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/singlemodel/object_detection_annotate_video_file.ipynb)|How to do AI inference on a video file, show annotated video, and save it to another video file. |
 |[object detection video stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/singlemodel/object_detection_video_stream.ipynb)|How to do AI inference on a video stream, and show annotated video in real-time.|
-|[object detection class filtering](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/singlemodel/object_detection_class_filtering.ipynb)|How to do object detection AI inference on a video stream filtering only desired set of classes.|
+|[object detection class filtering](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/singlemodel/object_detection_class_filtering.ipynb)|How to do object detection AI inference on an image file filtering only desired set of classes.|
 |[sound classification audio stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/singlemodel/sound_classification_audio_stream.ipynb)|How to do sound classification AI inference on an audio stream from a local microphone in real time. The result label with highest probability is displayed for each inference while keeping history few steps back.|
 
 
