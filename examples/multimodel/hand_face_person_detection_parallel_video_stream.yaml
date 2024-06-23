@@ -1,6 +1,8 @@
 hw_location: "@cloud"
-model_zoo_url: https://cs.degirum.com/degirum/public
-hand_det_model_name: yolo_v5s_hand_det--512x512_quant_n2x_orca_1
-face_det_model_name: yolo_v5s_face_det--512x512_quant_n2x_orca_1
-person_det_model_name: yolo_v5s_person_det--512x512_quant_n2x_orca_1
-video_source: ../../images/person_face_hand.mp4
+face_det_model_zoo_url: degirum/public
+face_det_model_name: yolo_v5s_face_det--512x512_quant_n2x_orca1_1
+hand_det_model_zoo_url: degirum/public
+hand_det_model_name: yolo_v5s_hand_det--512x512_quant_n2x_orca1_1
+person_det_model_zoo_url: degirum/public
+person_det_model_name: yolo_v5s_person_det--512x512_quant_n2x_orca1_1
+video_source: https://raw.githubusercontent.com/DeGirum/PySDKExamples/main/images/person_face_hand.mp4

@@ -20,7 +20,8 @@
 #         - '': Indicates the AI server is serving models from a local folder.
 #         - 'path to json file': Path to a single model zoo JSON file in case of @local inference.
 #     * iterations (int): Number of iterations to run for each model during profiling.
-#     * device_family (str): Device family of models to profile.
+#     * device_type (str): Runtime/Device family of models to profile.
+#     * model_family (str): Model family to profile.
 #
 # The script requires the 'degirum' and 'degirum_tools' modules to interact with the
 # AI inference engine and perform the profiling tasks.
@@ -48,21 +49,30 @@ if __name__ == "__main__":
     hw_location = config_data["hw_location"]
     model_zoo_url = config_data["model_zoo_url"]
     iterations = config_data["iterations"]
-    device_family = config_data["device_family"]
-
-    # connect to AI inference engine
-    zoo = dg.connect(hw_location, model_zoo_url, degirum_tools.get_token())
+    device_type = config_data["device_type"]
+    model_family = config_data["model_family"]
 
     # list of models to test
-    model_names = zoo.list_models(device=device_family)
-
+    model_names = dg.list_models(
+        inference_host_address=hw_location,
+        zoo_url=model_zoo_url,
+        token=degirum_tools.get_token(),
+        device_type=device_type,
+        model_family=model_family,
+    )
     # run batch predict for each model and record time measurements
     results = {}
     prog = degirum_tools.Progress(len(model_names), speed_units="models/s")
     for model_name in model_names:
         try:
             results[model_name] = degirum_tools.model_time_profile(
-                zoo.load_model(model_name), iterations
+                dg.load_model(
+                    model_name=model_name,
+                    inference_host_address=hw_location,
+                    zoo_url=model_zoo_url,
+                    token=degirum_tools.get_token(),
+                ),
+                iterations if not degirum_tools.get_test_mode() else 2,
             )
         except NotImplementedError:
             pass  # skip models for which time profiling is not supported

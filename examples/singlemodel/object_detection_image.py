@@ -39,15 +39,12 @@ if __name__ == "__main__":
     model_name = config_data["model_name"]
     image_source = config_data["image_source"]
 
-    # connect to AI inference engine
-    zoo = dg.connect(hw_location, model_zoo_url, degirum_tools.get_token())
-
     # load object detection AI model
-    model = zoo.load_model(
-        model_name,
-        overlay_font_scale=1.5,
-        overlay_alpha=1,
-        overlay_show_probabilities=True,
+    model = dg.load_model(
+        model_name=model_name,
+        inference_host_address=hw_location,
+        zoo_url=model_zoo_url,
+        token=degirum_tools.get_token(),
     )
 
     # perform AI model inference on given image source
@@ -56,4 +53,4 @@ if __name__ == "__main__":
     # show results of inference
     print(inference_result)  # numeric results
     with degirum_tools.Display("AI Camera") as display:
-        display.show_image(inference_result.image_overlay)  # graphical results
+        display.show_image(inference_result)  # graphical results

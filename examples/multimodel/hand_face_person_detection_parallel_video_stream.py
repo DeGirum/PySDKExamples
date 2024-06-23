@@ -37,27 +37,46 @@ if __name__ == "__main__":
 
     # Set all config options
     hw_location = config_data["hw_location"]
-    model_zoo_url = config_data["model_zoo_url"]
-    hand_det_model_name = config_data["hand_det_model_name"]
+    face_det_model_zoo_url = config_data["face_det_model_zoo_url"]
     face_det_model_name = config_data["face_det_model_name"]
+    hand_det_model_zoo_url = config_data["hand_det_model_zoo_url"]
+    hand_det_model_name = config_data["hand_det_model_name"]
+    person_det_model_zoo_url = config_data["person_det_model_zoo_url"]
     person_det_model_name = config_data["person_det_model_name"]
     video_source = config_data["video_source"]
+    overlay_color = [(255, 255, 0), (0, 255, 0), (255, 0, 0)]
 
-    # connect to AI inference engine
-    zoo = dg.connect(hw_location, model_zoo_url, degirum_tools.get_token())
+    # Load face detection, hand detection models, and person detection models
+    face_det_model = dg.load_model(
+        model_name=face_det_model_name,
+        inference_host_address=hw_location,
+        zoo_url=face_det_model_zoo_url,
+        token=degirum_tools.get_token(),
+    )
+    hand_det_model = dg.load_model(
+        model_name=hand_det_model_name,
+        inference_host_address=hw_location,
+        zoo_url=hand_det_model_zoo_url,
+        token=degirum_tools.get_token(),
+    )
+    person_det_model = dg.load_model(
+        model_name=person_det_model_name,
+        inference_host_address=hw_location,
+        zoo_url=person_det_model_zoo_url,
+        token=degirum_tools.get_token(),
+    )
+    person_det_model.overlay_color = overlay_color
+    # Create a compound model that combines the three models
+    combined_model = degirum_tools.CombiningCompoundModel(
+        degirum_tools.CombiningCompoundModel(hand_det_model, face_det_model),
+        person_det_model,
+    )
 
-    # load models for hand, face, and person detection
-    hand_det_model = zoo.load_model(hand_det_model_name)
-    face_det_model = zoo.load_model(face_det_model_name)
-    person_det_model = zoo.load_model(person_det_model_name, overlay_line_width=2)
+    # run AI inference on video stream
+    inference_results = degirum_tools.predict_stream(combined_model, video_source)
 
-    # AI prediction loop, press 'x' or 'q' to stop video
-    with degirum_tools.Display("Hands, Faces, and Persons") as display:
-        for inference_result in degirum_tools.predict_stream(
-            degirum_tools.CombiningCompoundModel(
-                degirum_tools.CombiningCompoundModel(hand_det_model, face_det_model),
-                person_det_model,
-            ),
-            video_source,
-        ):
+    # display inference results
+    # Press 'x' or 'q' to stop
+    with degirum_tools.Display("Hands, Faces and Persons") as display:
+        for inference_result in inference_results:
             display.show(inference_result)
