@@ -54,7 +54,11 @@ if __name__ == "__main__":
 
     # list of models to test
     model_names = dg.list_models(
+<<<<<<< HEAD
         inference_host_address=inference_host_address,
+=======
+        inference_host_address=hw_location,
+>>>>>>> 1623fcce7453334f8760043614202f5f4c0cec8d
         zoo_url=model_zoo_url,
         token=degirum_tools.get_token(),
         device_type=device_type,
@@ -68,7 +72,11 @@ if __name__ == "__main__":
             results[model_name] = degirum_tools.model_time_profile(
                 dg.load_model(
                     model_name=model_name,
+<<<<<<< HEAD
                     inference_host_address=inference_host_address,
+=======
+                    inference_host_address=hw_location,
+>>>>>>> 1623fcce7453334f8760043614202f5f4c0cec8d
                     zoo_url=model_zoo_url,
                     token=degirum_tools.get_token(),
                 ),

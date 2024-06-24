@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 inference_host_address: "@cloud"
+=======
+hw_location: "@cloud"
+>>>>>>> 1623fcce7453334f8760043614202f5f4c0cec8d
 face_det_model_zoo_url: degirum/public
 face_det_model_name: yolo_v5s_face_det--512x512_quant_n2x_orca1_1
 hand_det_model_zoo_url: degirum/public

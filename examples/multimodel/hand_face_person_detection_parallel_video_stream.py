@@ -36,7 +36,11 @@ if __name__ == "__main__":
         config_data = yaml.safe_load(file)
 
     # Set all config options
+<<<<<<< HEAD
     inference_host_address = config_data["inference_host_address"]
+=======
+    hw_location = config_data["hw_location"]
+>>>>>>> 1623fcce7453334f8760043614202f5f4c0cec8d
     face_det_model_zoo_url = config_data["face_det_model_zoo_url"]
     face_det_model_name = config_data["face_det_model_name"]
     hand_det_model_zoo_url = config_data["hand_det_model_zoo_url"]
@@ -49,19 +53,31 @@ if __name__ == "__main__":
     # Load face detection, hand detection models, and person detection models
     face_det_model = dg.load_model(
         model_name=face_det_model_name,
+<<<<<<< HEAD
         inference_host_address=inference_host_address,
+=======
+        inference_host_address=hw_location,
+>>>>>>> 1623fcce7453334f8760043614202f5f4c0cec8d
         zoo_url=face_det_model_zoo_url,
         token=degirum_tools.get_token(),
     )
     hand_det_model = dg.load_model(
         model_name=hand_det_model_name,
+<<<<<<< HEAD
         inference_host_address=inference_host_address,
+=======
+        inference_host_address=hw_location,
+>>>>>>> 1623fcce7453334f8760043614202f5f4c0cec8d
         zoo_url=hand_det_model_zoo_url,
         token=degirum_tools.get_token(),
     )
     person_det_model = dg.load_model(
         model_name=person_det_model_name,
+<<<<<<< HEAD
         inference_host_address=inference_host_address,
+=======
+        inference_host_address=hw_location,
+>>>>>>> 1623fcce7453334f8760043614202f5f4c0cec8d
         zoo_url=person_det_model_zoo_url,
         token=degirum_tools.get_token(),
     )

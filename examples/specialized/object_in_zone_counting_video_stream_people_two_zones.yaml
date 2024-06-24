@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 inference_host_address: "@cloud"
+=======
+hw_location: "@cloud"
+>>>>>>> 1623fcce7453334f8760043614202f5f4c0cec8d
 model_zoo_url: degirum/ultralytics_v6
 model_name: yolov8n_relu6_face--640x640_quant_tflite_edgetpu_1
 video_source: ../../images/store.mp4

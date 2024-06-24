@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 inference_host_address: "@cloud"
+=======
+hw_location: "@cloud"
+>>>>>>> 1623fcce7453334f8760043614202f5f4c0cec8d
 model_zoo_url: degirum/public
 model_name: yolo_v5s_coco--512x512_quant_n2x_orca1_1
 video_source: ../../images/Traffic2.mp4

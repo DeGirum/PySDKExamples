@@ -42,7 +42,11 @@ if __name__ == "__main__":
     # load object detection AI model
     model = dg.load_model(
         model_name=model_name,
+<<<<<<< HEAD
         inference_host_address=inference_host_address,
+=======
+        inference_host_address=hw_location,
+>>>>>>> 1623fcce7453334f8760043614202f5f4c0cec8d
         zoo_url=model_zoo_url,
         token=degirum_tools.get_token(),
     )
