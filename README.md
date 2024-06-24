@@ -1,6 +1,6 @@
 # DeGirum PySDK 
 
-DeGirum PySDK is an edge AI deployment focused software development kit that supports multiple hardware options, enabling AI solution providers to add AI to their applications using simple APIs.
+DeGirum PySDK is a software development kit, focused on edge AI development and deployment, that supports multiple hardware options, enabling AI solution providers to add AI to their applications using simple APIs.
 ![Degirum pysdk](/images/pysdk_hw_support.png)
 
 **[ORCA1 Performance Benchmarks](ORCABenchmarks.md)**
@@ -22,7 +22,7 @@ DeGirum public mode zoo. The inference result will be displayed in both text and
     import degirum as dg         # import DeGirum PySDK package
     
     # load mobilenet model from deGirum's public model zoo to run in the cloud
-    model = zoo.load_model(
+    model = dg.load_model(
         model_name = "mobilenet_v2_ssd_coco--300x300_quant_n2x_cpu_1",
         inference_host_address = dg.CLOUD,
         zoo_url = "degirum/public",
