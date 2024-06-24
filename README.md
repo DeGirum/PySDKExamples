@@ -1,4 +1,7 @@
-# DeGirum PySDK Examples
+# DeGirum PySDK 
+
+DeGirum PySDK is an edge AI deployment focused software development kit that supports multiple hardware options, enabling AI solution providers to add AI to their applications using simple APIs.
+![Degirum pysdk](/images/pysdk_hw_support.png)
 
 **[ORCA1 Performance Benchmarks](ORCABenchmarks.md)**
 
