@@ -20,17 +20,18 @@ DeGirum public mode zoo. The inference result will be displayed in both text and
 
     ```python
     import degirum as dg         # import DeGirum PySDK package
-    # connect to DeGirum cloud platform and use DeGirum public model zoo
-    zoo = dg.connect(dg.CLOUD, "https://cs.degirum.com", "<my cloud API access token>")
-    print(zoo.list_models())     # print all available models in the model zoo
-
-    # load mobilenet_ssd model for CPU; model_name should be one returned by zoo.list_models()
-    model_name = "mobilenet_v2_ssd_coco--300x300_quant_n2x_cpu_1"     
-    model = zoo.load_model(model_name, image_backend='pil')
-
+    
+    # load mobilenet model from deGirum's public model zoo to run in the cloud
+    model = zoo.load_model(
+        model_name = "mobilenet_v2_ssd_coco--300x300_quant_n2x_cpu_1",
+        inference_host_address = dg.CLOUD,
+        zoo_url = "degirum/public",
+        token = "<your cloud access token>",
+        image_backend='pil'
+    )
+    
     # perform AI inference of an image specified by URL
-    image_url = "https://raw.githubusercontent.com/DeGirum/PySDKExamples/main/images/TwoCats.jpg"
-    result = model(image_url)
+    result = model("https://raw.githubusercontent.com/DeGirum/PySDKExamples/main/images/TwoCats.jpg")
 
     print(result)                # print numeric results
     result.image_overlay.show()  # show graphical results
