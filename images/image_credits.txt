@@ -1,0 +1,7 @@
+HandSign.png: https://pixabay.com/photos/peace-hope-sign-language-finger-1006179/
+Car.jpg: https://pixabay.com/photos/automobile-automotive-car-classic-1838782/
+LicensePlate.jpg: Cropped from Car.jpg
+ThreePersons: https://pixabay.com/photos/kettlebell-fitness-crossfit-fit-3293481/
+TwoCats.jpg: https://pixabay.com/photos/animal-cat-couple-curious-cute-21584/
+LivingRoom.jpg: https://pixabay.com/photos/porch-fireplace-design-house-1967855/
+FirePlace.jpg: https://pixabay.com/photos/fireplace-mantel-living-room-cozy-558985/

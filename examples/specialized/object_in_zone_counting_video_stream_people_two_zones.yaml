@@ -1,0 +1,22 @@
+hw_location: "@cloud"
+model_zoo_url: degirum/ultralytics_v6
+model_name: yolov8n_relu6_face--640x640_quant_tflite_edgetpu_1
+video_source: ../../images/store.mp4
+class_list: ["Human face"]
+polygon_zones: 
+  - - - 0
+      - 91
+    - - 395
+      - 9
+    - - 436
+      - 518
+    - - 0
+      - 645
+  - - - 919
+      - 348
+    - - 1268
+      - 460
+    - - 1279
+      - 719
+    - - 453
+      - 715

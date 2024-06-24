@@ -1,0 +1,4 @@
+hw_location: "@cloud"
+model_zoo_url: degirum/public
+model_name: yolo_v5s_coco--512x512_quant_n2x_orca1_1
+video_source: https://raw.githubusercontent.com/DeGirum/PySDKExamples/main/images/example_video.mp4
