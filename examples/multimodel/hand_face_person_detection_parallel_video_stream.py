@@ -7,7 +7,7 @@
 # This script performs AI inference on a video stream using multiple detection models for hands, faces, and persons. It displays the video with annotated results. The script requires a YAML configuration file as input, which specifies the hardware location for running inference, the model zoo URL, the names of the models for hand, face, and person detection, and the source of the video.
 #
 # Parameters:
-# - hw_location (str): Specifies where to run inference with options '@cloud' for DeGirum cloud, '@local' for local machine, or an IP address for AI server inference.
+# - inference_host_address (str): Specifies where to run inference with options '@cloud' for DeGirum cloud, '@local' for local machine, or an IP address for AI server inference.
 # - model_zoo_url (str): Provides the URL or path for the model zoo with options 'cloud_zoo_url' for various inference options, '' for AI server serving models from a local folder, or a path to a JSON file for a single model zoo in case of @local inference.
 # - hand_det_model_name (str): Specifies the name of the model for hand detection.
 # - face_det_model_name (str): Specifies the name of the model for face detection.
@@ -36,7 +36,7 @@ if __name__ == "__main__":
         config_data = yaml.safe_load(file)
 
     # Set all config options
-    hw_location = config_data["hw_location"]
+    inference_host_address = config_data["inference_host_address"]
     face_det_model_zoo_url = config_data["face_det_model_zoo_url"]
     face_det_model_name = config_data["face_det_model_name"]
     hand_det_model_zoo_url = config_data["hand_det_model_zoo_url"]
@@ -49,19 +49,19 @@ if __name__ == "__main__":
     # Load face detection, hand detection models, and person detection models
     face_det_model = dg.load_model(
         model_name=face_det_model_name,
-        inference_host_address=hw_location,
+        inference_host_address=inference_host_address,
         zoo_url=face_det_model_zoo_url,
         token=degirum_tools.get_token(),
     )
     hand_det_model = dg.load_model(
         model_name=hand_det_model_name,
-        inference_host_address=hw_location,
+        inference_host_address=inference_host_address,
         zoo_url=hand_det_model_zoo_url,
         token=degirum_tools.get_token(),
     )
     person_det_model = dg.load_model(
         model_name=person_det_model_name,
-        inference_host_address=hw_location,
+        inference_host_address=inference_host_address,
         zoo_url=person_det_model_zoo_url,
         token=degirum_tools.get_token(),
     )

@@ -1,4 +1,4 @@
-hw_location: "@cloud"
+inference_host_address: "@cloud"
 model_zoo_url: degirum/public
 iterations: 10
 model_family:

@@ -6,7 +6,7 @@
 #
 # This script runs AI inference on a video source and displays the video stream with annotated results.
 # The script take a config.yaml file as an input. Tha config file specifies the following parameters.
-# hw_location: where you want to run inference
+# inference_host_address: where you want to run inference
 #     "@cloud" to use DeGirum cloud
 #     "@local" to run on local machine
 #     IP address for AI server inference
@@ -37,7 +37,7 @@ if __name__ == "__main__":
         config_data = yaml.safe_load(file)
 
     # Set all config options
-    hw_location = config_data["hw_location"]
+    inference_host_address = config_data["inference_host_address"]
     model_zoo_url = config_data["model_zoo_url"]
     model_name = config_data["model_name"]
     video_source = config_data["video_source"]
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     # load object detection AI model
     model = dg.load_model(
         model_name=model_name,
-        inference_host_address=hw_location,
+        inference_host_address=inference_host_address,
         zoo_url=model_zoo_url,
         token=degirum_tools.get_token(),
     )

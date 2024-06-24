@@ -6,7 +6,7 @@
 # This script performs AI inference on a video stream using a specified model and counts objects within defined polygon zones. It displays the video with annotated results and object counts. The script requires a YAML configuration file as input, which specifies the hardware location for running inference, the model zoo URL, the name of the model for AI inference, the source of the video, the polygon zones for counting, the list of classes to be counted, and whether to display per class counts.
 #
 # Parameters:
-# - hw_location (str): Specifies where to run inference with options '@cloud' for DeGirum cloud, '@local' for local machine, or an IP address for AI server inference.
+# - inference_host_address (str): Specifies where to run inference with options '@cloud' for DeGirum cloud, '@local' for local machine, or an IP address for AI server inference.
 # - model_zoo_url (str): Provides the URL or path for the model zoo with options 'cloud_zoo_url' for various inference options, '' for AI server serving models from a local folder, or a path to a JSON file for a single model zoo in case of @local inference.
 # - model_name (str): Specifies the name of the model for running AI inference.
 # - video_source: Defines the source of the video for inference with options being a camera index for local camera, a URL of an RTSP stream, a URL of a YouTube video, or a path to a video file (e.g., mp4).
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     with open(args.config, "r") as file:
         config_data = yaml.safe_load(file)
     # Set all config options
-    hw_location = config_data["hw_location"]
+    inference_host_address = config_data["inference_host_address"]
     model_zoo_url = config_data["model_zoo_url"]
     model_name = config_data["model_name"]
     video_source = config_data["video_source"]
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # load model
     model = dg.load_model(
         model_name=model_name,
-        inference_host_address=hw_location,
+        inference_host_address=inference_host_address,
         zoo_url=model_zoo_url,
         token=degirum_tools.get_token(),
         overlay_color=[(255, 0, 0)],

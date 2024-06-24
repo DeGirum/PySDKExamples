@@ -11,7 +11,7 @@
 #
 # Parameters:
 # - --config: Path to the YAML configuration file containing the following keys:
-#     * hw_location (str): Specifies where to run inference. Options are:
+#     * inference_host_address (str): Specifies where to run inference. Options are:
 #         - '@cloud': Use DeGirum cloud for inference.
 #         - '@local': Run inference on the local machine.
 #         - 'IP address': Specify the IP address of the AI server for inference.
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         config_data = yaml.safe_load(file)
 
     # Set all config options
-    hw_location = config_data["hw_location"]
+    inference_host_address = config_data["inference_host_address"]
     model_zoo_url = config_data["model_zoo_url"]
     iterations = config_data["iterations"]
     device_type = config_data["device_type"]
@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
     # list of models to test
     model_names = dg.list_models(
-        inference_host_address=hw_location,
+        inference_host_address=inference_host_address,
         zoo_url=model_zoo_url,
         token=degirum_tools.get_token(),
         device_type=device_type,
@@ -68,7 +68,7 @@ if __name__ == "__main__":
             results[model_name] = degirum_tools.model_time_profile(
                 dg.load_model(
                     model_name=model_name,
-                    inference_host_address=hw_location,
+                    inference_host_address=inference_host_address,
                     zoo_url=model_zoo_url,
                     token=degirum_tools.get_token(),
                 ),

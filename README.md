@@ -45,12 +45,12 @@ This repository provides PySDK example scripts that can perform ML inferences on
 1. On DeGirum AI Server deployed on a localhost or on some computer in your LAN or VPN,
 1. On DeGirum ORCA accelerator directly installed on your local computer.
 
-To try different options, you need to assign the appropriate value to `hw_location` variable, typically 
+To try different options, you need to assign the appropriate value to `inference_host_address` variable, typically 
 located in the first code cell of each example notebook:
 
-1. `hw_location = "@cloud"` for cloud hosting;
-1. `hw_location = "<hostname>"` for AI server hosting, where <hostname> is the hostname or IP address of yuor AI server in your LAN;
-1. `hw_location = "@local"` for local hosting.
+1. `inference_host_address = "@cloud"` for cloud hosting;
+1. `inference_host_address = "<hostname>"` for AI server hosting, where <hostname> is the hostname or IP address of yuor AI server in your LAN;
+1. `inference_host_address = "@local"` for local hosting.
    
 You have two ways to run examples:
 1. running them in the cloud in **Google Colab**,
