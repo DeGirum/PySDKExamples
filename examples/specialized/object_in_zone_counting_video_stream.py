@@ -57,7 +57,7 @@ if __name__ == "__main__":
         polygon_zones,
         class_list=class_list,
         per_class_display=per_class_display,
-        triggering_position=degirum_tools.AnchorPoint.CENTER,
+        triggering_positions=[degirum_tools.AnchorPoint.CENTER],
         window_name=window_name,  # attach display window for interactive zone adjustment
     )
 
