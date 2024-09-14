@@ -170,6 +170,8 @@ and execute it from there.
 | Example | Description |
 |---------|-------------|
 |[person count video](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/applications/person_count_video.ipynb)|Counting people in a video frame-by-frame using multiple detection models in parallel and annotating the video with the results.|
+|[stop sign violation detection](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/applications/stop_sign_violation_detection.ipynb)|Stop sign violation detection using object detection, object tracking, zone counting, line cross counting, and event detection.|
+
 
 ## Full List of Variables in `env.ini` Configuration File
 
