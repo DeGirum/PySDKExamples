@@ -1,0 +1,10 @@
+# YAML configuration for AI inference on multiple models
+
+inference_host_address: "@cloud"  # Where to run inference: @cloud, @local, or an IP address
+model_zoo_url: "degirum/models_openvino"  # URL or path to the model zoo
+
+# List of models to run inference on
+model_names:
+  - "yolov8n_relu6_coco--640x640_quant_openvino_multidevice_1"
+  
+iterations: 100  # Number of iterations for FPS profiling

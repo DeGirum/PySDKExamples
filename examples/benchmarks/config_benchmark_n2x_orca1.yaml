@@ -1,0 +1,18 @@
+# YAML configuration for AI inference on multiple models
+
+inference_host_address: "@cloud"  # Where to run inference: @cloud, @local, or an IP address
+model_zoo_url: "degirum/public"  # URL or path to the model zoo
+
+# List of models to run inference on
+model_names:
+  - "mobilenet_v1_imagenet--224x224_quant_n2x_orca1_1"
+  - "mobilenet_v2_imagenet--224x224_quant_n2x_orca1_1"
+  - "resnet50_imagenet--224x224_pruned_quant_n2x_orca1_1"
+  - "efficientnet_es_imagenet--224x224_quant_n2x_orca1_1"
+  - "efficientdet_lite1_coco--384x384_quant_n2x_orca1_1"
+  - "mobiledet_coco--320x320_quant_n2x_orca1_1"
+  - "yolov8n_relu6_coco--640x640_quant_n2x_orca1_1"
+  - "yolov8n_relu6_face--640x640_quant_n2x_orca1_1"
+  - "deeplab_seg--513x513_quant_n2x_orca1_1"
+
+iterations: 100  # Number of iterations for FPS profiling
