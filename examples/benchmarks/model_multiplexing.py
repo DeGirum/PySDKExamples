@@ -5,16 +5,33 @@ import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 
-def run_inference(model, image_batch):
-    """Run inference on a given model and batch of images."""
+def load_and_run_inference(
+    model_name, image_source, inference_host_address, zoo_url, token
+):
+    """Load the model and run inference on a given image batch inside the process."""
+    # Load the model inside the process
+    model = dg.load_model(
+        model_name=model_name,
+        inference_host_address=inference_host_address,
+        zoo_url=zoo_url,
+        token=token,
+    )
+
+    # Create a batch of images (same image repeated 100 times)
+    image_batch = [image_source] * 100
+
+    # for result in model.predict_batch(image_batch):
+    #     pass
+
+    # Run inference
     results = list(
         model.predict_batch(image_batch)
     )  # Convert to list to ensure full execution
-    return model.name, results
+    return model_name, len(results)  # Return the model name and the number of results
 
 
 def main():
-    # Load the models
+    # Model names
     model_names = [
         "mobilenet_v1_imagenet--224x224_quant_n2x_orca1_1",
         "mobilenet_v2_imagenet--224x224_quant_n2x_orca1_1",
@@ -26,32 +43,42 @@ def main():
     zoo_url = "degirum/public"  # Example model zoo URL
     token = degirum_tools.get_token()  # Get token from environment or configuration
 
-    models = []
+    # Prepare the image source (only one image, repeated later)
+    image_source = "../../images/ThreePersons.jpg"
+
+    # Step 0: Warmup inference to avoid cold-start overhead
+    print("Running warmup inference...")
     for model_name in model_names:
-        # Load each model from the model zoo
         model = dg.load_model(
             model_name=model_name,
             inference_host_address=inference_host_address,
             zoo_url=zoo_url,
             token=token,
         )
-        models.append(model)
-
-    # Prepare the batch of images (same image repeated 100 times)
-    image_source = "https://raw.githubusercontent.com/DeGirum/PySDKExamples/main/images/ThreePersons.jpg"
-    image_batch = [image_source] * 100
+        list(
+            model.predict_batch([image_source])
+        )  # Run inference on a single image to warm up
+    print("Warmup inference completed.\n")
 
     # Step 1: Measure time for sequential execution (x1, x2, x3, x4)
     sequential_times = []
-    for model in models:
+    for model_name in model_names:
         start_time = time.perf_counter()
-        results = list(
-            model.predict_batch(image_batch)
-        )  # Convert to list to ensure full execution
+        model = dg.load_model(
+            model_name=model_name,
+            inference_host_address=inference_host_address,
+            zoo_url=zoo_url,
+            token=token,
+        )
+        for result in model.predict_batch([image_source]):
+            pass
+        # results = list(
+        #     model.predict_batch([image_source] * 100)
+        # )  # Convert to list to ensure full execution
         end_time = time.perf_counter()
         sequential_time = end_time - start_time
         sequential_times.append(sequential_time)
-        print(f"Time for model {model.name}: {sequential_time:.2f} seconds")
+        print(f"Time for model {model_name}: {sequential_time:.2f} seconds")
 
     # Calculate total sequential time
     total_sequential_time = sum(sequential_times)
@@ -60,13 +87,23 @@ def main():
     # Step 2: Measure time for parallel execution (y) using ProcessPoolExecutor
     start_parallel_time = time.perf_counter()
     with ProcessPoolExecutor() as executor:
-        # Run inference on all models in parallel
+        # Run inference on all models in parallel, loading and running them inside the process
         futures = [
-            executor.submit(run_inference, model, image_batch) for model in models
+            executor.submit(
+                load_and_run_inference,
+                model_name,
+                image_source,
+                inference_host_address,
+                zoo_url,
+                token,
+            )
+            for model_name in model_names
         ]
         for future in as_completed(futures):
-            model_name, results = future.result()
-            print(f"Completed inference for model: {model_name}")
+            model_name, result_count = future.result()
+            print(
+                f"Completed inference for model: {model_name} with {result_count} results"
+            )
 
     end_parallel_time = time.perf_counter()
     parallel_time = end_parallel_time - start_parallel_time
