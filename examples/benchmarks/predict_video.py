@@ -1,7 +1,7 @@
 #
-# object_detection_image.py: AI Inference on Images
+# predict_video.py: AI Inference on a Video Stream
 #
-# This script performs AI inference on an image using command-line arguments and displays the results both in text format and as an annotated image overlay.
+# This script runs AI inference on a video stream using command-line arguments and displays the video with annotated results.
 #
 
 import argparse
@@ -12,7 +12,7 @@ import os
 
 def main():
     # Parse command-line arguments
-    parser = argparse.ArgumentParser(description="Run AI inference on an image.")
+    parser = argparse.ArgumentParser(description="Run AI inference on a video stream.")
     parser.add_argument(
         "--inference_host_address",
         type=str,
@@ -32,10 +32,10 @@ def main():
         help="Name of the model to use for inference. Default is 'yolov8n_relu6_coco--640x640_quant_n2x_orca1_1'.",
     )
     parser.add_argument(
-        "--image_source",
+        "--video_source",
         type=str,
-        default="https://raw.githubusercontent.com/DeGirum/PySDKExamples/main/images/ThreePersons.jpg",
-        help="Path or URL to the image for inference. Default is an example image.",
+        default="https://raw.githubusercontent.com/DeGirum/PySDKExamples/main/images/example_video.mp4",
+        help="Video source for inference. Can be a camera index (0, 1), RTSP stream URL, YouTube URL, or path to a video file. Default is an example video.",
     )
     parser.add_argument(
         "--device_type",
@@ -49,6 +49,12 @@ def main():
     )
 
     args = parser.parse_args()
+
+    # Determine if video source is a camera index (integer) or a string (URL, path)
+    if args.video_source.isdigit():
+        video_source = int(args.video_source)
+    else:
+        video_source = args.video_source
 
     # Get the token from the command-line argument or degirum_tools.get_token()
     token = args.token or degirum_tools.get_token()
@@ -70,27 +76,31 @@ def main():
     if args.device_type:
         model_args["device_type"] = args.device_type
 
+    # Print the parameters being used
+    print("Running inference with the following parameters:")
+    print(f"  Inference Host Address: {args.inference_host_address}")
+    print(f"  Model Zoo URL: {args.model_zoo_url}")
+    print(f"  Model Name: {args.model_name}")
+    print(f"  Video Source: {args.video_source}")
+    print(
+        f"  Device Type: {args.device_type if args.device_type else 'Default device'}"
+    )
+    print(f"  Token: {'Provided' if args.token else 'Loaded from environment'}")
+
     # Load the AI model with optional device_type
     model = dg.load_model(**model_args)
 
-    # Perform AI model inference on the given image source
-    inference_result = model(args.image_source)
+    # Set the display title to show model_name, video_source, and inference_host_address
+    display_title = f"{args.model_name} running on {args.video_source} {args.inference_host_address}"
 
-    # Display the results (numeric output always)
-    print("Inference Result:", inference_result)  # Numeric results
+    # Run AI inference on video stream
+    inference_results = degirum_tools.predict_stream(model, video_source)
 
-    # Check if the script is running in a display environment
-    if (
-        os.environ.get("DISPLAY") or os.name == "nt"
-    ):  # DISPLAY is usually set in graphical environments
-        # If DISPLAY exists (Linux/macOS) or on Windows, show the graphical result
-        try:
-            with degirum_tools.Display("AI Camera") as display:
-                display.show_image(inference_result)  # Graphical results
-        except Exception as e:
-            print(f"Error displaying results: {e}")
-    else:
-        print("No display found. Skipping graphical output.")
+    # Display the results with a live video stream
+    # Press 'x' or 'q' to stop
+    with degirum_tools.Display(display_title) as display:
+        for inference_result in inference_results:
+            display.show(inference_result)
 
 
 if __name__ == "__main__":
