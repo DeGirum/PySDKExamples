@@ -6,3 +6,4 @@ tests/output/
 .vscode/
 workarea/
 **/temp/
+.DS_Store
