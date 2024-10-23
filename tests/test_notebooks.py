@@ -64,6 +64,7 @@ _image_notebooks = [
     ("specialized/tiled_object_detection.ipynb", "TrafficHD_short.mp4", [3,4], []),
     ("applications/person_count_video.ipynb", "Masked.mp4", [7], []),
     ("applications/stop_sign_violation_detection.ipynb", "Masked.mp4", [3], []),
+    ("applications/person_age_gender_detection.ipynb", "Masked.mp4", {4:2}, []),
 ]
 
 # _imageless_notebooks is a list of notebooks without an image cell output
