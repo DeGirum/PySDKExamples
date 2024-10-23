@@ -52,7 +52,7 @@ _image_notebooks = [
     ("singlemodel/object_detection_annotate_video_file.ipynb", "Masked.mp4", [3], []),
     ("dgstreams/dgstreams_demo.ipynb", "Masked.mp4", {3:1, 4:1, 5:2, 6:1, 8:1, 10:1}, []),
     ("dgstreams/multi_camera_multi_model_detection.ipynb", "Masked.mp4", {3:2}, []),
-    ("dgstreams/person_pose_detection_pipelined_video_stream.ipynb", "Masked.mp4", [5], []),
+    ("dgstreams/person_pose_detection_pipelined_video_stream.ipynb", "Masked.mp4", [4], []),
     ("multimodel/face_gender_recognition_pipelined_video_stream.ipynb", "Masked.mp4", [3], []),
     ("multimodel/hand_face_person_detection_parallel_video_stream.ipynb", "Masked.mp4", [3], []),
     ("multimodel/license_plate_recognition_pipelined_video_stream.ipynb", "Car.mp4", [3], []),
