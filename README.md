@@ -171,6 +171,7 @@ and execute it from there.
 |---------|-------------|
 |[person count video](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/applications/person_count_video.ipynb)|Counting people in a video frame-by-frame using multiple detection models in parallel and annotating the video with the results.|
 |[stop sign violation detection](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/applications/stop_sign_violation_detection.ipynb)|Stop sign violation detection using object detection, object tracking, zone counting, line cross counting, and event detection.|
+|[person age gender detection](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/applications/person_age_gender_detection.ipynb)|Person detection followed by object tracking, zone presence detection, age detection, and gender classification with result averaging among all occurrences of detected person in the zone.|
 
 
 ## Full List of Variables in `env.ini` Configuration File
