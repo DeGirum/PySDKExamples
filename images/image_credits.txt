@@ -5,3 +5,4 @@ ThreePersons: https://pixabay.com/photos/kettlebell-fitness-crossfit-fit-3293481
 TwoCats.jpg: https://pixabay.com/photos/animal-cat-couple-curious-cute-21584/
 LivingRoom.jpg: https://pixabay.com/photos/porch-fireplace-design-house-1967855/
 FirePlace.jpg: https://pixabay.com/photos/fireplace-mantel-living-room-cozy-558985/
+ParkingLot.jpg: https://www.kaggle.com/datasets/braunge/aerial-view-car-detection-for-yolov5 (mydata/mydata/images/test/4 (47)_1650423582.jpg) (License: ODBL 1.0)
