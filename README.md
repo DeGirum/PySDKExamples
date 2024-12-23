@@ -149,6 +149,7 @@ and execute it from there.
 |[object in zone counting video file](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/specialized/object_in_zone_counting_video_file.ipynb)|Object detection and object counting in polygon zone: video file annotation|
 |[object in zone counting video stream](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/specialized/object_in_zone_counting_video_stream.ipynb)|Object detection and object counting in polygon zone: streaming video processing|
 |[tiled object detection](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/specialized/tiled_object_detection.ipynb)|How to do tiled object detection of a video stream from a video file. Each video frame is divided by tiles with some overlap, each tile of the AI model input size (to avoid resizing). Object detection is performed for each tile, then results from different tiles are combined.|
+|[advanced tiling for object detection](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/specialized/advanced_tiling_strategies.ipynb)|Demonstrates how to perform image tiling with various strategies that mitigates partial/duplicate detections introduced by tiling.|
 
 ### Benchmarks
 
