@@ -172,6 +172,7 @@ and execute it from there.
 |[person count video](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/applications/person_count_video.ipynb)|Counting people in a video frame-by-frame using multiple detection models in parallel and annotating the video with the results.|
 |[stop sign violation detection](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/applications/stop_sign_violation_detection.ipynb)|Stop sign violation detection using object detection, object tracking, zone counting, line cross counting, and event detection.|
 |[person age gender detection](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/applications/person_age_gender_detection.ipynb)|Person detection followed by object tracking, zone presence detection, age detection, and gender classification with result averaging among all occurrences of detected person in the zone.|
+|[car wrong direction detection](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/applications/car_wrong_direction_detection.ipynb)|Detect a car going in the wrong direction using object detection, object tracking, line cross counting, and event detection. When an event is detected, the notification is sent to the notification service of your choice and a video clip around that event is uploaded to S3-compatible storage of your choice.|
 
 
 ## Full List of Variables in `env.ini` Configuration File
