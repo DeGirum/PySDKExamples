@@ -11,9 +11,9 @@ DeGirum PySDK is a software development kit, focused on edge AI development, tha
 
 1. Log in to [DeGirum Cloud Portal](https://cs.degirum.com).
 
-1. Create cloud API access token on [**Tokens** page of DeGirum Cloud Portal](https://cs.degirum.com/profile#profile-tab-tokens).
+1. Create cloud API access token on [**Tokens** page of DeGirum Cloud Portal](https://hub.degirum.com/tokens/).
 
-1. Install DeGirum PySDK. Read the instructions [here](https://docs.degirum.com/content/pysdk/installation/).
+1. Install DeGirum PySDK. Read the instructions [here](https://docs.degirum.com/content/pysdk/basic-install/).
 
 1. The following script will perform ML inference of a test image with two cats using a model from
 DeGirum public mode zoo. The inference result will be displayed in both text and graphical form.
@@ -41,7 +41,7 @@ DeGirum public mode zoo. The inference result will be displayed in both text and
 
 This repository provides PySDK example scripts that can perform ML inferences on the following hosting options:
 
-1. Using [DeGirum Cloud Platform](https://cs.degirum.com),
+1. Using [DeGirum Cloud Platform](https://hub.degirum.com),
 1. On DeGirum AI Server deployed on a localhost or on some computer in your LAN or VPN,
 1. On DeGirum ORCA accelerator directly installed on your local computer.
 
@@ -83,7 +83,7 @@ following variables:
 
     |Variable Name|Description|
     |-------------|-----------|
-    |`DEGIRUM_CLOUD_TOKEN`|DeGirum cloud platform API access token. To obtain a token, visit [**Tokens** page on DeGirum Cloud Portal](https://cs.degirum.com/profile#profile-tab-tokens).|
+    |`DEGIRUM_CLOUD_TOKEN`|DeGirum cloud platform API access token. To obtain a token, visit [**Tokens** page on DeGirum Cloud Portal](https://hub.degirum.com/tokens/).|
 
 
     This will allow loading the token from the `env.ini` file instead of hard-coding the value in the script. Please make sure not to commit the `env.ini` file with the token value.
