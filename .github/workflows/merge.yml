@@ -19,10 +19,10 @@ jobs:
       # do not abort other jobs on job failure
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-2019]
+        os: [ubuntu-22.04, windows-2022]
         include:
           - default_shell: bash -eo pipefail -l {0}
-          - os: windows-2019
+          - os: windows-2022
             default_shell: cmd
 
     runs-on: ${{ matrix.os }}
