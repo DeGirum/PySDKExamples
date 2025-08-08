@@ -177,6 +177,7 @@ and execute it from there.
 |[person age gender detection](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/applications/person_age_gender_detection.ipynb)|Person detection followed by object tracking, zone presence detection, age detection, and gender classification with result averaging among all occurrences of detected person in the zone.|
 |[car wrong direction detection](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/applications/car_wrong_direction_detection.ipynb)|Detect a car going in the wrong direction using object detection, object tracking, line cross counting, and event detection. When an event is detected, the notification is sent to the notification service of your choice and a video clip around that event is uploaded to S3-compatible storage of your choice.|
 |[parking management](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/applications/parking_management.ipynb)|Monitor a parking lot's occupancy using object detection and zone intrusion detection in a video. Zones defined for parking spaces are checked for occupancy and counted, and the video is annotated with occupancy/vacancy counts.|
+|[smart nvr](https://colab.research.google.com/github/DeGirum/PySDKExamples/blob/main/examples/applications/smart_nvr.ipynb)|NVR triggered by object detection|
 
 
 ## Full List of Variables in `env.ini` Configuration File
