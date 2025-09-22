@@ -1,6 +1,6 @@
 # ORCA Performance Benchmarks
 In this page, we provide performance benchmarks of DeGirum ORCA1 AI accelerator 
-on various models. The frames per second (FPS) numbers are obatained by running the [single model performance test.ipynb](examples/benchmarks/single_model_performace_test.ipynb) jupyter notebook on a machine equipped with ORCA1. The script can also be run on the cloud platform to estimate the performance. All FPS numbers are for __batch_size=1__. This page will be periodically updated to reflect the latest performance numbers. As our compiler and software mature, we expect to add more models and also improve the performance.
+on various models. The frames per second (FPS) numbers are obatained by running the [single model performance test.ipynb](examples/benchmarks/single_model_performance_test.ipynb) jupyter notebook on a machine equipped with ORCA1. The script can also be run on the cloud platform to estimate the performance. All FPS numbers are for __batch_size=1__. This page will be periodically updated to reflect the latest performance numbers. As our compiler and software mature, we expect to add more models and also improve the performance.
 
 __Last updated on: May 22, 2023__
 
